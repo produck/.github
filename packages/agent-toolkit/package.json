@@ -13,10 +13,7 @@
   },
   "scripts": {
     "verify": "node ./bin/agent-toolkit.mjs --help && node ./bin/agent-toolkit.mjs preflight --cwd . --require package.json",
-    "pack:check": "npm pack --dry-run",
-    "publish:dry-run": "npm publish --dry-run --access public",
-    "publish:latest": "npm publish --access public",
-    "release": "node ./bin/release.mjs"
+    "pack:check": "npm pack --dry-run"
   },
   "files": [
     "bin",

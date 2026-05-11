@@ -8,10 +8,7 @@ const ALLOWED_TAGS = ['INIT', 'ADD', 'REMOVE', 'FIX', 'REFACTOR', 'UPGRADE'];
 const ALLOWED_TARGETS = ['docs', 'test', 'ci', 'deps', 'api', 'schema', 'infra'];
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, '../templates');
-const DEFAULT_INSTRUCTIONS_TEMPLATE_PATH = path.resolve(
-  TEMPLATE_ROOT,
-  'default.instructions.md',
-);
+const DEFAULT_INSTRUCTIONS_TEMPLATE_PATH = path.resolve(TEMPLATE_ROOT, 'default.instructions.md');
 
 function loadTemplateFile(relativePath) {
   const templatePath = path.resolve(TEMPLATE_ROOT, relativePath);
@@ -402,9 +399,7 @@ function runSyncInstructions(options) {
   const report = {
     cwd,
     outPath,
-    source: sourceArg
-      ? path.resolve(cwd, sourceArg)
-      : DEFAULT_INSTRUCTIONS_TEMPLATE_PATH,
+    source: sourceArg ? path.resolve(cwd, sourceArg) : DEFAULT_INSTRUCTIONS_TEMPLATE_PATH,
     exists,
     overwritten: exists && force,
     dryRun,

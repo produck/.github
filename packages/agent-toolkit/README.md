@@ -15,33 +15,33 @@ Central CLI toolkit for organization-level AI execution workflows.
 Run preflight checks:
 
 npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
+ agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
 
 Capture long output safely:
 
 npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
+ agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
 
 Summarize captured output:
 
 npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
+ agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
 
 Validate commit message format:
 
 npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
+ agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
 
 Manual per-repository instruction distribution (write .instructions.md):
 
 npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit sync-instructions --cwd .
+ agent-toolkit sync-instructions --cwd .
 
 Use organization source file instead of built-in template:
 
 npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit sync-instructions --cwd . \
-  --source path/to/org/.instructions.md --force
+ agent-toolkit sync-instructions --cwd . \
+ --source path/to/org/.instructions.md --force
 
 Built-in template location (for review and updates):
 
@@ -59,7 +59,7 @@ npm --workspace @produck/agent-toolkit run pack:check
 
 Lerna-like release flow (recommended):
 
-0) Interactive mode (TTY):
+0. Interactive mode (TTY):
 
 npm --workspace @produck/agent-toolkit run release
 
@@ -121,6 +121,6 @@ Release policy:
 Rollback quick steps:
 
 1. Check latest published version:
-  `npm view @produck/agent-toolkit version`
+   `npm view @produck/agent-toolkit version`
 2. Fix source and run release again with a new version.
 3. Push commit and tags.
