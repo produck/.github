@@ -9,6 +9,13 @@ Use this format:
 
 - `[TAG] summary`
 
+Multi-line commit message rule:
+
+- Every non-empty line in the commit message must start with `[TAG]`.
+- Do not use untagged bullet lines in commit message body.
+- If body details are needed, repeat tagged lines instead of raw bullets.
+- `summary` cannot appear as a standalone untagged line.
+
 In monorepo or grouped notes, package/workspace labels can appear outside each
 message line (for example section headers like `@scope/pkg`, `workspace`, or
 `*`).
@@ -39,7 +46,7 @@ When using this style:
 - Summary may include a target noun prefix to express content domain.
 - Mention concrete areas when useful (route, endpoint, helper, file, test,
   constraint).
-- Prefer one clear change per line when writing grouped summaries.
+- Prefer one clear tagged change per line when writing grouped summaries.
 - `[REFACTOR]` implies potentially breaking updates and should explicitly
   describe impact.
 - Special rule for `[UPGRADE]`: use `[UPGRADE] deps` for pure dependency
@@ -69,6 +76,9 @@ Summary target extension (optional):
 
 - `[FIX] race conditions in createTeam/acceptInvitation/acceptRequest by
   wrapping checks and writes in one transaction`
+- `[FIX] <infra>: enforce node-first execution`
+- `[FIX] <infra>: remove repo-local ignore for transient logs`
+- `[FIX] <infra>: add policy-repo exception for local agent output`
 - `[ADD] shared helper src/Web/Student/Router/Team/membership.mjs for
   student-side team mutation routes`
 - `[REFACTOR] remove c8 ignore on Screenshot.mjs response.ok (covered by
@@ -91,6 +101,8 @@ Avoid vague or low-signal messages such as:
 - `[ADD] <feature>: ...` (target outside allowed whitelist)
 - `[added] ...` (non-uppercase tag)
 - `[CHANGED] ...` (tag outside whitelist)
+- `- remove old script` (untagged body line)
+- `summary without tag` (untagged standalone line)
 
 ## Notes
 

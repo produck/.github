@@ -79,6 +79,13 @@ Use bracketed commit style:
 
 - `[TAG] summary`
 
+Multi-line rule:
+
+- Every non-empty commit message line must start with `[TAG]`.
+- Do not use untagged bullet lines in commit body.
+- If details are needed, use additional tagged lines.
+- Do not keep summary as an untagged standalone line.
+
 Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and
 `[UPGRADE]`.
 Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` ->
@@ -102,6 +109,8 @@ Examples:
 
 - `[FIX] race conditions in createTeam/acceptInvitation/acceptRequest by using
   one transaction`
+- `[FIX] <infra>: enforce node-first execution policy`
+- `[FIX] <infra>: remove repo-local ignore for transient logs`
 - `[ADD] screenshot-upload-fail cross-endpoint test covering uploadFile
   response.ok branch`
 - `[REMOVE] deprecated score-field prompt template`
@@ -116,6 +125,7 @@ Avoid vague messages such as:
   updates that should be named
 - `[ADD] docs: ...` (target syntax without angle brackets)
 - `[ADD] <feature>: ...` (target outside allowed target list)
+- `- update infra` (untagged body line)
 
 ## Pull requests
 

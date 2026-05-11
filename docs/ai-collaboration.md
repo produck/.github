@@ -88,6 +88,10 @@ max_line_length = 80
 ## Commit and PR conventions
 
 - Commit messages use bracketed tags: `[TAG] summary`.
+- Every non-empty commit message line must start with `[TAG]`.
+- Do not use untagged bullet lines in commit message body.
+- If details are needed, use additional tagged lines.
+- Do not keep summary as an untagged standalone line.
 - Use uppercase tags from this whitelist: `[INIT]`, `[ADD]`, `[REMOVE]`,
   `[FIX]`, `[REFACTOR]`, `[UPGRADE]`.
 - Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` ->
