@@ -10,18 +10,22 @@ function usage() {
   console.log([
     'Usage:',
     '  node ./bin/release.mjs',
-    '  node ./bin/release.mjs <patch|minor|major> [--publish]',
+    '  node ./bin/release.mjs <patch|minor|major> [--publish] [--no-commit] [--no-tag]',
     '  node ./bin/release.mjs --interactive',
     '',
     'Behavior:',
     '  1) bump version (no git tag)',
     '  2) run verify',
     '  3) run publish:dry-run',
-    '  4) optionally publish latest when --publish is set',
+    '  4) auto commit version change (default)',
+    '  5) auto create git tag (default)',
+    '  6) optionally publish latest when --publish is set',
     '',
     'Interactive mode defaults:',
     '  - release level: patch',
     '  - publish mode: dry-run',
+    '  - auto commit: enabled',
+    '  - auto tag: enabled',
   ].join('\n'));
 }
 
@@ -40,6 +44,72 @@ function runNpm(args) {
 
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
+  }
+}
+
+function runGit(args) {
+  const result = spawnSync('git', args, {
+    stdio: 'inherit',
+    cwd: process.cwd(),
+    shell: true,
+  });
+
+  if (result.error) {
+    console.error(`[release] failed to run git ${args.join(' ')}:`);
+    console.error(result.error.message);
+    process.exit(1);
+  }
+
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
+
+function getDirtyFiles() {
+  const result = spawnSync('git', ['status', '--porcelain'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: process.cwd(),
+    shell: true,
+    encoding: 'utf8',
+  });
+
+  if (result.error || result.status !== 0) {
+    console.error('[release] unable to check git status');
+    process.exit(1);
+  }
+
+  return result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+function ensureReleaseWorkspaceClean() {
+  const dirty = getDirtyFiles();
+  if (dirty.length === 0) {
+    return;
+  }
+
+  console.error('[release] working tree is not clean before release:');
+  for (const line of dirty) {
+    console.error(`  ${line}`);
+  }
+  console.error('[release] commit/stash changes and retry');
+  process.exit(2);
+}
+
+function commitAndTag(version, shouldCommit, shouldTag) {
+  if (shouldCommit) {
+    const message = `[UPGRADE] <infra>: release @produck/agent-toolkit ${version}`;
+    console.log(`[release] commit version bump: ${message}`);
+    runGit(['add', 'package.json']);
+    runGit(['commit', '-m', message]);
+  }
+
+  if (shouldTag) {
+    const tag = `agent-toolkit-v${version}`;
+    console.log(`[release] create tag: ${tag}`);
+    runGit(['tag', '-a', tag, '-m', `[UPGRADE] <infra>: tag ${tag}`]);
   }
 }
 
@@ -102,18 +172,42 @@ async function askInteractive(currentVersion) {
       process.exit(2);
     }
 
-    return { level, shouldPublish };
+    console.log('[release] auto commit and tag settings:');
+    console.log('  1) commit + tag (default)');
+    console.log('  2) commit only');
+    console.log('  3) no commit, no tag');
+
+    const vcsAnswer = (
+      await rl.question('Choose vcs mode [1/2/3] (default: 1): ')
+    ).trim();
+
+    let shouldCommit = true;
+    let shouldTag = true;
+    if (vcsAnswer === '2') {
+      shouldCommit = true;
+      shouldTag = false;
+    } else if (vcsAnswer === '3') {
+      shouldCommit = false;
+      shouldTag = false;
+    } else if (vcsAnswer && vcsAnswer !== '1') {
+      console.error(`Invalid vcs choice: ${vcsAnswer}`);
+      process.exit(2);
+    }
+
+    return { level, shouldPublish, shouldCommit, shouldTag };
   } finally {
     rl.close();
   }
 }
 
-function runRelease(level, shouldPublish) {
+function runRelease(level, shouldPublish, shouldCommit, shouldTag) {
   if (!LEVELS.has(level)) {
     console.error(`Invalid release level: ${level}`);
     usage();
     process.exit(2);
   }
+
+  ensureReleaseWorkspaceClean();
 
   const pkgFile = path.resolve('package.json');
   const before = JSON.parse(fs.readFileSync(pkgFile, 'utf8')).version;
@@ -129,6 +223,8 @@ function runRelease(level, shouldPublish) {
 
   console.log('[release] publish dry-run');
   runNpm(['run', 'publish:dry-run']);
+
+  commitAndTag(after, shouldCommit, shouldTag);
 
   if (shouldPublish) {
     console.log('[release] publish latest');
@@ -155,10 +251,23 @@ if (interactiveRequested) {
   const pkgFile = path.resolve('package.json');
   const currentVersion = JSON.parse(fs.readFileSync(pkgFile, 'utf8')).version;
   const interactive = await askInteractive(currentVersion);
-  runRelease(interactive.level, interactive.shouldPublish);
+  runRelease(
+    interactive.level,
+    interactive.shouldPublish,
+    interactive.shouldCommit,
+    interactive.shouldTag
+  );
   process.exit(0);
 }
 
 const level = args[0];
 const shouldPublish = args.includes('--publish');
-runRelease(level, shouldPublish);
+const shouldCommit = !args.includes('--no-commit');
+const shouldTag = !args.includes('--no-tag');
+
+if (shouldTag && !shouldCommit) {
+  console.error('[release] --no-commit cannot be combined with tag enabled');
+  process.exit(2);
+}
+
+runRelease(level, shouldPublish, shouldCommit, shouldTag);

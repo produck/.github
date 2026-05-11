@@ -50,16 +50,29 @@ Interactive prompts let you choose:
 
 - version level: patch/minor/major
 - action: dry-run or publish
+- vcs mode: commit+tag / commit only / no commit+no tag
 
 Default choices:
 
 - patch
 - dry-run
+- commit + tag
 
 Interactive mode handles both:
 
 - version bump level (patch/minor/major)
 - action mode (dry-run or publish)
+- auto commit and tag after dry-run
+
+Non-interactive flags:
+
+- `npm --prefix tools/agent-toolkit run release -- patch --publish`
+- `npm --prefix tools/agent-toolkit run release -- patch --no-tag`
+- `npm --prefix tools/agent-toolkit run release -- patch --no-commit --no-tag`
+
+Note:
+
+- Release requires a clean working tree in `tools/agent-toolkit` before start.
 
 Low-level commands (optional):
 
