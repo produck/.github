@@ -1,24 +1,39 @@
 {
   "name": "@produck/eslint-rules",
-  "version": "0.1.0",
-  "description": "Shared ESLint flat config presets for the Produck organization",
+  "version": "0.3.0",
+  "description": "Common eslint rules of Produck team",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/produck/.github.git",
     "directory": "packages/eslint-rules"
   },
+  "main": "src/index.mjs",
+  "types": "src/index.d.ts",
   "exports": {
-    ".": "./index.mjs"
+    ".": {
+      "import": "./src/index.mjs",
+      "types": "./src/index.d.ts"
+    }
   },
   "files": [
-    "index.mjs",
-    "README.md"
+    "src"
   ],
-  "scripts": {
-    "verify": "node -e \"import('./index.mjs').then(() => console.log('ok')).catch((e) => { console.error(e); process.exit(1); })\"",
-    "pack:check": "npm pack --dry-run"
+  "peerDependencies": {
+    "@eslint/config-helpers": ">=0.6.0",
+    "eslint": ">=10.3.0"
   },
+  "scripts": {
+    "test": "node --test test/index.mjs",
+    "coverage": "node --test --experimental-test-coverage test/index.mjs",
+    "lint": "eslint src test",
+    "verify": "node -e \"import('./src/index.mjs').then(() => console.log('[eslint-rules] package loaded successfully')).catch((e) => { console.error(e); process.exit(1); })\""
+  },
+  "keywords": [
+    "eslint",
+    "rules"
+  ],
+  "author": "ChaosLee",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
