@@ -17,12 +17,30 @@ Multi-line commit message rule:
 - If body details are needed, repeat tagged lines instead of raw bullets.
 - `summary` cannot appear as a standalone untagged line.
 
-In monorepo or grouped notes, package/workspace labels can appear outside each
-message line (for example section headers like `@scope/pkg`, `workspace`, or
-`*`).
-The text after `[TAG]` is always the description.
-For non-monorepo repositories, do not use package/workspace section headers;
-write commit messages directly as `[TAG] summary`.
+Monorepo format (required for multi-package repositories):
+
+- Package/workspace labels appear as **section headers** followed by a colon
+  (format: `package-name:` or `@scope/package:`).
+- All lines under a package header belong to that package.
+- Every line under a package header must start with `[TAG]`.
+- No empty lines between tagged lines within a package section.
+- Multiple packages follow the same pattern (each with its own header).
+
+Example monorepo format:
+
+```
+foo:
+[FIX] race condition in auth handler
+[ADD] <test>: cover edge case for concurrent login
+bar:
+[REFACTOR] <docs>: rewrite installation guide
+```
+
+Standalone repository format:
+
+- Do not use package/workspace section headers.
+- Write commit messages directly as `[TAG] summary`.
+- All tagged lines belong to the repository globally.
 
 Allowed tags (fixed whitelist):
 
@@ -91,6 +109,24 @@ Summary target extension (optional):
 - `[FIX] <test>: stabilize screenshot upload retry assertion`
 - `[REFACTOR] <ci>: split lint and test jobs for faster feedback`
 
+Monorepo examples:
+
+```
+foo:
+[FIX] a
+[FIX] b
+[FIX] c
+```
+
+```
+core:
+[ADD] <api>: new user authentication endpoint
+[REFACTOR] <test>: restructure session management tests
+utils:
+[UPGRADE] <deps>: update lodash to v4.17.21
+[FIX] <docs>: clarify error handling in README
+```
+
 ## Avoid
 
 Avoid vague or low-signal messages such as:
@@ -105,6 +141,12 @@ Avoid vague or low-signal messages such as:
 - `- remove old script` (untagged body line)
 - `summary without tag` (untagged standalone line)
 - empty lines between tagged lines
+- Monorepo mistakes:
+  - `foo: [FIX] a` (package header and tag on same line)
+  - `@produck/foo: [FIX] a` (package name in every tag line instead of
+    section header)
+  - `foo:\n\n[FIX] a` (empty line after package header)
+  - `foo:` without any tagged lines below (orphaned section header)
 
 ## Validation
 

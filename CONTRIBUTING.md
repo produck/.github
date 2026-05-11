@@ -101,7 +101,8 @@ Language conventions:
 
 Use bracketed commit style:
 
-- `[TAG] summary`
+- Standalone: `[TAG] summary` or `[TAG] <target>: summary`
+- Monorepo: Package header followed by tagged lines
 
 Multi-line rule:
 
@@ -110,6 +111,22 @@ Multi-line rule:
 - Do not use untagged bullet lines in commit body.
 - If details are needed, use additional tagged lines.
 - Do not keep summary as an untagged standalone line.
+
+Monorepo format (required for multi-package repositories):
+
+```
+package-name:
+[TAG] description of change a
+[TAG] description of change b
+another-package:
+[TAG] description of change c
+```
+
+Standalone format (single-package repositories):
+
+```
+[TAG] description of change
+```
 
 Validation step (recommended):
 
@@ -120,16 +137,12 @@ Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and
 `[UPGRADE]`.
 Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` ->
 `[REMOVE]`, and `[FIXED]` -> `[FIX]`.
-Tags must be uppercase, and bracketed summaries must be in English.
+Tags must be uppercase, and summaries must be in English.
 Summary may optionally use a target noun prefix: `[TAG] <target>: <summary>`.
 Allowed targets are `docs`, `test`, `ci`, `deps`, `api`, `schema`, and `infra`.
 If target syntax is used, target must be wrapped in angle brackets and must be
 from the allowed target list.
-Targets are summary nouns, not commit tags.
-For grouped notes in monorepos, package/workspace labels can appear as section
-headers outside each message line.
-For non-monorepo repositories, do not use package/workspace section headers; use
-`[TAG] summary` directly.
+
 Special rule for `[UPGRADE]`:
 - For pure dependency upgrades, `[UPGRADE] deps` is allowed and recommended.
 - If the commit also updates IFF artifacts or IPC-related artifacts/calls, the
