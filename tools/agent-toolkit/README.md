@@ -30,3 +30,38 @@ Validate commit message format:
 
 npm exec --package=@produck/agent-toolkit@latest \
   agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
+
+## Local verification
+
+From repository root:
+
+npm --prefix tools/agent-toolkit run verify
+npm --prefix tools/agent-toolkit run pack:check
+
+## Publish workflow
+
+Dry-run publish:
+
+npm --prefix tools/agent-toolkit run publish:dry-run
+
+Publish latest:
+
+npm --prefix tools/agent-toolkit run publish:latest
+
+## GitHub workflow
+
+Repository includes manual workflow:
+
+- .github/workflows/publish-agent-toolkit.yml
+
+Workflow behavior:
+
+- Always runs verify, pack:check, and publish:dry-run.
+- Publishes only when workflow input publish=true.
+- Requires repository secret NPM_TOKEN for publish step.
+
+Release policy:
+
+- Default organization usage is @latest.
+- Run verify and publish:dry-run before publish:latest.
+- Keep rollback option by republishing previous stable version if needed.

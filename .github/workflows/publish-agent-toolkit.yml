@@ -1,0 +1,47 @@
+name: Publish Agent Toolkit
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to npm registry"
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+jobs:
+  verify-and-optionally-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: tools/agent-toolkit
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify CLI
+        run: npm run verify
+
+      - name: Pack dry-run
+        run: npm run pack:check
+
+      - name: Publish dry-run
+        run: npm run publish:dry-run
+
+      - name: Publish latest
+        if: inputs.publish == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm run publish:latest

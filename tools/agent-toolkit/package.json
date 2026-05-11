@@ -3,8 +3,19 @@
   "version": "0.1.0",
   "description": "Central CLI toolkit for organization AI execution workflows",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/produck/.github.git",
+    "directory": "tools/agent-toolkit"
+  },
   "bin": {
     "agent-toolkit": "./bin/agent-toolkit.mjs"
+  },
+  "scripts": {
+    "verify": "node ./bin/agent-toolkit.mjs --help && node ./bin/agent-toolkit.mjs preflight --cwd . --require package.json",
+    "pack:check": "npm pack --dry-run",
+    "publish:dry-run": "npm publish --dry-run --access public",
+    "publish:latest": "npm publish --access public"
   },
   "files": [
     "bin"
