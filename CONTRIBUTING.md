@@ -72,6 +72,19 @@ max_line_length = 80
 - Organization-wide requirement: all Markdown files should keep each line at 80
   characters or fewer.
 
+## Testing baseline
+
+- Prefer Node.js standard test runner (`node:test`) with `describe` and `it`.
+- Test cases must be independently executable.
+- Test cases must not rely on execution order or shared mutable state from
+  other cases.
+- For local debugging of new cases, use `{ only: true }` scoped regression.
+- Add `{ only: true }` to the target `describe/it` and all ancestor `describe`
+  blocks when running `--test-only`.
+- Run focused debug with `node --test --test-only test/index.mjs`.
+- Remove all `only` markers after debugging.
+- Run full regression with repository standard command before merge.
+
 Language conventions:
 
 - Explanations, discussion, and review communication default to Chinese unless
