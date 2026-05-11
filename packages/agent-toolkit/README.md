@@ -52,8 +52,8 @@ Built-in template location (for review and updates):
 
 From repository root:
 
-npm --prefix tools/agent-toolkit run verify
-npm --prefix tools/agent-toolkit run pack:check
+npm --workspace @produck/agent-toolkit run verify
+npm --workspace @produck/agent-toolkit run pack:check
 
 ## Manual publish
 
@@ -61,7 +61,7 @@ Lerna-like release flow (recommended):
 
 0) Interactive mode (TTY):
 
-npm --prefix tools/agent-toolkit run release
+npm --workspace @produck/agent-toolkit run release
 
 Interactive prompts let you choose:
 
@@ -83,21 +83,22 @@ Interactive mode handles both:
 
 Non-interactive flags:
 
-- `npm --prefix tools/agent-toolkit run release -- patch --publish`
-- `npm --prefix tools/agent-toolkit run release -- patch --no-tag`
-- `npm --prefix tools/agent-toolkit run release -- patch --no-commit --no-tag`
+- `npm --workspace @produck/agent-toolkit run release -- patch --publish`
+- `npm --workspace @produck/agent-toolkit run release -- patch --no-tag`
+- `npm --workspace @produck/agent-toolkit run release -- patch --no-commit --no-tag`
 
 Note:
 
-- Release requires a clean working tree in `tools/agent-toolkit` before start.
+- Release requires a clean working tree in `packages/agent-toolkit` before
+  start.
 - After release success, push commit and tags:
   - `git -C d:/workspace/PRODUCK/.github push`
   - `git -C d:/workspace/PRODUCK/.github push --tags`
 
 Low-level commands (optional):
 
-npm --prefix tools/agent-toolkit run publish:dry-run
-npm --prefix tools/agent-toolkit run publish:latest
+npm --workspace @produck/agent-toolkit run publish:dry-run
+npm --workspace @produck/agent-toolkit run publish:latest
 
 ## GitHub workflow
 

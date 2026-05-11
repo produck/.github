@@ -1,0 +1,26 @@
+{
+  "name": "@produck/eslint-rules",
+  "version": "0.1.0",
+  "description": "Shared ESLint flat config presets for the Produck organization",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/produck/.github.git",
+    "directory": "packages/eslint-rules"
+  },
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "README.md"
+  ],
+  "scripts": {
+    "verify": "node -e \"import('./index.mjs').then(() => console.log('ok')).catch((e) => { console.error(e); process.exit(1); })\"",
+    "pack:check": "npm pack --dry-run"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

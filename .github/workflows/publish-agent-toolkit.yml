@@ -11,7 +11,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: tools/agent-toolkit
+        working-directory: packages/agent-toolkit
     steps:
       - name: Checkout
         uses: actions/checkout@v4

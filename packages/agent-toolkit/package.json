@@ -6,7 +6,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/produck/.github.git",
-    "directory": "tools/agent-toolkit"
+    "directory": "packages/agent-toolkit"
   },
   "bin": {
     "agent-toolkit": "bin/agent-toolkit.mjs"

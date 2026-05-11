@@ -16,6 +16,14 @@ repositories in the produck organization.
 - Commit message grammar and target taxonomy
 - Pull request template and review checklist
 - Node.js initialization baseline for monorepo and standalone modes
+- Monorepo workspace packages under `packages/`
+
+## Workspace packages
+
+- `packages/agent-toolkit`: central CLI bridge package
+  `@produck/agent-toolkit`
+- `packages/eslint-rules`: shared ESLint flat config package
+  `@produck/eslint-rules`
 
 ## Core documents
 

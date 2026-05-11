@@ -236,8 +236,8 @@ When bridge mechanism uses a central npm package, default execution strategy is
 
 Local implementation reference in this repository:
 
-- `tools/agent-toolkit` stores the central package source for shared context,
-  searchability, and iteration.
+- `packages/agent-toolkit` stores the central CLI bridge package source.
+- `packages/eslint-rules` stores the shared ESLint rule presets.
 - This local path is the implementation source, not an automatic runtime mount
   for other repositories.
 

@@ -1,0 +1,23 @@
+{
+  "name": "@produck/org-policies-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Produck organization policy repository monorepo",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "deps:install": "npm install",
+    "test": "echo \"No root tests configured\"",
+    "coverage": "echo \"No root coverage configured\"",
+    "lint": "echo \"No root lint configured\"",
+    "publish": "echo \"Use workspace package release flows\"",
+    "toolkit:verify": "npm --workspace @produck/agent-toolkit run verify",
+    "toolkit:pack-check": "npm --workspace @produck/agent-toolkit run pack:check",
+    "eslint-rules:verify": "npm --workspace @produck/eslint-rules run verify",
+    "eslint-rules:pack-check": "npm --workspace @produck/eslint-rules run pack:check"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
