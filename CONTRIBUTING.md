@@ -176,6 +176,9 @@ Directory conventions for Node-first execution:
 
 - Commit reusable execution utilities under `scripts/` only.
 - Write runtime logs/results under `logs/` only.
+- Exception for this organization-level `.github` repository: avoid adding
+  repo-local ignore rules just for transient agent logs; use session memory
+  paths or local temp directories.
 - Do not commit temporary debug scripts; keep them in session memory locations
   when available.
 - Do not place temporary scripts under `.git/` or `.github/`.

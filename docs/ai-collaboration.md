@@ -149,6 +149,9 @@ Script placement and lifecycle policy:
 - Reusable repository scripts MUST be stored in `scripts/`.
 - Runtime outputs (logs, reports, captures) MUST be stored in `logs/` or
   repository-defined output directories and ignored by git.
+- For organization-level policy repositories (for example this `.github`
+  repository), do not add runtime-output `.gitignore` only for local agent
+  execution; use session memory paths or local temp locations instead.
 - Temporary diagnostic scripts MUST NOT be committed and MUST use session
   memory workspace paths when available.
 - Do not place ad-hoc execution scripts in `.git/`, `.github/`, or random root
