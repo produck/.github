@@ -1,8 +1,11 @@
 Usage:
   agent-toolkit sync-instructions [--cwd <dir>] [--out <file>]
-    [--source <file>] [--force] [--dry-run]
+    [--source <file-or-dir>] [--force] [--prune] [--dry-run]
 
 Behavior:
-  - Writes organization instruction entrypoint template to target file.
-  - Defaults to <cwd>/.instructions.md when --out is not provided.
-  - If target exists, command fails unless --force is set.
+  - Syncs one or multiple .instructions.md files to target path.
+  - Defaults to <cwd>/.github/instructions/produck when --out is not provided.
+  - If --source is a directory, all *.instructions.md files in that directory are synced.
+  - If --source is omitted, built-in namespaced assets are used.
+  - Existing changed files require --force.
+  - --prune deletes unmanaged leftovers only when file contains managed marker.

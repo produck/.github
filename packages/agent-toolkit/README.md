@@ -36,16 +36,16 @@ Validate commit message format:
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
 ```
 
-Manual per-repository instruction distribution (write .instructions.md):
+Manual per-repository instruction distribution (write .github/instructions/produck/*.instructions.md):
 
 ```
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd .
 ```
 
-Use organization source file instead of built-in template:
+Use organization source directory instead of built-in assets:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source path/to/org/.instructions.md --force
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source path/to/org/.github/instructions/produck --force --prune
 ```
 
 Built-in template location (for review and updates):
@@ -55,8 +55,8 @@ Built-in template location (for review and updates):
 
 Publish-time generated instruction assets:
 
-- `publish-assets/instructions/org.instructions.md`
-- Generated from `docs/*.md` via `prepack`
+- `publish-assets/instructions/produck/*.instructions.md`
+- Generated from `docs/*.md` via `prepack` with per-file `applyTo`
 - Included in npm package, ignored in git working tree
 
 ## Local verification
