@@ -14,34 +14,46 @@ Central CLI toolkit for organization-level AI execution workflows.
 
 Run preflight checks:
 
+```bash
 npm exec --package=@produck/agent-toolkit@latest \
- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
+  agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
+```
 
 Capture long output safely:
 
+```bash
 npm exec --package=@produck/agent-toolkit@latest \
- agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
+  agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
+```
 
 Summarize captured output:
 
+```bash
 npm exec --package=@produck/agent-toolkit@latest \
- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
+  agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
+```
 
 Validate commit message format:
 
+```bash
 npm exec --package=@produck/agent-toolkit@latest \
- agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
+  agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
+```
 
 Manual per-repository instruction distribution (write .instructions.md):
 
+```bash
 npm exec --package=@produck/agent-toolkit@latest \
- agent-toolkit sync-instructions --cwd .
+  agent-toolkit sync-instructions --cwd .
+```
 
 Use organization source file instead of built-in template:
 
+```bash
 npm exec --package=@produck/agent-toolkit@latest \
- agent-toolkit sync-instructions --cwd . \
- --source path/to/org/.instructions.md --force
+  agent-toolkit sync-instructions --cwd . \
+  --source path/to/org/.instructions.md --force
+```
 
 Built-in template location (for review and updates):
 
@@ -52,53 +64,28 @@ Built-in template location (for review and updates):
 
 From repository root:
 
+```bash
 npm --workspace @produck/agent-toolkit run verify
 npm --workspace @produck/agent-toolkit run pack:check
+```
 
-## Manual publish
+## Publishing
 
-Lerna-like release flow (recommended):
+Publishing is centralized at workspace root via lerna, not via
+package-level release scripts.
 
-0. Interactive mode (TTY):
+From monorepo root (`produck/.github`):
 
-npm --workspace @produck/agent-toolkit run release
+```bash
+npm run publish:dry-run
+npm run publish
+```
 
-Interactive prompts let you choose:
+Notes:
 
-- version level: patch/minor/major
-- action: dry-run or publish
-- vcs mode: commit+tag / commit only / no commit+no tag
-
-Default choices:
-
-- patch
-- dry-run
-- commit + tag
-
-Interactive mode handles both:
-
-- version bump level (patch/minor/major)
-- action mode (dry-run or publish)
-- auto commit and tag after dry-run
-
-Non-interactive flags:
-
-- `npm --workspace @produck/agent-toolkit run release -- patch --publish`
-- `npm --workspace @produck/agent-toolkit run release -- patch --no-tag`
-- `npm --workspace @produck/agent-toolkit run release -- patch --no-commit --no-tag`
-
-Note:
-
-- Release requires a clean working tree in `packages/agent-toolkit` before
-  start.
-- After release success, push commit and tags:
-  - `git -C d:/workspace/PRODUCK/.github push`
-  - `git -C d:/workspace/PRODUCK/.github push --tags`
-
-Low-level commands (optional):
-
-npm --workspace @produck/agent-toolkit run publish:dry-run
-npm --workspace @produck/agent-toolkit run publish:latest
+- `publish:dry-run` validates package contents by running `npm pack --dry-run`
+  across non-private workspace packages.
+- `publish` runs lerna publish flow from workspace root.
 
 ## GitHub workflow
 
@@ -108,19 +95,19 @@ Repository includes manual workflow:
 
 Workflow behavior:
 
-- Always runs verify, pack:check, and publish:dry-run.
+- Always runs verify and pack:check for `@produck/agent-toolkit`.
 - Does not publish to npm.
-- Used as release gate before manual publish.
+- Used as release gate before workspace-level publish.
 
 Release policy:
 
 - Default organization usage is @latest.
-- Run verify and publish:dry-run before publish:latest.
+- Run verify, pack:check, and workspace `publish:dry-run` before `publish`.
 - Keep rollback option by republishing previous stable version if needed.
 
 Rollback quick steps:
 
 1. Check latest published version:
    `npm view @produck/agent-toolkit version`
-2. Fix source and run release again with a new version.
+2. Fix source and rerun workspace publish flow with a new version.
 3. Push commit and tags.
