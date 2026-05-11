@@ -3,6 +3,13 @@
 This repository defines organization-level collaboration policies for
 repositories in the produck organization.
 
+## Start Here
+
+- **Organization instructions**: [.instructions.md](.instructions.md) — Quick
+  navigation and core principles for all repositories.
+- **Contributor guide**: [CONTRIBUTING.md](CONTRIBUTING.md) — Development and
+  collaboration standards.
+
 ## What this repo contains
 
 - AI collaboration baseline and precedence rules
@@ -12,7 +19,6 @@ repositories in the produck organization.
 
 ## Core documents
 
-- CONTRIBUTING: [CONTRIBUTING.md](CONTRIBUTING.md)
 - AI collaboration: [docs/ai-collaboration.md](docs/ai-collaboration.md)
 - Commit convention: [docs/commit-convention.md](docs/commit-convention.md)
 - Node.js init baseline:
