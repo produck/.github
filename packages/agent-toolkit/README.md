@@ -14,45 +14,38 @@ Central CLI toolkit for organization-level AI execution workflows.
 
 Run preflight checks:
 
-```bash
-npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
 ```
 
 Capture long output safely:
 
-```bash
-npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
 ```
 
 Summarize captured output:
 
-```bash
-npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
 ```
 
 Validate commit message format:
 
-```bash
-npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
 ```
 
 Manual per-repository instruction distribution (write .instructions.md):
 
-```bash
-npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit sync-instructions --cwd .
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd .
 ```
 
 Use organization source file instead of built-in template:
 
-```bash
-npm exec --package=@produck/agent-toolkit@latest \
-  agent-toolkit sync-instructions --cwd . \
-  --source path/to/org/.instructions.md --force
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source path/to/org/.instructions.md --force
 ```
 
 Built-in template location (for review and updates):
