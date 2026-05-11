@@ -55,10 +55,10 @@ Use organization source directory instead of built-in assets:
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source path/to/org/.github/distribution/produck --force --prune
 ```
 
-Built-in template location (for review and updates):
+Built-in command-local resource locations (for review and updates):
 
-- `templates/user-space-bootstrap.md`
-- `templates/help/*.txt`
+- `bin/command/*/help.txt`
+- `bin/command/sync-instructions/user-space-bootstrap.md`
 
 Publish-time generated instruction assets:
 
