@@ -40,21 +40,25 @@ npm --prefix tools/agent-toolkit run pack:check
 
 ## Manual publish
 
-Prepare next patch release (bump + verify + dry-run):
+Lerna-like release flow (recommended):
+
+1) Bump + verify + dry-run (no publish):
 
 npm --prefix tools/agent-toolkit run release:patch
 
-Dry-run publish:
+2) Publish after confirmation:
+
+npm --prefix tools/agent-toolkit run release:patch:publish
+
+Alternative levels:
+
+- npm --prefix tools/agent-toolkit run release:minor
+- npm --prefix tools/agent-toolkit run release:major
+
+Low-level commands (optional):
 
 npm --prefix tools/agent-toolkit run publish:dry-run
-
-Publish latest:
-
 npm --prefix tools/agent-toolkit run publish:latest
-
-Publish with release guard (verify + publish):
-
-npm --prefix tools/agent-toolkit run release:publish
 
 ## GitHub workflow
 
