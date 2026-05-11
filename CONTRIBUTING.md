@@ -239,6 +239,10 @@ npm run publish:dry-run
 npm run publish
 ```
 
+`npm run publish` wraps `lerna publish` and automatically adds
+`--force-publish @produck/agent-toolkit` when files under
+`.github/distribution/produck/` changed since the latest toolkit tag.
+
 5. Push release commit and tags:
 
 ```bash
