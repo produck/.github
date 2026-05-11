@@ -176,6 +176,12 @@ Node-first policy:
 - MAY use direct shell commands only for short, read-only, atomic checks.
 - MUST avoid pipeline-based post-processing in long-output tasks.
 
+When using a central npm toolkit bridge:
+
+- Default to `<pkg>@latest` for organization tooling commands.
+- Print resolved package version before high-impact commands.
+- For risky operations, run dry-run first and keep a pinned-version fallback.
+
 Use a two-step flow:
 
 1. Capture all command output into a log file.

@@ -185,6 +185,18 @@ What does not work automatically:
   repository exist.
 - Cross-repository script execution requires an explicit bridge mechanism.
 
+### Central package execution policy
+
+When bridge mechanism uses a central npm package, default execution strategy is
+`@latest` to deliver new capabilities quickly.
+
+Required safeguards for `@latest`:
+
+- Print resolved package version before running high-impact commands.
+- For high-risk operations, run dry-run/preview first, then execute.
+- Keep an emergency fallback path to a pinned version for incident mitigation.
+- Prefer `npm exec --package=<pkg>@latest <bin> ...` for predictable invocation.
+
 ### Recommended organization AI instruction template
 
 Use the following template text in organization AI instructions:
@@ -196,6 +208,10 @@ Use the following template text in organization AI instructions:
   - Use Node scripts first for file/path/output processing.
   - For large output tasks, use two phases: capture full output, then analyze.
   - Avoid fragile shell pipeline post-processing for long-output commands.
+- Central package policy:
+  - Default to `<pkg>@latest` for organization tooling commands.
+  - Print resolved package version before high-impact execution.
+  - Use dry-run first for risky operations; keep rollback path to pinned version.
 - Commit message policy:
   - Every non-empty commit message line must start with `[TAG]`.
   - Empty lines are not allowed between commit message lines.
