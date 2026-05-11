@@ -110,7 +110,8 @@ Avoid vague or low-signal messages such as:
 
 Use the local validator before commit:
 
-- `node scripts/validate-commit-message.mjs --file <message-file>`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
+  validate-commit-msg --file <message-file>`
 
 If validation fails, fix the message and rerun until it passes.
 

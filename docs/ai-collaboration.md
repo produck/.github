@@ -93,8 +93,9 @@ max_line_length = 80
 - Do not use untagged bullet lines in commit message body.
 - If details are needed, use additional tagged lines.
 - Do not keep summary as an untagged standalone line.
-- Recommended local validation: `node scripts/validate-commit-message.mjs --file
-  <message-file>`.
+- Recommended local validation:
+  `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
+  validate-commit-msg --file <message-file>`.
 - Use uppercase tags from this whitelist: `[INIT]`, `[ADD]`, `[REMOVE]`,
   `[FIX]`, `[REFACTOR]`, `[UPGRADE]`.
 - Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` ->
@@ -140,10 +141,14 @@ Recommended three-step flow:
 
 Recommended local tools:
 
-- `node scripts/preflight.mjs --cwd . --require package.json --ensure-dir logs`
-- `node scripts/run-and-capture.mjs --out logs/run.log --cmd "<command>"`
-- `node scripts/summarize-log.mjs --file logs/run.log --last 120`
-- `node scripts/summarize-log.mjs --file logs/run.log --match "FAIL|ERROR"`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit preflight
+  --cwd . --require package.json --ensure-dir logs`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit run-capture
+  --out logs/run.log --cmd "<command>"`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit summarize-log
+  --file logs/run.log --last 120`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit summarize-log
+  --file logs/run.log --match "FAIL|ERROR"`
 
 Guardrails:
 

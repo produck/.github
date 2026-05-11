@@ -100,7 +100,8 @@ Multi-line rule:
 
 Validation step (recommended):
 
-- `node scripts/validate-commit-message.mjs --file <message-file>`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
+  validate-commit-msg --file <message-file>`
 
 Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and
 `[UPGRADE]`.
@@ -191,16 +192,23 @@ Use a two-step flow:
 
 Recommended execution sequence:
 
-1. `node scripts/preflight.mjs --cwd . --require package.json --ensure-dir logs`
-2. `node scripts/run-and-capture.mjs --out logs/run.log --cmd "npm run test"`
-3. `node scripts/summarize-log.mjs --file logs/run.log --last 120`
-4. `node scripts/summarize-log.mjs --file logs/run.log --match "FAIL|ERROR"`
+1. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit preflight
+  --cwd . --require package.json --ensure-dir logs`
+2. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit run-capture
+  --out logs/run.log --cmd "npm run test"`
+3. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
+  summarize-log --file logs/run.log --last 120`
+4. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
+  summarize-log --file logs/run.log --match "FAIL|ERROR"`
 
 Recommended commands:
 
-- `node scripts/run-and-capture.mjs --out logs/run.log --cmd "npm run test"`
-- `node scripts/summarize-log.mjs --file logs/run.log --last 120`
-- `node scripts/summarize-log.mjs --file logs/run.log --match "FAIL|ERROR"`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit run-capture
+  --out logs/run.log --cmd "npm run test"`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
+  summarize-log --file logs/run.log --last 120`
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
+  summarize-log --file logs/run.log --match "FAIL|ERROR"`
 
 This improves reliability when terminal sessions are non-interactive or have
 TTY/pipe limitations.
