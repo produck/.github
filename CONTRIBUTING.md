@@ -12,6 +12,8 @@ Organization-level scope note:
   organization AI instruction settings.
 - Scripts in this repository are not automatically available inside other
   repositories.
+- Central package source in this repository lives under `tools/agent-toolkit`
+  for shared context and maintenance.
 - For scope details and copyable organization instruction text, see
   [AI Collaboration](docs/ai-collaboration.md).
 

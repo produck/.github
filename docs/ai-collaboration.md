@@ -190,6 +190,13 @@ What does not work automatically:
 When bridge mechanism uses a central npm package, default execution strategy is
 `@latest` to deliver new capabilities quickly.
 
+Local implementation reference in this repository:
+
+- `tools/agent-toolkit` stores the central package source for shared context,
+  searchability, and iteration.
+- This local path is the implementation source, not an automatic runtime mount
+  for other repositories.
+
 Required safeguards for `@latest`:
 
 - Print resolved package version before running high-impact commands.

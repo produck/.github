@@ -1,0 +1,16 @@
+{
+  "name": "@produck/agent-toolkit",
+  "version": "0.1.0",
+  "description": "Central CLI toolkit for organization AI execution workflows",
+  "type": "module",
+  "bin": {
+    "agent-toolkit": "./bin/agent-toolkit.mjs"
+  },
+  "files": [
+    "bin"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
