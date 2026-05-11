@@ -44,6 +44,8 @@ Notes:
 Script and output directory policy:
 
 - Reusable project scripts should be committed under root `scripts/`.
+- Organization-level shared tooling may use a central npm package bridge instead
+  of repository-local `scripts/` duplication.
 - Runtime command outputs should be written under root `logs/` (or a documented
   equivalent) and ignored by git.
 - Temporary debug scripts should not be committed.

@@ -185,6 +185,21 @@ When using a central npm toolkit bridge:
 - Print resolved package version before high-impact commands.
 - For risky operations, run dry-run first and keep a pinned-version fallback.
 
+Bridge release checklist (required for central toolkit release):
+
+1. Observe latest published version:
+  `npm view @produck/agent-toolkit version`
+2. Run release flow (`npm run release`) and complete selected mode.
+3. Push release commit: `git push`
+4. Push release tags: `git push --tags`
+
+Bridge rollback checklist (minimum):
+
+1. Confirm published version mismatch/incident scope.
+2. Publish a new fixed version (never overwrite existing version).
+3. Push rollback commit and tags.
+4. Record rollback reason and target version in PR/issue notes.
+
 Use a two-step flow:
 
 1. Capture all command output into a log file.

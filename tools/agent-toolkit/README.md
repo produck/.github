@@ -73,6 +73,9 @@ Non-interactive flags:
 Note:
 
 - Release requires a clean working tree in `tools/agent-toolkit` before start.
+- After release success, push commit and tags:
+  - `git -C d:/workspace/PRODUCK/.github push`
+  - `git -C d:/workspace/PRODUCK/.github push --tags`
 
 Low-level commands (optional):
 
@@ -96,3 +99,10 @@ Release policy:
 - Default organization usage is @latest.
 - Run verify and publish:dry-run before publish:latest.
 - Keep rollback option by republishing previous stable version if needed.
+
+Rollback quick steps:
+
+1. Check latest published version:
+  `npm view @produck/agent-toolkit version`
+2. Fix source and run release again with a new version.
+3. Push commit and tags.

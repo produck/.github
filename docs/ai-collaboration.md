@@ -209,6 +209,24 @@ Required safeguards for `@latest`:
 - Keep an emergency fallback path to a pinned version for incident mitigation.
 - Prefer `npm exec --package=<pkg>@latest <bin> ...` for predictable invocation.
 
+Version observability (required before high-impact operations):
+
+- `npm view @produck/agent-toolkit version`
+- Record the observed version in task notes or PR description.
+
+Post-release synchronization (required):
+
+- Push release commit: `git push`
+- Push release tag: `git push --tags`
+
+Rollback runbook (minimum):
+
+- Confirm latest published version:
+  `npm view @produck/agent-toolkit version`
+- If rollback is needed, bump from current source and republish a fixed version.
+- Do not republish an already-used version number.
+- Push corresponding commit and tags after rollback publish.
+
 ### Recommended organization AI instruction template
 
 Use the following template text in organization AI instructions:
