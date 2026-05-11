@@ -41,6 +41,14 @@ Notes:
 - Testing strategy and framework are repository-defined.
 - Repositories must keep `npm run test` and `npm run coverage` executable.
 
+Script and output directory policy:
+
+- Reusable project scripts should be committed under root `scripts/`.
+- Runtime command outputs should be written under root `logs/` (or a documented
+  equivalent) and ignored by git.
+- Temporary debug scripts should not be committed.
+- `.github/` should not be used as a temporary script workspace.
+
 Required ignore baseline:
 
 - Each Node.js repository must include a root `.gitignore`.

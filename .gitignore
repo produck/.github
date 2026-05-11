@@ -1,0 +1,6 @@
+# Runtime outputs for node-first execution flow
+logs/
+
+# Temporary local diagnostics
+*.tmp.mjs
+*.local.mjs

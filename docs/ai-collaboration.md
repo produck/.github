@@ -144,6 +144,18 @@ Guardrails:
 - Do not append fragile post-pipelines to the capture command.
 - If filtering fails, keep the captured raw log as the source of truth.
 
+Script placement and lifecycle policy:
+
+- Reusable repository scripts MUST be stored in `scripts/`.
+- Runtime outputs (logs, reports, captures) MUST be stored in `logs/` or
+  repository-defined output directories and ignored by git.
+- Temporary diagnostic scripts MUST NOT be committed and MUST use session
+  memory workspace paths when available.
+- Do not place ad-hoc execution scripts in `.git/`, `.github/`, or random root
+  paths.
+- `.github/` is reserved for GitHub platform config (workflows, templates,
+  issue forms), not for temporary run scripts.
+
 ## Precedence
 
 If a repository provides more specific instructions, follow the repository

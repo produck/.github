@@ -171,3 +171,13 @@ Recommended commands:
 
 This improves reliability when terminal sessions are non-interactive or have
 TTY/pipe limitations.
+
+Directory conventions for Node-first execution:
+
+- Commit reusable execution utilities under `scripts/` only.
+- Write runtime logs/results under `logs/` only.
+- Do not commit temporary debug scripts; keep them in session memory locations
+  when available.
+- Do not place temporary scripts under `.git/` or `.github/`.
+- Keep `.github/` for repository hosting metadata (workflows/templates/forms)
+  only.
