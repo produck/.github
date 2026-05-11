@@ -82,9 +82,14 @@ Use bracketed commit style:
 Multi-line rule:
 
 - Every non-empty commit message line must start with `[TAG]`.
+- Empty lines are not allowed between commit message lines.
 - Do not use untagged bullet lines in commit body.
 - If details are needed, use additional tagged lines.
 - Do not keep summary as an untagged standalone line.
+
+Validation step (recommended):
+
+- `node scripts/validate-commit-message.mjs --file <message-file>`
 
 Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and
 `[UPGRADE]`.
@@ -126,6 +131,7 @@ Avoid vague messages such as:
 - `[ADD] docs: ...` (target syntax without angle brackets)
 - `[ADD] <feature>: ...` (target outside allowed target list)
 - `- update infra` (untagged body line)
+- empty lines between tagged lines
 
 ## Pull requests
 

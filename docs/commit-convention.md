@@ -12,6 +12,7 @@ Use this format:
 Multi-line commit message rule:
 
 - Every non-empty line in the commit message must start with `[TAG]`.
+- Empty lines are not allowed in commit message body.
 - Do not use untagged bullet lines in commit message body.
 - If body details are needed, repeat tagged lines instead of raw bullets.
 - `summary` cannot appear as a standalone untagged line.
@@ -103,6 +104,15 @@ Avoid vague or low-signal messages such as:
 - `[CHANGED] ...` (tag outside whitelist)
 - `- remove old script` (untagged body line)
 - `summary without tag` (untagged standalone line)
+- empty lines between tagged lines
+
+## Validation
+
+Use the local validator before commit:
+
+- `node scripts/validate-commit-message.mjs --file <message-file>`
+
+If validation fails, fix the message and rerun until it passes.
 
 ## Notes
 
