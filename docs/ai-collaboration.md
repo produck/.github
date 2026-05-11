@@ -38,3 +38,5 @@ This document defines a lightweight AI collaboration baseline for repositories i
 ## Precedence
 
 If a repository provides more specific instructions, follow the repository instructions over this organization baseline.
+
+For Node.js repositories, also follow [Node.js Initialization Baseline](nodejs-initialization.md).

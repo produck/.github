@@ -60,3 +60,5 @@ In PR descriptions, summarize:
 - known risks or follow-up work
 
 If a repository provides more specific instructions, follow the repository instructions over this organization baseline.
+
+For Node.js repositories, follow [Node.js Initialization Baseline](docs/nodejs-initialization.md).
