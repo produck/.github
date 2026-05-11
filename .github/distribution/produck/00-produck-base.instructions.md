@@ -1,9 +1,10 @@
 ---
-applyTo: "**"
+applyTo: '**'
 ---
 
 <!-- managed-by: @produck/agent-toolkit -->
 <!-- source: .github/distribution/produck/00-produck-base.instructions.md -->
+
 # AI Collaboration
 
 This document defines a lightweight AI collaboration baseline for repositories

@@ -8,7 +8,10 @@ const PACKAGE_ROOT = path.resolve(SCRIPT_DIR, '..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const SOURCE_DIR = path.resolve(REPO_ROOT, '.github/distribution/produck');
 const OUTPUT_DIR = path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck');
-const LEGACY_OUTPUT_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/org.instructions.md');
+const LEGACY_OUTPUT_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/instructions/org.instructions.md',
+);
 const MANAGED_MARKER = '<!-- managed-by: @produck/agent-toolkit -->';
 
 function normalize(text) {

@@ -1,9 +1,10 @@
 ---
-applyTo: "**"
+applyTo: '**'
 ---
 
 <!-- managed-by: @produck/agent-toolkit -->
 <!-- source: .github/distribution/produck/15-produck-workspace.instructions.md -->
+
 # Workspace Shared Configuration Guide
 
 ## Overview

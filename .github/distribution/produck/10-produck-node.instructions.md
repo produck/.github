@@ -1,9 +1,10 @@
 ---
-applyTo: "**/*.{js,cjs,mjs,ts,tsx,json,yaml,yml}"
+applyTo: '**/*.{js,cjs,mjs,ts,tsx,json,yaml,yml}'
 ---
 
 <!-- managed-by: @produck/agent-toolkit -->
 <!-- source: .github/distribution/produck/10-produck-node.instructions.md -->
+
 # Node.js Initialization Baseline
 
 This document defines the organization-level initialization baseline for Node.js

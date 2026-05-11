@@ -36,7 +36,7 @@ Validate commit message format:
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
 ```
 
-Manual per-repository instruction distribution (write .github/instructions/produck/*.instructions.md):
+Manual per-repository instruction distribution (write .github/instructions/produck/\*.instructions.md):
 
 ```
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd .

@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+applyTo: '**'
 ---
 
 <!-- managed-by: @produck/agent-toolkit -->

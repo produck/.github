@@ -1,9 +1,10 @@
 ---
-applyTo: "**"
+applyTo: '**'
 ---
 
 <!-- managed-by: @produck/agent-toolkit -->
 <!-- source: .github/distribution/produck/20-produck-commit.instructions.md -->
+
 # Commit Convention
 
 Repositories in the `produck` organization use a bracketed TAG style for commit

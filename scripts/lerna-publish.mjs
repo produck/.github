@@ -28,12 +28,7 @@ function runGit(args, options = {}) {
 }
 
 function findLatestToolkitTag() {
-  const result = runGit([
-    'tag',
-    '--list',
-    `${TOOLKIT_PACKAGE_NAME}@*`,
-    '--sort=-v:refname',
-  ]);
+  const result = runGit(['tag', '--list', `${TOOLKIT_PACKAGE_NAME}@*`, '--sort=-v:refname']);
 
   return result.stdout
     .split(/\r?\n/)
@@ -50,9 +45,7 @@ function getDistributionSourceChangesSince(tagName) {
   if (result.status !== 0 && result.status !== 1) {
     const stderr = result.stderr?.trim();
     throw new Error(
-      `Unable to diff ${DISTRIBUTION_SOURCE_PATH} since ${tagName}${
-        stderr ? `: ${stderr}` : ''
-      }`,
+      `Unable to diff ${DISTRIBUTION_SOURCE_PATH} since ${tagName}${stderr ? `: ${stderr}` : ''}`,
     );
   }
 
@@ -63,9 +56,7 @@ function getDistributionSourceChangesSince(tagName) {
 }
 
 function hasForcePublishArg(args) {
-  return args.some(
-    (arg) => arg === '--force-publish' || arg.startsWith('--force-publish='),
-  );
+  return args.some((arg) => arg === '--force-publish' || arg.startsWith('--force-publish='));
 }
 
 function resolveForcePublish() {
