@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +9,7 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 const TOOLKIT_PACKAGE_NAME = '@produck/agent-toolkit';
 const DISTRIBUTION_SOURCE_PATH = '.github/distribution/produck';
 const PREVIEW_FLAG = '--preview-resolved-command';
+const LERNA_CLI_PATH = path.resolve(REPO_ROOT, 'node_modules/lerna/dist/cli.js');
 
 function runGit(args, options = {}) {
   const result = spawnSync('git', args, {
@@ -118,12 +120,20 @@ function run() {
   }
 
   if (previewOnly) {
-    process.stdout.write(`[lerna-publish] command: npx lerna ${publishArgs.join(' ')}\n`);
+    process.stdout.write(
+      `[lerna-publish] command: ${process.execPath} ${LERNA_CLI_PATH} ${publishArgs.join(' ')}\n`,
+    );
     return;
   }
 
-  const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  const result = spawnSync(npxCommand, ['lerna', ...publishArgs], {
+  if (!fs.existsSync(LERNA_CLI_PATH)) {
+    process.stderr.write(
+      `[lerna-publish] Missing local lerna CLI: ${LERNA_CLI_PATH}. Run npm install first.\n`,
+    );
+    process.exit(1);
+  }
+
+  const result = spawnSync(process.execPath, [LERNA_CLI_PATH, ...publishArgs], {
     cwd: REPO_ROOT,
     stdio: 'inherit',
     env: process.env,
