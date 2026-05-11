@@ -6,6 +6,15 @@ Thank you for contributing to repositories in the `produck` organization.
 
 This organization uses a lightweight set of AI collaboration defaults.
 
+Organization-level scope note:
+
+- Policies in this repository can be applied across repositories through
+  organization AI instruction settings.
+- Scripts in this repository are not automatically available inside other
+  repositories.
+- For scope details and copyable organization instruction text, see
+  [AI Collaboration](docs/ai-collaboration.md).
+
 - Default to Chinese for explanations and discussion unless the repository or
   request requires another language.
 - Prefer existing repository patterns over introducing new abstractions.

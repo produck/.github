@@ -166,6 +166,48 @@ Script placement and lifecycle policy:
 - `.github/` is reserved for GitHub platform config (workflows, templates,
   issue forms), not for temporary run scripts.
 
+## Organization-level AI instruction scope
+
+This repository is the policy source for organization-wide AI instructions.
+
+What works across repositories:
+
+- Organization-level AI instruction text can guide agent behavior in all
+  repositories when configured at organization settings.
+- Rules in this document should be copied into organization AI instructions.
+- Repository-specific rules may still add stricter constraints.
+
+What does not work automatically:
+
+- Scripts stored in this repository are not auto-mounted into other
+  repositories.
+- Agents in another repository cannot assume local file paths from this
+  repository exist.
+- Cross-repository script execution requires an explicit bridge mechanism.
+
+### Recommended organization AI instruction template
+
+Use the following template text in organization AI instructions:
+
+- Use Chinese for discussion unless repository rules require another language.
+- Follow existing repository patterns; do not invent APIs, files, commands, or
+  config keys.
+- Node-first execution policy:
+  - Use Node scripts first for file/path/output processing.
+  - For large output tasks, use two phases: capture full output, then analyze.
+  - Avoid fragile shell pipeline post-processing for long-output commands.
+- Commit message policy:
+  - Every non-empty commit message line must start with `[TAG]`.
+  - Empty lines are not allowed between commit message lines.
+  - Use only allowed tags: `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`,
+    `[REFACTOR]`, `[UPGRADE]`.
+  - Optional target syntax is `[TAG] <target>: <summary>` with target in:
+    `docs`, `test`, `ci`, `deps`, `api`, `schema`, `infra`.
+- Do not assume scripts from organization `.github` repository exist in target
+  repositories.
+- If a repository provides stricter rules, repository rules override
+  organization defaults.
+
 ## Precedence
 
 If a repository provides more specific instructions, follow the repository
