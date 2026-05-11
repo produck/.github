@@ -50,6 +50,7 @@ Allowed tags (fixed whitelist):
 - `[FIX]`
 - `[REFACTOR]`
 - `[UPGRADE]`
+- `[PUBLISH]`
 
 Legacy-to-canonical mapping (for migration):
 
@@ -72,20 +73,23 @@ When using this style:
   upgrades.
 - If `[UPGRADE]` also includes IFF artifacts or IPC-related artifacts/calls, the
   summary must explicitly name the updated artifact/call.
+- Special rule for `[PUBLISH]`: use `[PUBLISH]` for release and package
+  publishing commits managed by lerna or similar tools. No target required.
 
 Summary target extension (optional):
 
 - Format: `[TAG] <target>: <summary>`
 - Allowed targets (fixed whitelist):
-	- `docs`: documentation content, guides, comments, and usage notes
-	- `test`: test cases, fixtures, assertions, and test tooling
-	- `ci`: continuous integration workflows, pipeline steps, and automation jobs
-	- `deps`: dependency declarations, lockfiles, and dependency management scripts
-	- `api`: externally visible interfaces, route contracts, and client/server API
-   behavior
-	- `schema`: data model definitions, migration schemas, and validation schema
-   changes
-	- `infra`: infrastructure and environment provisioning/configuration
+  - `docs`: documentation content, guides, comments, and usage notes
+  - `test`: test cases, fixtures, assertions, and test tooling
+  - `ci`: continuous integration workflows, pipeline steps, and automation jobs
+  - `deps`: dependency declarations, lockfiles, and dependency management scripts
+  - `api`: externally visible interfaces, route contracts, and client/server API
+    behavior
+  - `schema`: data model definitions, migration schemas, and validation schema
+    changes
+  - `infra`: infrastructure and environment provisioning/configuration
+  - `fmt`: code formatting, style, and linter configuration changes
 - When target syntax is used, `target` must be one of the allowed values above.
 - Target must be wrapped in angle brackets (`<target>`) to distinguish it from
   namespace-like identifiers inside summary text.
@@ -94,14 +98,14 @@ Summary target extension (optional):
 ## Examples
 
 - `[FIX] race conditions in createTeam/acceptInvitation/acceptRequest by
-  wrapping checks and writes in one transaction`
+wrapping checks and writes in one transaction`
 - `[FIX] <infra>: enforce node-first execution`
 - `[FIX] <infra>: remove repo-local ignore for transient logs`
 - `[FIX] <infra>: add policy-repo exception for local agent output`
 - `[ADD] shared helper src/Web/Student/Router/Team/membership.mjs for
-  student-side team mutation routes`
+student-side team mutation routes`
 - `[REFACTOR] remove c8 ignore on Screenshot.mjs response.ok (covered by
-  integration test)`
+integration test)`
 - `[INIT] initialize @tjuamt/eer-score-field-ai-kitchen debug tool`
 - `[REMOVE] deprecated score-field prompt template`
 - `[UPGRADE] deps`
@@ -153,7 +157,7 @@ Avoid vague or low-signal messages such as:
 Use the local validator before commit:
 
 - `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-  validate-commit-msg --file <message-file>`
+validate-commit-msg --file <message-file>`
 
 If validation fails, fix the message and rerun until it passes.
 

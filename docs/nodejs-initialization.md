@@ -76,13 +76,13 @@ Required ignore baseline:
 - Team-specific ignore conventions should be appended on top of that baseline
   template, not used as a replacement.
 - The root `.gitignore` should at minimum ignore:
-	- `node_modules/`
-	- `coverage/`
-	- `.env`
-	- `.env.*`
-	- npm logs (for example `npm-debug.log*`)
-	- OS/editor noise (for example `.DS_Store`, `Thumbs.db`, `.vscode/` when
-   workspace settings are not intended to be shared)
+  - `node_modules/`
+  - `coverage/`
+  - `.env`
+  - `.env.*`
+  - npm logs (for example `npm-debug.log*`)
+  - OS/editor noise (for example `.DS_Store`, `Thumbs.db`, `.vscode/` when
+    workspace settings are not intended to be shared)
 
 Team conventions for `.gitignore`:
 
@@ -91,10 +91,10 @@ Team conventions for `.gitignore`:
 - Do not remove baseline entries from the GitHub template unless repository
   owners document a justified exception.
 - Organization-approved team extension entries are:
-	- `*.ign*` (manually created local directories/files that should not be
-   committed)
-	- `*.gen*` (generated artifacts created by program execution, for example
-   during tests)
+  - `*.ign*` (manually created local directories/files that should not be
+    committed)
+  - `*.gen*` (generated artifacts created by program execution, for example
+    during tests)
 - Append these team entries under a dedicated team block at the end of the root
   `.gitignore`.
 

@@ -131,7 +131,7 @@ Standalone format (single-package repositories):
 Validation step (recommended):
 
 - `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-  validate-commit-msg --file <message-file>`
+validate-commit-msg --file <message-file>`
 
 Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and
 `[UPGRADE]`.
@@ -144,6 +144,7 @@ If target syntax is used, target must be wrapped in angle brackets and must be
 from the allowed target list.
 
 Special rule for `[UPGRADE]`:
+
 - For pure dependency upgrades, `[UPGRADE] deps` is allowed and recommended.
 - If the commit also updates IFF artifacts or IPC-related artifacts/calls, the
   summary must be specific about what was updated.
@@ -151,11 +152,11 @@ Special rule for `[UPGRADE]`:
 Examples:
 
 - `[FIX] race conditions in createTeam/acceptInvitation/acceptRequest by using
-  one transaction`
+one transaction`
 - `[FIX] <infra>: enforce node-first execution policy`
 - `[FIX] <infra>: remove repo-local ignore for transient logs`
 - `[ADD] screenshot-upload-fail cross-endpoint test covering uploadFile
-  response.ok branch`
+response.ok branch`
 - `[REMOVE] deprecated score-field prompt template`
 - `[ADD] <docs>: onboarding section for standalone mode`
 - `[FIX] <test>: cover uploadFile response.ok branch`
@@ -214,7 +215,7 @@ When using a central npm toolkit bridge:
 Bridge release checklist (required for central toolkit release):
 
 1. Observe latest published version:
-  `npm view @produck/agent-toolkit version`
+   `npm view @produck/agent-toolkit version`
 2. Run release flow (`npm run release`) and complete selected mode.
 3. Push release commit: `git push`
 4. Push release tags: `git push --tags`
@@ -234,22 +235,22 @@ Use a two-step flow:
 Recommended execution sequence:
 
 1. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit preflight
-  --cwd . --require package.json --ensure-dir logs`
+--cwd . --require package.json --ensure-dir logs`
 2. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit run-capture
-  --out logs/run.log --cmd "npm run test"`
+--out logs/run.log --cmd "npm run test"`
 3. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-  summarize-log --file logs/run.log --last 120`
+summarize-log --file logs/run.log --last 120`
 4. `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-  summarize-log --file logs/run.log --match "FAIL|ERROR"`
+summarize-log --file logs/run.log --match "FAIL|ERROR"`
 
 Recommended commands:
 
 - `npm exec --package=@produck/agent-toolkit@latest agent-toolkit run-capture
-  --out logs/run.log --cmd "npm run test"`
+--out logs/run.log --cmd "npm run test"`
 - `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-  summarize-log --file logs/run.log --last 120`
+summarize-log --file logs/run.log --last 120`
 - `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-  summarize-log --file logs/run.log --match "FAIL|ERROR"`
+summarize-log --file logs/run.log --match "FAIL|ERROR"`
 
 This improves reliability when terminal sessions are non-interactive or have
 TTY/pipe limitations.
