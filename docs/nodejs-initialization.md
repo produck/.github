@@ -18,6 +18,8 @@ This document defines the organization-level initialization baseline for Node.js
 - Node.js version policy: LTS required (no fixed major version at organization level).
 - Package manager: npm only.
 - Module system: ESM by default (`"type": "module"` in `package.json`).
+- Follow the organization `.gitattributes` baseline (LF default for text files).
+- Follow the organization `.editorconfig` baseline.
 
 Required script keys:
 

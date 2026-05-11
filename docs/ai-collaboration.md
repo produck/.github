@@ -16,6 +16,51 @@ This document defines a lightweight AI collaboration baseline for repositories i
 - Do not add new dependencies unless necessary and explicitly justified.
 - When changing behavior, add or update tests when practical.
 - Treat authentication, authorization, secrets, infrastructure, and production configuration as high-risk areas that require human review.
+- Repositories should include a root `.gitattributes` to normalize line endings safely across platforms.
+
+## Git attributes conventions
+
+- All repositories should include a root `.gitattributes`.
+- Default text line ending policy is LF.
+- Recommended minimum template:
+
+```gitattributes
+* text=auto eol=lf
+
+# Windows script entrypoints
+*.bat text eol=crlf
+*.cmd text eol=crlf
+```
+
+- Repository-specific exceptions are allowed but must be documented in repository instructions.
+
+## EditorConfig conventions
+
+- All repositories should include a root `.editorconfig`.
+- Recommended organization baseline:
+
+```editorconfig
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.yml]
+indent_style = space
+indent_size = 2
+
+[*.yaml]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+```
+
+- Repository-specific exceptions are allowed but must be documented in repository instructions.
 
 ## Language conventions
 

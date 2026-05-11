@@ -12,6 +12,46 @@ This organization uses a lightweight set of AI collaboration defaults.
 - Do not add new dependencies unless necessary and explicitly justified.
 - When changing behavior, add or update tests when practical.
 - Treat authentication, authorization, secrets, infrastructure, and production configuration as high-risk areas that require human review.
+- Include a root `.gitattributes` in repositories and normalize text files to LF by default.
+
+Git attributes baseline:
+
+- Use LF as the default text line ending via `.gitattributes`.
+- Recommended minimum `.gitattributes`:
+
+```gitattributes
+* text=auto eol=lf
+
+# Windows script entrypoints
+*.bat text eol=crlf
+*.cmd text eol=crlf
+```
+
+EditorConfig baseline:
+
+- Include a root `.editorconfig` in repositories.
+- Recommended minimum `.editorconfig`:
+
+```editorconfig
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.yml]
+indent_style = space
+indent_size = 2
+
+[*.yaml]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+```
 
 Language conventions:
 
