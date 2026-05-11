@@ -15,7 +15,7 @@
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
     "publish": "lerna publish",
-    "publish:dry-run": "lerna publish --dry-run",
+    "publish:dry-run": "lerna exec --no-private -- npm pack --dry-run",
     "toolkit:verify": "npm --workspace @produck/agent-toolkit run verify",
     "toolkit:pack-check": "npm --workspace @produck/agent-toolkit run pack:check",
     "eslint-rules:verify": "npm --workspace @produck/eslint-rules run verify",
