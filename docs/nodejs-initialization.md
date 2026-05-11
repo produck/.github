@@ -41,6 +41,23 @@ Notes:
 - Testing strategy and framework are repository-defined.
 - Repositories must keep `npm run test` and `npm run coverage` executable.
 
+Test authoring baseline (required):
+
+- Prefer Node.js standard library test runner (`node:test`) with `describe` and
+  `it`.
+- Each test case must be independently executable.
+- Test cases must not depend on execution order or state from other cases.
+- New test debugging should use local `only` mode for scoped regression.
+- After debugging, remove all `only` markers before final validation.
+
+Recommended local debug flow:
+
+1. Add `{ only: true }` to the target `describe/it` and all ancestor
+   `describe` blocks.
+2. Run `node --test --test-only test/index.mjs`.
+3. Remove all `only` markers.
+4. Run full regression via repository standard test command.
+
 Script and output directory policy:
 
 - Reusable project scripts should be committed under root `scripts/`.
