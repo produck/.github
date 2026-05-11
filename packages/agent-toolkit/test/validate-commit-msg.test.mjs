@@ -10,11 +10,15 @@ const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(TEST_DIR, '..');
 const TOOLKIT_BIN = path.resolve(PACKAGE_ROOT, 'bin/agent-toolkit.mjs');
 
-function runValidate(messageFile) {
-  return spawnSync(process.execPath, [TOOLKIT_BIN, 'validate-commit-msg', '--file', messageFile], {
+function runValidateArgs(args) {
+  return spawnSync(process.execPath, [TOOLKIT_BIN, 'validate-commit-msg', ...args], {
     cwd: PACKAGE_ROOT,
     encoding: 'utf8',
   });
+}
+
+function runValidate(messageFile) {
+  return runValidateArgs(['--file', messageFile]);
 }
 
 async function withMessage(content, runner) {
@@ -31,6 +35,30 @@ async function withMessage(content, runner) {
 }
 
 describe('validate-commit-msg', () => {
+  it('prints help and exits when --file is missing', () => {
+    const result = runValidateArgs([]);
+
+    assert.equal(result.status, 2);
+    assert.match(result.stdout, /Usage:/);
+  });
+
+  it('fails when message file is missing', () => {
+    const missingPath = path.join(os.tmpdir(), 'agent-toolkit-missing-message-file.txt');
+    const result = runValidate(missingPath);
+
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /Message file not found/);
+  });
+
+  it('fails on empty commit message file', async () => {
+    await withMessage('', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Commit message is empty/);
+    });
+  });
+
   it('accepts standalone tagged commit lines', async () => {
     await withMessage('[FIX] <docs>: clarify validate command output\n', async (messageFile) => {
       const result = runValidate(messageFile);
@@ -59,6 +87,114 @@ describe('validate-commit-msg', () => {
 
       assert.equal(result.status, 1);
       assert.match(result.stderr, /section header "workspace:" must be followed by at least one tagged line/i);
+    });
+  });
+
+  it('rejects tagged lines before section header in section mode', async () => {
+    const message = [
+      '[FIX] <docs>: line before section header',
+      'workspace:',
+      '[FIX] <docs>: section line',
+      '',
+    ].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(
+        result.stderr,
+        /section header is required before tagged lines when package\/workspace sections are used/i,
+      );
+    });
+  });
+
+  it('rejects standalone lines without [TAG]', async () => {
+    await withMessage('summary without tag\n', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /must start with \[TAG\] followed by a space/i);
+    });
+  });
+
+  it('rejects disallowed tags', async () => {
+    await withMessage('[CHANGED] update config\n', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /tag \[CHANGED\] is not allowed/i);
+    });
+  });
+
+  it('rejects disallowed targets', async () => {
+    await withMessage('[FIX] <feature>: add capability\n', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /target <feature> is not allowed/i);
+    });
+  });
+
+  it('rejects missing summary after tag', async () => {
+    await withMessage('[FIX]    \n', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /summary is required after tag/i);
+    });
+  });
+
+  it('rejects empty summary after target', async () => {
+    await withMessage('[FIX] <docs>:    \n', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /summary is required after target/i);
+    });
+  });
+
+  it('rejects empty lines in commit message', async () => {
+    const message = ['[FIX] first line', '', '[FIX] second line', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /empty line is not allowed/i);
+    });
+  });
+
+  it('rejects empty lines in section mode', async () => {
+    const message = ['workspace:', '[FIX] <docs>: first line', '', '[FIX] <docs>: second line', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /empty line is not allowed/i);
+    });
+  });
+
+  it('reports validateCommitLine errors inside section mode', async () => {
+    const message = ['workspace:', '[CHANGED] invalid tag inside section', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /tag \[CHANGED\] is not allowed/i);
+    });
+  });
+
+  it('rejects trailing orphan section header', async () => {
+    const message = ['workspace:', '[FIX] <docs>: section entry', 'core:', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /section header "core:" must be followed by at least one tagged line/i);
     });
   });
 

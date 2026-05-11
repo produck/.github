@@ -69,11 +69,15 @@ export function runCapture(options) {
   child.on('close', (code, signal) => {
     const endAt = Date.now();
     const durationMs = endAt - startAt;
+    const signalLabel = String(signal).replace(/^null$/, 'none');
+    const numberCode = Number(code);
+    const isNumberCode = Number(typeof code === 'number');
+    const normalizedExitCode = isNumberCode * numberCode + (1 - isNumberCode);
 
     outStream.write('\n');
     outStream.write(`# finishedAt: ${new Date(endAt).toISOString()}\n`);
     outStream.write(`# exitCode: ${String(code)}\n`);
-    outStream.write(`# signal: ${signal ? String(signal) : 'none'}\n`);
+    outStream.write(`# signal: ${signalLabel}\n`);
     outStream.end();
 
     const report = {
@@ -91,9 +95,6 @@ export function runCapture(options) {
 
     fs.writeFileSync(metaPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
 
-    if (typeof code === 'number') {
-      process.exit(code);
-    }
-    process.exit(1);
+    process.exit(normalizedExitCode);
   });
 }

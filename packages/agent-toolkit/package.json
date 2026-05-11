@@ -13,6 +13,8 @@
   },
   "scripts": {
     "prepack": "node ./bin/build-publish-assets.mjs",
+    "coverage": "npm exec --yes -- c8 --reporter=lcov --reporter=html --reporter=text-summary node --test test/index.mjs",
+    "coverage:check": "npm exec --yes -- c8 --check-coverage --lines 100 --functions 100 --branches 100 --statements 100 node --test test/index.mjs",
     "test": "node --test test/index.mjs",
     "verify": "node ./bin/agent-toolkit.mjs --help && node ./bin/agent-toolkit.mjs preflight --cwd . --require package.json",
     "pack:check": "npm pack --dry-run"
