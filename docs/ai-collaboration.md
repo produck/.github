@@ -73,6 +73,17 @@ max_line_length = 80
 - Organization-wide requirement: all Markdown files should keep each line at 80
   characters or fewer.
 
+### EditorConfig quick rule
+
+- Default action: directly copy the `.editorconfig` sample in this document.
+- If target repository has no root `.editorconfig`, create one from this sample
+  without modification.
+- If target repository already has a root `.editorconfig`, do not replace the
+  whole file; add only missing required keys from this sample.
+- Repository-documented exceptions override this sample.
+- If an exception applies, keep the exception and record it in change notes.
+- Do not include unrelated formatting-only changes in the same commit.
+
 ## Language conventions
 
 - Explanations, discussion, and review communication default to Chinese unless
