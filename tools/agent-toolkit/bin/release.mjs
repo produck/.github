@@ -25,15 +25,18 @@ function usage() {
   ].join('\n'));
 }
 
-function npmCmd() {
-  return process.platform === 'win32' ? 'npm.cmd' : 'npm';
-}
-
 function runNpm(args) {
-  const result = spawnSync(npmCmd(), args, {
+  const result = spawnSync('npm', args, {
     stdio: 'inherit',
     cwd: process.cwd(),
+    shell: true,
   });
+
+  if (result.error) {
+    console.error(`[release] failed to run npm ${args.join(' ')}:`);
+    console.error(result.error.message);
+    process.exit(1);
+  }
 
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
