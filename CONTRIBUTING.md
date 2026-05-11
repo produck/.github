@@ -62,3 +62,6 @@ In PR descriptions, summarize:
 If a repository provides more specific instructions, follow the repository instructions over this organization baseline.
 
 For Node.js repositories, follow [Node.js Initialization Baseline](docs/nodejs-initialization.md).
+This includes the root `.gitignore` baseline and mode-specific ignore strategy.
+For `.gitignore`, use the GitHub default Node.js template as baseline, then append team conventions.
+Organization-approved team conventions include `*.ign*` and `*.gen*`.
