@@ -51,7 +51,6 @@ function runGit(args) {
   const result = spawnSync('git', args, {
     stdio: 'inherit',
     cwd: process.cwd(),
-    shell: true,
   });
 
   if (result.error) {
@@ -69,7 +68,6 @@ function getDirtyFiles() {
   const result = spawnSync('git', ['status', '--porcelain'], {
     stdio: ['ignore', 'pipe', 'pipe'],
     cwd: process.cwd(),
-    shell: true,
     encoding: 'utf8',
   });
 
