@@ -8,6 +8,7 @@ Central CLI toolkit for organization-level AI execution workflows.
 - agent-toolkit run-capture
 - agent-toolkit summarize-log
 - agent-toolkit validate-commit-msg
+- agent-toolkit sync-instructions
 
 ## Examples
 
@@ -30,6 +31,17 @@ Validate commit message format:
 
 npm exec --package=@produck/agent-toolkit@latest \
   agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
+
+Manual per-repository instruction distribution (write .instructions.md):
+
+npm exec --package=@produck/agent-toolkit@latest \
+  agent-toolkit sync-instructions --cwd .
+
+Use organization source file instead of built-in template:
+
+npm exec --package=@produck/agent-toolkit@latest \
+  agent-toolkit sync-instructions --cwd . \
+  --source path/to/org/.instructions.md --force
 
 ## Local verification
 

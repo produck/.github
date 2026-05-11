@@ -59,6 +59,7 @@ function printMainHelp() {
     '  run-capture',
     '  summarize-log',
     '  validate-commit-msg',
+    '  sync-instructions',
     '',
     'Use:',
     '  agent-toolkit <command> --help',
@@ -100,6 +101,44 @@ function printValidateHelp() {
     '  - Optional target form: [TAG] <target>: <summary>',
   ].join('\n'));
 }
+
+function printSyncInstructionsHelp() {
+  console.log([
+    'Usage:',
+    '  agent-toolkit sync-instructions [--cwd <dir>] [--out <file>]',
+    '    [--source <file>] [--force] [--dry-run]',
+    '',
+    'Behavior:',
+    '  - Writes organization instruction entrypoint template to target file.',
+    '  - Defaults to <cwd>/.instructions.md when --out is not provided.',
+    '  - If target exists, command fails unless --force is set.',
+  ].join('\n'));
+}
+
+const DEFAULT_INSTRUCTIONS_TEMPLATE = [
+  '# Organization Collaboration Instructions',
+  '',
+  'This repository follows organization-level AI and engineering rules.',
+  '',
+  '## Required Rules',
+  '',
+  '- Commit message format must follow bracketed TAG policy.',
+  '- Keep root .editorconfig aligned with organization baseline:',
+  '  - If missing, create from organization sample.',
+  '  - If present, add missing required keys only (minimal merge).',
+  '- Repository owners generate and own eslint.config.mjs.',
+  '- AI must not rewrite full eslint config; only add missing',
+  '  @produck/eslint-rules integration as minimal patch.',
+  '- Repository-specific ESLint overrides must layer on top of',
+  '  @produck/eslint-rules.',
+  '',
+  '## References',
+  '',
+  '- docs/ai-collaboration.md',
+  '- docs/commit-convention.md',
+  '- docs/nodejs-initialization.md',
+  '',
+].join('\n');
 
 function runPreflight(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
@@ -357,6 +396,59 @@ function runValidateCommitMsg(options) {
   console.log('Commit message validation passed');
 }
 
+function runSyncInstructions(options) {
+  const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
+  const outArg = getSingle(options, '--out', '.instructions.md');
+  const sourceArg = getSingle(options, '--source', '');
+  const force = hasFlag(options, '--force');
+  const dryRun = hasFlag(options, '--dry-run');
+
+  if (!fs.existsSync(cwd)) {
+    console.error(`CWD does not exist: ${cwd}`);
+    process.exit(2);
+  }
+
+  const outPath = path.resolve(cwd, outArg);
+  let content = DEFAULT_INSTRUCTIONS_TEMPLATE;
+
+  if (sourceArg) {
+    const sourcePath = path.resolve(cwd, sourceArg);
+    if (!fs.existsSync(sourcePath)) {
+      console.error(`Source file does not exist: ${sourcePath}`);
+      process.exit(2);
+    }
+    content = fs.readFileSync(sourcePath, 'utf8');
+    if (!content.endsWith('\n')) {
+      content = `${content}\n`;
+    }
+  }
+
+  const exists = fs.existsSync(outPath);
+  if (exists && !force) {
+    console.error(`Target already exists: ${outPath}`);
+    console.error('Use --force to overwrite.');
+    process.exit(2);
+  }
+
+  const report = {
+    cwd,
+    outPath,
+    source: sourceArg ? path.resolve(cwd, sourceArg) : 'built-in-template',
+    exists,
+    overwritten: exists && force,
+    dryRun,
+  };
+
+  if (dryRun) {
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    process.exit(0);
+  }
+
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, content, 'utf8');
+  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+}
+
 function main() {
   const parsed = parseCommonArgs(process.argv.slice(2));
   const command = parsed.positional[0] || '';
@@ -384,6 +476,10 @@ function main() {
       printValidateHelp();
       process.exit(0);
     }
+    if (command === 'sync-instructions') {
+      printSyncInstructionsHelp();
+      process.exit(0);
+    }
   }
 
   if (command === 'preflight') {
@@ -403,6 +499,11 @@ function main() {
 
   if (command === 'validate-commit-msg') {
     runValidateCommitMsg(options);
+    return;
+  }
+
+  if (command === 'sync-instructions') {
+    runSyncInstructions(options);
     return;
   }
 

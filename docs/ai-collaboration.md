@@ -214,6 +214,21 @@ What does not work automatically:
   repository exist.
 - Cross-repository script execution requires an explicit bridge mechanism.
 
+### Manual instruction distribution workflow
+
+When CI enforcement is deferred, use manual sync per repository:
+
+1. Generate or update repository entrypoint `.instructions.md`.
+2. Keep repository-specific exceptions in that repository after sync.
+3. Validate critical policies manually in each update cycle.
+
+Recommended command:
+
+- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit sync-instructions --cwd . --source <path-to-org>/.instructions.md --force`
+
+This keeps instruction entrypoints aligned without requiring submodule or
+automatic PR rollout.
+
 ### Central package execution policy
 
 When bridge mechanism uses a central npm package, default execution strategy is
