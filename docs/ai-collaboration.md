@@ -1,0 +1,28 @@
+# AI Collaboration
+
+This document defines a lightweight AI collaboration baseline for repositories in the `produck` organization.
+
+## Goals
+
+- Improve consistency when using AI tools across repositories
+- Keep the baseline lightweight and easy to adopt
+- Let repositories add stricter or more specific instructions when needed
+
+## Default expectations
+
+- Default to Chinese for explanations and discussion unless the repository or request requires another language.
+- Prefer existing repository patterns over introducing new abstractions or frameworks.
+- Do not invent APIs, packages, configuration keys, commands, environment variables, or files.
+- Do not add new dependencies unless necessary and explicitly justified.
+- When changing behavior, add or update tests when practical.
+- Treat authentication, authorization, secrets, infrastructure, and production configuration as high-risk areas that require human review.
+
+## Commit and PR conventions
+
+- Prefer Conventional Commits: `type(scope): summary` or `type: summary`
+- Prefer PR titles that follow the same format when practical
+- In PR descriptions, summarize what changed, why it changed, how it was validated, and any known risks or follow-up work
+
+## Precedence
+
+If a repository provides more specific instructions, follow the repository instructions over this organization baseline.
