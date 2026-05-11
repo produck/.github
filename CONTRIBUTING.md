@@ -216,28 +216,35 @@ Bridge release checklist (required for central toolkit release):
 
 1. Observe latest published version:
 
-  ```bash
-  npm view @produck/agent-toolkit version
-  ```
+```bash
+npm view @produck/agent-toolkit version
+```
 
-2. Run workspace publish dry-run:
+2. Run mandatory release checks (format + test):
 
-  ```bash
-  npm run publish:dry-run
-  ```
+```bash
+npm run format:check
+npm run test
+```
 
-3. Publish from workspace root:
+3. Run workspace publish dry-run:
 
-  ```bash
-  npm run publish
-  ```
+```bash
+npm run publish:dry-run
+```
 
-4. Push release commit and tags:
+4. Publish from workspace root:
 
-  ```bash
-  git push
-  git push --tags
-  ```
+```bash
+npm run publish
+```
+
+5. Push release commit and tags:
+
+```bash
+git push
+git push --tags
+```
 
 Bridge rollback checklist (minimum):
 

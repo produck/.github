@@ -77,6 +77,8 @@ package-level release scripts.
 From monorepo root (`produck/.github`):
 
 ```bash
+npm run format:check
+npm run test
 npm run publish:dry-run
 npm run publish
 ```
@@ -102,7 +104,8 @@ Workflow behavior:
 Release policy:
 
 - Default organization usage is @latest.
-- Run verify, pack:check, and workspace `publish:dry-run` before `publish`.
+- Run format:check and test first, then workspace `publish:dry-run` before
+  `publish`.
 - Keep rollback option by republishing previous stable version if needed.
 
 Rollback quick steps:
