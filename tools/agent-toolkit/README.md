@@ -42,6 +42,20 @@ npm --prefix tools/agent-toolkit run pack:check
 
 Lerna-like release flow (recommended):
 
+0) Interactive mode (TTY):
+
+npm --prefix tools/agent-toolkit run release
+
+Interactive prompts let you choose:
+
+- version level: patch/minor/major
+- action: dry-run or publish
+
+Default choices:
+
+- patch
+- dry-run
+
 1) Bump + verify + dry-run (no publish):
 
 npm --prefix tools/agent-toolkit run release:patch
