@@ -42,6 +42,13 @@ Manual per-repository instruction distribution (write .github/instructions/produ
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd .
 ```
 
+Legacy repository bootstrap behavior:
+
+- If `.github/copilot-instructions.md` is missing, sync-instructions initializes it.
+- The initialized file guides repository owners to keep organization baseline in
+  `.github/instructions/produck/*.instructions.md` and put local-only rules in
+  `.github/copilot-instructions.md`.
+
 Use organization source directory instead of built-in assets:
 
 ```
@@ -51,6 +58,7 @@ npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructi
 Built-in template location (for review and updates):
 
 - `templates/default.instructions.md`
+- `templates/user-space-bootstrap.md`
 - `templates/help/*.txt`
 
 Publish-time generated instruction assets:

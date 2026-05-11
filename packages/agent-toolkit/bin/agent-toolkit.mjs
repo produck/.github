@@ -15,6 +15,7 @@ const PUBLISH_INSTRUCTIONS_PATH = path.resolve(PUBLISH_ASSETS_ROOT, 'instruction
 const DEFAULT_INSTRUCTIONS_TEMPLATE_PATH = path.resolve(TEMPLATE_ROOT, 'default.instructions.md');
 const MANAGED_MARKER = '<!-- managed-by: @produck/agent-toolkit -->';
 const DEFAULT_NAMESPACE_OUT_DIR = '.github/instructions/produck';
+const USER_SPACE_ENTRYPOINT = '.github/copilot-instructions.md';
 
 function loadTemplateFile(relativePath) {
   const templatePath = path.resolve(TEMPLATE_ROOT, relativePath);
@@ -176,6 +177,16 @@ function readInstructionEntriesFromDirectory(sourceDir) {
 function isManagedFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   return content.includes(MANAGED_MARKER);
+}
+
+function buildUserSpaceBootstrapContent(namespaceDirPath, cwd) {
+  const namespaceDisplayPath = path.relative(cwd, namespaceDirPath).replace(/\\/g, '/');
+  let content = loadTemplateFile('user-space-bootstrap.md');
+  content = content.replace(/\{\{NAMESPACE_GLOB\}\}/g, `${namespaceDisplayPath}/*.instructions.md`);
+  if (!content.endsWith('\n')) {
+    content = `${content}\n`;
+  }
+  return content;
 }
 
 function runPreflight(options) {
@@ -515,6 +526,8 @@ function runSyncInstructions(options) {
       overwritten: exists && force,
       dryRun,
       prune: false,
+      initializedUserSpaceEntry: false,
+      userSpaceEntryPath: null,
     };
 
     if (dryRun) {
@@ -573,6 +586,9 @@ function runSyncInstructions(options) {
     }
   }
 
+  const userSpaceEntryPath = path.resolve(cwd, USER_SPACE_ENTRYPOINT);
+  const shouldInitUserSpaceEntry = !fs.existsSync(userSpaceEntryPath);
+
   const report = {
     mode: 'directory',
     cwd,
@@ -582,6 +598,8 @@ function runSyncInstructions(options) {
     dryRun,
     force,
     prune,
+    initializedUserSpaceEntry: shouldInitUserSpaceEntry,
+    userSpaceEntryPath,
     files: planned.map((item) => ({
       fileName: item.fileName,
       sourcePath: item.sourcePath,
@@ -600,6 +618,13 @@ function runSyncInstructions(options) {
   for (const item of toWrite) {
     fs.writeFileSync(item.targetPath, item.content, 'utf8');
   }
+
+  if (shouldInitUserSpaceEntry) {
+    fs.mkdirSync(path.dirname(userSpaceEntryPath), { recursive: true });
+    const userSpaceBootstrap = buildUserSpaceBootstrapContent(outDir, cwd);
+    fs.writeFileSync(userSpaceEntryPath, userSpaceBootstrap, 'utf8');
+  }
+
   for (const filePath of pruneDeletes) {
     fs.unlinkSync(filePath);
   }
