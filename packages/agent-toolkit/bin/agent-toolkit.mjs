@@ -4,8 +4,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
-const ALLOWED_TAGS = ['INIT', 'ADD', 'REMOVE', 'FIX', 'REFACTOR', 'UPGRADE'];
-const ALLOWED_TARGETS = ['docs', 'test', 'ci', 'deps', 'api', 'schema', 'infra'];
+const ALLOWED_TAGS = ['INIT', 'ADD', 'REMOVE', 'FIX', 'REFACTOR', 'UPGRADE', 'PUBLISH'];
+const ALLOWED_TARGETS = ['docs', 'test', 'ci', 'deps', 'api', 'schema', 'infra', 'fmt'];
+const SECTION_HEADER_RE = /^(?:@[\w.-]+\/)?[\w.-]+:$/;
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, '../templates');
 const PUBLISH_ASSETS_ROOT = path.resolve(SCRIPT_DIR, '../publish-assets');
@@ -383,6 +384,63 @@ function validateCommitLine(line, lineNo) {
   return null;
 }
 
+function isSectionHeaderLine(line) {
+  return SECTION_HEADER_RE.test(line.trim());
+}
+
+function validateSectionFormat(lines) {
+  const errors = [];
+  let currentSection = '';
+  let currentSectionLineNo = 0;
+  let currentSectionHasTaggedLine = false;
+
+  for (let i = 0; i < lines.length; i += 1) {
+    const lineNo = i + 1;
+    const line = lines[i];
+
+    if (line.trim() === '') {
+      errors.push(`Line ${lineNo}: empty line is not allowed`);
+      continue;
+    }
+
+    if (isSectionHeaderLine(line)) {
+      if (currentSection && !currentSectionHasTaggedLine) {
+        errors.push(
+          `Line ${currentSectionLineNo}: section header "${currentSection}" must be followed by at least one tagged line`,
+        );
+      }
+
+      currentSection = line.trim();
+      currentSectionLineNo = lineNo;
+      currentSectionHasTaggedLine = false;
+      continue;
+    }
+
+    if (!currentSection) {
+      errors.push(
+        `Line ${lineNo}: section header is required before tagged lines when package/workspace sections are used`,
+      );
+      continue;
+    }
+
+    const err = validateCommitLine(line, lineNo);
+    if (err) {
+      errors.push(err);
+      continue;
+    }
+
+    currentSectionHasTaggedLine = true;
+  }
+
+  if (currentSection && !currentSectionHasTaggedLine) {
+    errors.push(
+      `Line ${currentSectionLineNo}: section header "${currentSection}" must be followed by at least one tagged line`,
+    );
+  }
+
+  return errors;
+}
+
 function runValidateCommitMsg(options) {
   const file = getSingle(options, '--file', '');
   if (!file) {
@@ -404,11 +462,15 @@ function runValidateCommitMsg(options) {
     process.exit(2);
   }
 
-  const errors = [];
-  for (let i = 0; i < lines.length; i += 1) {
-    const err = validateCommitLine(lines[i], i + 1);
-    if (err) {
-      errors.push(err);
+  const hasSectionHeaders = lines.some((line) => isSectionHeaderLine(line));
+
+  const errors = hasSectionHeaders ? validateSectionFormat(lines) : [];
+  if (!hasSectionHeaders) {
+    for (let i = 0; i < lines.length; i += 1) {
+      const err = validateCommitLine(lines[i], i + 1);
+      if (err) {
+        errors.push(err);
+      }
     }
   }
 

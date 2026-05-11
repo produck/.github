@@ -34,6 +34,12 @@ This document is maintained directly as a downstream-distributable source.
 - Semicolons: Always required (error)
 - Trailing commas: Always in multiline (error)
 - No inline config allowed: `noInlineConfig: true`
+- The listed ESLint rules can be satisfied either by explicit local
+  declarations or by inherited shared presets.
+- Repositories are not required to redeclare rules locally when those rules are
+  already provided by inherited presets.
+- If a repository overrides inherited rules, include only the deltas and
+  document the rationale.
 
 **Usage in packages:**
 

@@ -163,6 +163,9 @@ Avoid vague or low-signal messages such as:
 
 Use the local validator before commit:
 
+- Validation is required before both `git commit` and `git commit --amend`.
+- Do not create or amend a commit when validation fails.
+
 - `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
 validate-commit-msg --file <message-file>`
 

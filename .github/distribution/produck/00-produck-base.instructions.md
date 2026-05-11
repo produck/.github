@@ -118,8 +118,11 @@ max_line_length = 80
   be present in repository lint configuration.
 - Apply minimal patching only: keep existing repository/framework structure and
   add the smallest necessary changes.
-- Repository-specific overrides are allowed, but should layer on top of
-  `@produck/eslint-rules` instead of bypassing it.
+- Repository-specific overrides are optional and should be added only when
+  behavior intentionally differs from shared presets.
+- In ESLint flat config, "layer on top" means local override items must appear
+  after shared preset items in exported order.
+- No-op overrides that repeat inherited values should be avoided.
 
 ## Language conventions
 
@@ -144,16 +147,10 @@ max_line_length = 80
 - Recommended local validation:
   `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
 validate-commit-msg --file <message-file>`.
-- Use uppercase tags from this whitelist: `[INIT]`, `[ADD]`, `[REMOVE]`,
-  `[FIX]`, `[REFACTOR]`, `[UPGRADE]`.
-- Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` ->
-  `[REMOVE]`, and `[FIXED]` -> `[FIX]`.
-- To express content domain, summary may use target syntax: `[TAG] <target>:
-  <summary>`.
-- Allowed targets are `docs`, `test`, `ci`, `deps`, `api`, `schema`, and
-  `infra`.
-- If target syntax is used, target must be wrapped in angle brackets and must be
-  from the allowed target list.
+- Canonical source for commit tag/target whitelists, legacy mapping, and
+  target syntax is
+  `.github/distribution/produck/20-produck-commit.instructions.md`.
+- Do not redefine commit tag or target whitelists in other instruction files.
 - For non-monorepo repositories, use `[TAG] summary` directly (no
   package/workspace section headers).
 - Bracketed commit summaries should be in English
@@ -247,6 +244,9 @@ When CI enforcement is deferred, use manual sync per repository:
    `.github/instructions/produck/`.
 2. Keep repository-specific exceptions in `.github/copilot-instructions.md`.
 3. Validate critical policies manually in each update cycle.
+4. After instruction sync, validate duplicated policy sections remain
+  consistent across instruction files, especially commit tag and target
+  whitelists.
 
 Recommended command:
 
