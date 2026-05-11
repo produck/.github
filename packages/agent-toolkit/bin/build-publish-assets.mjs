@@ -7,6 +7,7 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(SCRIPT_DIR, '..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const OUTPUT_DIR = path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck');
+const LEGACY_OUTPUT_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/org.instructions.md');
 const SPECS = [
   {
     sourcePath: 'docs/ai-collaboration.md',
@@ -85,6 +86,11 @@ function run() {
   }
 
   cleanStaleManagedFiles();
+
+  if (fs.existsSync(LEGACY_OUTPUT_PATH)) {
+    fs.unlinkSync(LEGACY_OUTPUT_PATH);
+    process.stdout.write(`Removed legacy ${LEGACY_OUTPUT_PATH}\n`);
+  }
 }
 
 run();

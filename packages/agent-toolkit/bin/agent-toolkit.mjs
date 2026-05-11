@@ -11,7 +11,6 @@ const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, '../templates');
 const PUBLISH_ASSETS_ROOT = path.resolve(SCRIPT_DIR, '../publish-assets');
 const PUBLISH_INSTRUCTIONS_ROOT = path.resolve(PUBLISH_ASSETS_ROOT, 'instructions');
 const PUBLISH_NAMESPACE_ROOT = path.resolve(PUBLISH_INSTRUCTIONS_ROOT, 'produck');
-const PUBLISH_INSTRUCTIONS_PATH = path.resolve(PUBLISH_ASSETS_ROOT, 'instructions/org.instructions.md');
 const MANAGED_MARKER = '<!-- managed-by: @produck/agent-toolkit -->';
 const DEFAULT_NAMESPACE_OUT_DIR = '.github/instructions/produck';
 const USER_SPACE_ENTRYPOINT = '.github/copilot-instructions.md';
@@ -126,24 +125,6 @@ function loadDefaultInstructionsTemplate() {
       type: 'dir',
       sourcePath: PUBLISH_NAMESPACE_ROOT,
       entries,
-    };
-  }
-
-  if (fs.existsSync(PUBLISH_INSTRUCTIONS_PATH)) {
-    let content = fs.readFileSync(PUBLISH_INSTRUCTIONS_PATH, 'utf8');
-    if (!content.endsWith('\n')) {
-      content = `${content}\n`;
-    }
-    return {
-      type: 'file',
-      sourcePath: PUBLISH_INSTRUCTIONS_PATH,
-      entries: [
-        {
-          fileName: '00-produck-base.instructions.md',
-          content,
-          sourcePath: PUBLISH_INSTRUCTIONS_PATH,
-        },
-      ],
     };
   }
 
