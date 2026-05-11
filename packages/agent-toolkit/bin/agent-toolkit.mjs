@@ -12,7 +12,6 @@ const PUBLISH_ASSETS_ROOT = path.resolve(SCRIPT_DIR, '../publish-assets');
 const PUBLISH_INSTRUCTIONS_ROOT = path.resolve(PUBLISH_ASSETS_ROOT, 'instructions');
 const PUBLISH_NAMESPACE_ROOT = path.resolve(PUBLISH_INSTRUCTIONS_ROOT, 'produck');
 const PUBLISH_INSTRUCTIONS_PATH = path.resolve(PUBLISH_ASSETS_ROOT, 'instructions/org.instructions.md');
-const DEFAULT_INSTRUCTIONS_TEMPLATE_PATH = path.resolve(TEMPLATE_ROOT, 'default.instructions.md');
 const MANAGED_MARKER = '<!-- managed-by: @produck/agent-toolkit -->';
 const DEFAULT_NAMESPACE_OUT_DIR = '.github/instructions/produck';
 const USER_SPACE_ENTRYPOINT = '.github/copilot-instructions.md';
@@ -106,10 +105,6 @@ function printSyncInstructionsHelp() {
 }
 
 function loadDefaultInstructionsTemplate() {
-  let sourcePath = DEFAULT_INSTRUCTIONS_TEMPLATE_PATH;
-  let content = '';
-  let fileName = '00-produck-base.instructions.md';
-  let type = 'file';
   if (fs.existsSync(PUBLISH_NAMESPACE_ROOT)) {
     const names = fs
       .readdirSync(PUBLISH_NAMESPACE_ROOT)
@@ -133,26 +128,28 @@ function loadDefaultInstructionsTemplate() {
       entries,
     };
   }
+
   if (fs.existsSync(PUBLISH_INSTRUCTIONS_PATH)) {
-    sourcePath = PUBLISH_INSTRUCTIONS_PATH;
-    content = fs.readFileSync(PUBLISH_INSTRUCTIONS_PATH, 'utf8');
-  } else {
-    content = loadTemplateFile('default.instructions.md');
+    let content = fs.readFileSync(PUBLISH_INSTRUCTIONS_PATH, 'utf8');
+    if (!content.endsWith('\n')) {
+      content = `${content}\n`;
+    }
+    return {
+      type: 'file',
+      sourcePath: PUBLISH_INSTRUCTIONS_PATH,
+      entries: [
+        {
+          fileName: '00-produck-base.instructions.md',
+          content,
+          sourcePath: PUBLISH_INSTRUCTIONS_PATH,
+        },
+      ],
+    };
   }
-  if (!content.endsWith('\n')) {
-    content = `${content}\n`;
-  }
-  return {
-    type,
-    sourcePath,
-    entries: [
-      {
-        fileName,
-        content,
-        sourcePath,
-      },
-    ],
-  };
+
+  console.error('No built-in instruction assets found.');
+  console.error('Run prepack/publish to generate publish-assets, or pass --source explicitly.');
+  process.exit(2);
 }
 
 function readInstructionEntriesFromDirectory(sourceDir) {

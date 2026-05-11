@@ -57,7 +57,6 @@ npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructi
 
 Built-in template location (for review and updates):
 
-- `templates/default.instructions.md`
 - `templates/user-space-bootstrap.md`
 - `templates/help/*.txt`
 
