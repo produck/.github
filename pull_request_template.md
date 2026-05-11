@@ -12,7 +12,7 @@
 
 ## Checklist
 
-- [ ] The title follows `type(scope): summary` or `type: summary` when practical
+- [ ] The title is clear and specific (and follows repository-specific title rules if any)
 - [ ] I verified the change matches existing repository patterns
 - [ ] I did not introduce invented APIs, packages, commands, or configuration
 - [ ] I added or updated tests when practical

@@ -19,8 +19,12 @@ This document defines a lightweight AI collaboration baseline for repositories i
 
 ## Commit and PR conventions
 
-- Prefer Conventional Commits: `type(scope): summary` or `type: summary`
-- Prefer PR titles that follow the same format when practical
+- Commit messages use bracketed tags: `[TAG] summary`.
+- Use uppercase tags from this whitelist: `[INIT]`, `[ADDED]`, `[REMOVED]`, `[FIXED]`, `[REFACTOR]`, `[UPGRADE]`.
+- For non-monorepo repositories, use `[TAG] summary` directly (no package/workspace section headers).
+- Bracketed commit summaries should be in English
+- `[UPGRADE] deps` is allowed for pure dependency upgrades; if IFF artifacts or IPC-related artifacts/calls are updated, the summary must name those updates explicitly.
+- PR title format is repository-defined; no organization-level title format restriction
 - In PR descriptions, summarize what changed, why it changed, how it was validated, and any known risks or follow-up work
 
 ## Precedence

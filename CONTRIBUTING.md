@@ -15,26 +15,34 @@ This organization uses a lightweight set of AI collaboration defaults.
 
 ## Commit messages
 
-Use Conventional Commits when possible:
+Use bracketed commit style:
 
-- `type(scope): summary`
-- `type: summary`
+- `[TAG] summary`
+
+Allowed tags are `[INIT]`, `[ADDED]`, `[REMOVED]`, `[FIXED]`, `[REFACTOR]`, and `[UPGRADE]`.
+Tags must be uppercase, and bracketed summaries must be in English.
+For grouped notes in monorepos, package/workspace labels can appear as section headers outside each message line.
+For non-monorepo repositories, do not use package/workspace section headers; use `[TAG] summary` directly.
+Special rule for `[UPGRADE]`:
+- For pure dependency upgrades, `[UPGRADE] deps` is allowed and recommended.
+- If the commit also updates IFF artifacts or IPC-related artifacts/calls, the summary must be specific about what was updated.
 
 Examples:
 
-- `feat(auth): add token refresh handling`
-- `fix(api): handle empty pagination result`
-- `docs(readme): clarify local setup steps`
+- `[FIXED] race conditions in createTeam/acceptInvitation/acceptRequest by using one transaction`
+- `[ADDED] screenshot-upload-fail cross-endpoint test covering uploadFile response.ok branch`
+- `[REMOVED] deprecated score-field prompt template`
 
 Avoid vague messages such as:
 
-- `fix bug`
-- `update code`
-- `misc changes`
+- `[ADDED] update things`
+- `[FIXED] issue`
+- `[UPGRADE] dependencies` when the commit includes specific artifact/call updates that should be named
 
 ## Pull requests
 
-Prefer PR titles that also follow Conventional Commits.
+PR titles have no organization-level format restriction.
+Use clear, specific titles, and follow repository-specific rules when provided.
 
 In PR descriptions, summarize:
 
