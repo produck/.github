@@ -114,11 +114,26 @@ max_line_length = 80
 When a command may produce large output (for example 10k+ lines), use a
 two-phase flow instead of shell pipelines like `| grep` or `| tail`.
 
+Node-first policy:
+
+- MUST use Node scripts first for output processing, file processing, path
+  checks, and multi-step command orchestration.
+- MAY use direct shell commands only for short, read-only, atomic checks (for
+  example status/list/current-directory checks).
+- MUST avoid shell pipelines and stream redirection for long-output tasks.
+
 - Phase 1 (capture): run command and write full output to a file first.
 - Phase 2 (analyze): run a separate step to filter/summarize that file.
 
+Recommended three-step flow:
+
+1. Preflight: verify required files/paths and create output directories.
+2. Capture: execute command and persist full output.
+3. Analyze: summarize or filter captured output.
+
 Recommended local tools:
 
+- `node scripts/preflight.mjs --cwd . --require package.json --ensure-dir logs`
 - `node scripts/run-and-capture.mjs --out logs/run.log --cmd "<command>"`
 - `node scripts/summarize-log.mjs --file logs/run.log --last 120`
 - `node scripts/summarize-log.mjs --file logs/run.log --match "FAIL|ERROR"`

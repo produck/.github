@@ -8,13 +8,17 @@ function printUsage() {
     [
       'Usage:',
       '  node scripts/run-and-capture.mjs --out <logFile> --cmd <command>',
-      '  [--cwd <directory>] [--meta <metaFile>]',
+      '  [--cwd <directory>] [--meta <metaFile>] [--allow-pipe]',
       '',
       'Example:',
       '  node scripts/run-and-capture.mjs \\',
       '    --out logs/test.stdout.log \\',
       '    --meta logs/test.meta.json \\',
       '    --cmd "npm run test"',
+      '',
+      'Notes:',
+      '  By default, shell pipes are blocked for reliability.',
+      '  Add --allow-pipe only when a pipe is intentionally required.',
     ].join('\n')
   );
 }
@@ -25,6 +29,7 @@ function parseArgs(argv) {
     cmd: '',
     cwd: process.cwd(),
     meta: '',
+    allowPipe: false,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -51,6 +56,10 @@ function parseArgs(argv) {
       i += 1;
       continue;
     }
+    if (token === '--allow-pipe') {
+      args.allowPipe = true;
+      continue;
+    }
     if (token === '--help' || token === '-h') {
       return { help: true };
     }
@@ -67,6 +76,13 @@ if (parsed.help) {
 
 if (!parsed.out || !parsed.cmd) {
   printUsage();
+  process.exit(2);
+}
+
+if (!parsed.allowPipe && parsed.cmd.includes('|')) {
+  console.error(
+    'Blocked command containing pipe. Use two-phase flow or pass --allow-pipe.'
+  );
   process.exit(2);
 }
 

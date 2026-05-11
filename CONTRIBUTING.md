@@ -144,10 +144,24 @@ Organization-approved team conventions include `*.ign*` and `*.gen*`.
 For commands with very large output, avoid one-shot shell pipelines like
 `command | tail` or `command | grep`.
 
+Node-first policy:
+
+- MUST use Node scripts first for path checks, file operations, output
+  processing, and multi-step command execution.
+- MAY use direct shell commands only for short, read-only, atomic checks.
+- MUST avoid pipeline-based post-processing in long-output tasks.
+
 Use a two-step flow:
 
 1. Capture all command output into a log file.
 2. Analyze the captured log in a separate command.
+
+Recommended execution sequence:
+
+1. `node scripts/preflight.mjs --cwd . --require package.json --ensure-dir logs`
+2. `node scripts/run-and-capture.mjs --out logs/run.log --cmd "npm run test"`
+3. `node scripts/summarize-log.mjs --file logs/run.log --last 120`
+4. `node scripts/summarize-log.mjs --file logs/run.log --match "FAIL|ERROR"`
 
 Recommended commands:
 
