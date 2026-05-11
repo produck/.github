@@ -1,19 +1,10 @@
-name: Publish Agent Toolkit
+name: Verify Agent Toolkit
 
 on:
   workflow_dispatch:
-    inputs:
-      publish:
-        description: "Publish to npm registry"
-        required: true
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
 
 jobs:
-  verify-and-optionally-publish:
+  verify-toolkit:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,7 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org
 
       - name: Verify CLI
         run: npm run verify
@@ -39,9 +29,3 @@ jobs:
 
       - name: Publish dry-run
         run: npm run publish:dry-run
-
-      - name: Publish latest
-        if: inputs.publish == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm run publish:latest

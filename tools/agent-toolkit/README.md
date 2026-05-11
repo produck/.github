@@ -38,7 +38,7 @@ From repository root:
 npm --prefix tools/agent-toolkit run verify
 npm --prefix tools/agent-toolkit run pack:check
 
-## Publish workflow
+## Manual publish
 
 Dry-run publish:
 
@@ -57,8 +57,8 @@ Repository includes manual workflow:
 Workflow behavior:
 
 - Always runs verify, pack:check, and publish:dry-run.
-- Publishes only when workflow input publish=true.
-- Requires repository secret NPM_TOKEN for publish step.
+- Does not publish to npm.
+- Used as release gate before manual publish.
 
 Release policy:
 
