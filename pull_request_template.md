@@ -13,6 +13,7 @@
 ## Checklist
 
 - [ ] The title is clear and specific (and follows repository-specific title rules if any)
+- [ ] I followed organization language conventions and kept terminology consistent
 - [ ] I verified the change matches existing repository patterns
 - [ ] I did not introduce invented APIs, packages, commands, or configuration
 - [ ] I added or updated tests when practical

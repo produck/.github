@@ -17,6 +17,14 @@ This document defines a lightweight AI collaboration baseline for repositories i
 - When changing behavior, add or update tests when practical.
 - Treat authentication, authorization, secrets, infrastructure, and production configuration as high-risk areas that require human review.
 
+## Language conventions
+
+- Explanations, discussion, and review communication default to Chinese unless the repository or request requires another language.
+- Commit messages keep the bracketed format and use English summaries.
+- PR descriptions and issue comments may use Chinese or English, but keep one language per section and keep terminology consistent.
+- Code identifiers, filenames, and existing public API names should follow existing repository conventions; do not translate existing symbols.
+- User-facing copy should follow the target product locale of the repository/module.
+
 ## Commit and PR conventions
 
 - Commit messages use bracketed tags: `[TAG] summary`.
