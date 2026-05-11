@@ -6,13 +6,17 @@ Thank you for contributing to repositories in the `produck` organization.
 
 This organization uses a lightweight set of AI collaboration defaults.
 
-- Default to Chinese for explanations and discussion unless the repository or request requires another language.
+- Default to Chinese for explanations and discussion unless the repository or
+  request requires another language.
 - Prefer existing repository patterns over introducing new abstractions.
-- Do not invent APIs, packages, configuration keys, commands, environment variables, or files.
+- Do not invent APIs, packages, configuration keys, commands, environment
+  variables, or files.
 - Do not add new dependencies unless necessary and explicitly justified.
 - When changing behavior, add or update tests when practical.
-- Treat authentication, authorization, secrets, infrastructure, and production configuration as high-risk areas that require human review.
-- Include a root `.gitattributes` in repositories and normalize text files to LF by default.
+- Treat authentication, authorization, secrets, infrastructure, and production
+  configuration as high-risk areas that require human review.
+- Include a root `.gitattributes` in repositories and normalize text files to LF
+  by default.
 
 Git attributes baseline:
 
@@ -54,15 +58,20 @@ trim_trailing_whitespace = false
 max_line_length = 80
 ```
 
-- Organization-wide requirement: all Markdown files should keep each line at 80 characters or fewer.
+- Organization-wide requirement: all Markdown files should keep each line at 80
+  characters or fewer.
 
 Language conventions:
 
-- Explanations, discussion, and review communication default to Chinese unless the repository or request requires another language.
+- Explanations, discussion, and review communication default to Chinese unless
+  the repository or request requires another language.
 - Commit messages use English summaries in the bracketed format.
-- PR descriptions and issue comments may use Chinese or English, but keep one language per section and keep terminology consistent.
-- Code identifiers, filenames, and existing public API names should follow existing repository conventions; do not translate existing symbols.
-- User-facing copy should follow the target product locale of the repository/module.
+- PR descriptions and issue comments may use Chinese or English, but keep one
+  language per section and keep terminology consistent.
+- Code identifiers, filenames, and existing public API names should follow
+  existing repository conventions; do not translate existing symbols.
+- User-facing copy should follow the target product locale of the
+  repository/module.
 
 ## Commit messages
 
@@ -70,23 +79,31 @@ Use bracketed commit style:
 
 - `[TAG] summary`
 
-Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and `[UPGRADE]`.
-Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` -> `[REMOVE]`, and `[FIXED]` -> `[FIX]`.
+Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and
+`[UPGRADE]`.
+Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` ->
+`[REMOVE]`, and `[FIXED]` -> `[FIX]`.
 Tags must be uppercase, and bracketed summaries must be in English.
 Summary may optionally use a target noun prefix: `[TAG] <target>: <summary>`.
 Allowed targets are `docs`, `test`, `ci`, `deps`, `api`, `schema`, and `infra`.
-If target syntax is used, target must be wrapped in angle brackets and must be from the allowed target list.
+If target syntax is used, target must be wrapped in angle brackets and must be
+from the allowed target list.
 Targets are summary nouns, not commit tags.
-For grouped notes in monorepos, package/workspace labels can appear as section headers outside each message line.
-For non-monorepo repositories, do not use package/workspace section headers; use `[TAG] summary` directly.
+For grouped notes in monorepos, package/workspace labels can appear as section
+headers outside each message line.
+For non-monorepo repositories, do not use package/workspace section headers; use
+`[TAG] summary` directly.
 Special rule for `[UPGRADE]`:
 - For pure dependency upgrades, `[UPGRADE] deps` is allowed and recommended.
-- If the commit also updates IFF artifacts or IPC-related artifacts/calls, the summary must be specific about what was updated.
+- If the commit also updates IFF artifacts or IPC-related artifacts/calls, the
+  summary must be specific about what was updated.
 
 Examples:
 
-- `[FIX] race conditions in createTeam/acceptInvitation/acceptRequest by using one transaction`
-- `[ADD] screenshot-upload-fail cross-endpoint test covering uploadFile response.ok branch`
+- `[FIX] race conditions in createTeam/acceptInvitation/acceptRequest by using
+  one transaction`
+- `[ADD] screenshot-upload-fail cross-endpoint test covering uploadFile
+  response.ok branch`
 - `[REMOVE] deprecated score-field prompt template`
 - `[ADD] <docs>: onboarding section for standalone mode`
 - `[FIX] <test>: cover uploadFile response.ok branch`
@@ -95,7 +112,8 @@ Avoid vague messages such as:
 
 - `[ADD] update things`
 - `[FIX] issue`
-- `[UPGRADE] dependencies` when the commit includes specific artifact/call updates that should be named
+- `[UPGRADE] dependencies` when the commit includes specific artifact/call
+  updates that should be named
 - `[ADD] docs: ...` (target syntax without angle brackets)
 - `[ADD] <feature>: ...` (target outside allowed target list)
 
@@ -111,9 +129,12 @@ In PR descriptions, summarize:
 - how it was validated
 - known risks or follow-up work
 
-If a repository provides more specific instructions, follow the repository instructions over this organization baseline.
+If a repository provides more specific instructions, follow the repository
+instructions over this organization baseline.
 
-For Node.js repositories, follow [Node.js Initialization Baseline](docs/nodejs-initialization.md).
+For Node.js repositories, follow [Node.js Initialization
+Baseline](docs/nodejs-initialization.md).
 This includes the root `.gitignore` baseline and mode-specific ignore strategy.
-For `.gitignore`, use the GitHub default Node.js template as baseline, then append team conventions.
+For `.gitignore`, use the GitHub default Node.js template as baseline, then
+append team conventions.
 Organization-approved team conventions include `*.ign*` and `*.gen*`.
