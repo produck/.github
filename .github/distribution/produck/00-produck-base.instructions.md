@@ -1,3 +1,9 @@
+---
+applyTo: "**"
+---
+
+<!-- managed-by: @produck/agent-toolkit -->
+<!-- source: .github/distribution/produck/00-produck-base.instructions.md -->
 # AI Collaboration
 
 This document defines a lightweight AI collaboration baseline for repositories
@@ -8,6 +14,23 @@ in the `produck` organization.
 - Improve consistency when using AI tools across repositories
 - Keep the baseline lightweight and easy to adopt
 - Let repositories add stricter or more specific instructions when needed
+
+## Instruction source split
+
+To separate organization-only governance from downstream-distributable
+baseline, policy sources are split as follows:
+
+- Downstream-distributable source:
+  `.github/distribution/produck/*.instructions.md`
+- Organization-only source (not distributed):
+  `.github/instructions/produck/*.instructions.md`
+
+Editing rule:
+
+- Update downstream baseline rules directly in
+  `.github/distribution/produck/*.instructions.md`.
+- Update organization-only workflow/governance in
+  `.github/instructions/produck/`.
 
 ## Default expectations
 
@@ -203,7 +226,7 @@ What works across repositories:
 
 - Organization-level AI instruction text can guide agent behavior in all
   repositories when configured at organization settings.
-- Rules in this document should be copied into organization AI instructions.
+- Rules in `.github/distribution/produck/` are the downstream-sync source.
 - Repository-specific rules may still add stricter constraints.
 
 What does not work automatically:
@@ -218,13 +241,18 @@ What does not work automatically:
 
 When CI enforcement is deferred, use manual sync per repository:
 
-1. Generate or update repository entrypoint `.instructions.md`.
-2. Keep repository-specific exceptions in that repository after sync.
+1. Sync organization downstream source
+   `.github/distribution/produck/*.instructions.md` into target repository
+   `.github/instructions/produck/`.
+2. Keep repository-specific exceptions in `.github/copilot-instructions.md`.
 3. Validate critical policies manually in each update cycle.
 
 Recommended command:
 
-- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit sync-instructions --cwd . --source <path-to-org>/.instructions.md --force`
+- `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source <path-to-org>/.github/distribution/produck --force --prune`
+
+If the package has been published, `--source` can be omitted to use built-in
+assets from `@produck/agent-toolkit`.
 
 This keeps instruction entrypoints aligned without requiring submodule or
 automatic PR rollout.
@@ -299,4 +327,4 @@ If a repository provides more specific instructions, follow the repository
 instructions over this organization baseline.
 
 For Node.js repositories, also follow [Node.js Initialization
-Baseline](nodejs-initialization.md).
+Baseline](10-produck-node.instructions.md).

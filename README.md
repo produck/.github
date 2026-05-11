@@ -27,11 +27,20 @@ repositories in the produck organization.
 
 ## Core documents
 
-- AI collaboration: [docs/ai-collaboration.md](docs/ai-collaboration.md)
-- Commit convention: [docs/commit-convention.md](docs/commit-convention.md)
+- AI collaboration: [.github/distribution/produck/00-produck-base.instructions.md](.github/distribution/produck/00-produck-base.instructions.md)
+- Commit convention: [.github/distribution/produck/20-produck-commit.instructions.md](.github/distribution/produck/20-produck-commit.instructions.md)
 - Node.js init baseline:
-  [docs/nodejs-initialization.md](docs/nodejs-initialization.md)
+  [.github/distribution/produck/10-produck-node.instructions.md](.github/distribution/produck/10-produck-node.instructions.md)
 - PR template: [pull_request_template.md](pull_request_template.md)
+
+## Instruction source split
+
+- Downstream-distributable source:
+  `.github/distribution/produck/*.instructions.md`
+- Organization-only source:
+  `.github/instructions/produck/*.instructions.md`
+- NPM publish assets are generated from downstream-distributable source by
+  `packages/agent-toolkit/bin/build-publish-assets.mjs`
 
 ## How to use this repo
 

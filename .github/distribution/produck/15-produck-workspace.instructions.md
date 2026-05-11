@@ -1,8 +1,21 @@
+---
+applyTo: "**"
+---
+
+<!-- managed-by: @produck/agent-toolkit -->
+<!-- source: .github/distribution/produck/15-produck-workspace.instructions.md -->
 # Workspace Shared Configuration Guide
 
 ## Overview
 
 The Produck monorepo provides unified configuration across all packages for consistency and ease of maintenance.
+
+## Distribution classification
+
+This document is maintained directly as a downstream-distributable source.
+
+- Authoritative path:
+  `.github/distribution/produck/15-produck-workspace.instructions.md`
 
 ## Shared Configurations
 
@@ -100,7 +113,7 @@ export default [
 - All packages automatically inherit root patterns
 - Single maintenance point
 - No package-level overrides allowed
-- Per `docs/nodejs-initialization.md`: "Keep ignore rules centralized at repository root whenever possible"
+- Per organization baseline: keep ignore rules centralized at repository root whenever possible
 
 ## Root Workspace Scripts
 

@@ -15,7 +15,7 @@ Organization-level scope note:
 - Central package sources in this repository live under `packages/` for shared
   context and maintenance.
 - For scope details and copyable organization instruction text, see
-  [AI Collaboration](docs/ai-collaboration.md).
+  [AI Collaboration](.github/distribution/produck/00-produck-base.instructions.md).
 
 - Default to Chinese for explanations and discussion unless the repository or
   request requires another language.
@@ -188,7 +188,7 @@ If a repository provides more specific instructions, follow the repository
 instructions over this organization baseline.
 
 For Node.js repositories, follow [Node.js Initialization
-Baseline](docs/nodejs-initialization.md).
+Baseline](.github/distribution/produck/10-produck-node.instructions.md).
 This includes the root `.gitignore` baseline and mode-specific ignore strategy.
 For `.gitignore`, use the GitHub default Node.js template as baseline, then
 append team conventions.

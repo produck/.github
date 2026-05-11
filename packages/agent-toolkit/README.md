@@ -52,7 +52,7 @@ Legacy repository bootstrap behavior:
 Use organization source directory instead of built-in assets:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source path/to/org/.github/instructions/produck --force --prune
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source path/to/org/.github/distribution/produck --force --prune
 ```
 
 Built-in template location (for review and updates):
@@ -63,8 +63,17 @@ Built-in template location (for review and updates):
 Publish-time generated instruction assets:
 
 - `publish-assets/instructions/produck/*.instructions.md`
-- Generated from `docs/*.md` via `prepack` with per-file `applyTo`
+- Generated from `.github/distribution/produck/*.instructions.md` via
+  `prepack`
 - Included in npm package, ignored in git working tree
+
+Downstream source maintenance in policy repository:
+
+- Maintain source files directly under `.github/distribution/produck/*.instructions.md`
+
+Organization-only instruction source (not published):
+
+- `.github/instructions/produck/*.instructions.md`
 
 ## Local verification
 
