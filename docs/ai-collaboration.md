@@ -84,6 +84,19 @@ max_line_length = 80
 - If an exception applies, keep the exception and record it in change notes.
 - Do not include unrelated formatting-only changes in the same commit.
 
+## ESLint conventions
+
+- Repository owners generate `eslint.config.mjs` first (for example via
+  framework scaffolding or ESLint official initialization flow).
+- AI must not replace the existing config wholesale; it should only check the
+  current config and add missing `@produck/eslint-rules` integration.
+- `@produck/eslint-rules` is the organization-wide style consensus and should
+  be present in repository lint configuration.
+- Apply minimal patching only: keep existing repository/framework structure and
+  add the smallest necessary changes.
+- Repository-specific overrides are allowed, but should layer on top of
+  `@produck/eslint-rules` instead of bypassing it.
+
 ## Language conventions
 
 - Explanations, discussion, and review communication default to Chinese unless
