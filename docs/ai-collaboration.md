@@ -109,6 +109,26 @@ max_line_length = 80
 - In PR descriptions, summarize what changed, why it changed, how it was
   validated, and any known risks or follow-up work
 
+## Terminal long-output protocol
+
+When a command may produce large output (for example 10k+ lines), use a
+two-phase flow instead of shell pipelines like `| grep` or `| tail`.
+
+- Phase 1 (capture): run command and write full output to a file first.
+- Phase 2 (analyze): run a separate step to filter/summarize that file.
+
+Recommended local tools:
+
+- `node scripts/run-and-capture.mjs --out logs/run.log --cmd "<command>"`
+- `node scripts/summarize-log.mjs --file logs/run.log --last 120`
+- `node scripts/summarize-log.mjs --file logs/run.log --match "FAIL|ERROR"`
+
+Guardrails:
+
+- Always create output directories before capture.
+- Do not append fragile post-pipelines to the capture command.
+- If filtering fails, keep the captured raw log as the source of truth.
+
 ## Precedence
 
 If a repository provides more specific instructions, follow the repository

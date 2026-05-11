@@ -138,3 +138,22 @@ This includes the root `.gitignore` baseline and mode-specific ignore strategy.
 For `.gitignore`, use the GitHub default Node.js template as baseline, then
 append team conventions.
 Organization-approved team conventions include `*.ign*` and `*.gen*`.
+
+## Terminal workflow for large output
+
+For commands with very large output, avoid one-shot shell pipelines like
+`command | tail` or `command | grep`.
+
+Use a two-step flow:
+
+1. Capture all command output into a log file.
+2. Analyze the captured log in a separate command.
+
+Recommended commands:
+
+- `node scripts/run-and-capture.mjs --out logs/run.log --cmd "npm run test"`
+- `node scripts/summarize-log.mjs --file logs/run.log --last 120`
+- `node scripts/summarize-log.mjs --file logs/run.log --match "FAIL|ERROR"`
+
+This improves reliability when terminal sessions are non-interactive or have
+TTY/pipe limitations.
