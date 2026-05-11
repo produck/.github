@@ -16,11 +16,7 @@
     "pack:check": "npm pack --dry-run",
     "publish:dry-run": "npm publish --dry-run --access public",
     "publish:latest": "npm publish --access public",
-    "release": "node ./bin/release.mjs",
-    "release:patch": "npm run release -- patch",
-    "release:minor": "npm run release -- minor",
-    "release:major": "npm run release -- major",
-    "release:patch:publish": "npm run release -- patch --publish"
+    "release": "node ./bin/release.mjs"
   },
   "files": [
     "bin"

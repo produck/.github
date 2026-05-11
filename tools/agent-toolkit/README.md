@@ -56,18 +56,10 @@ Default choices:
 - patch
 - dry-run
 
-1) Bump + verify + dry-run (no publish):
+Interactive mode handles both:
 
-npm --prefix tools/agent-toolkit run release:patch
-
-2) Publish after confirmation:
-
-npm --prefix tools/agent-toolkit run release:patch:publish
-
-Alternative levels:
-
-- npm --prefix tools/agent-toolkit run release:minor
-- npm --prefix tools/agent-toolkit run release:major
+- version bump level (patch/minor/major)
+- action mode (dry-run or publish)
 
 Low-level commands (optional):
 
