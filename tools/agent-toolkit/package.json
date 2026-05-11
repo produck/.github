@@ -20,8 +20,7 @@
     "release:patch": "npm run release -- patch",
     "release:minor": "npm run release -- minor",
     "release:major": "npm run release -- major",
-    "release:patch:publish": "npm run release -- patch --publish",
-    "release:publish": "npm run release -- patch --publish"
+    "release:patch:publish": "npm run release -- patch --publish"
   },
   "files": [
     "bin"
