@@ -43,6 +43,11 @@ npm exec --package=@produck/agent-toolkit@latest \
   agent-toolkit sync-instructions --cwd . \
   --source path/to/org/.instructions.md --force
 
+Built-in template location (for review and updates):
+
+- `templates/default.instructions.md`
+- `templates/help/*.txt`
+
 ## Local verification
 
 From repository root:

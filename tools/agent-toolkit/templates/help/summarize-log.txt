@@ -1,0 +1,3 @@
+Usage:
+  agent-toolkit summarize-log --file <logFile>
+    [--last <lineCount>] [--match <regex>] [--max <lineCount>]

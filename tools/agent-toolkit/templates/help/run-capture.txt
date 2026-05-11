@@ -1,0 +1,3 @@
+Usage:
+  agent-toolkit run-capture --out <logFile> --cmd <command>
+    [--cwd <directory>] [--meta <metaFile>] [--allow-pipe]

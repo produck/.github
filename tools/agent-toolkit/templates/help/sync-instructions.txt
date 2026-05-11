@@ -1,0 +1,8 @@
+Usage:
+  agent-toolkit sync-instructions [--cwd <dir>] [--out <file>]
+    [--source <file>] [--force] [--dry-run]
+
+Behavior:
+  - Writes organization instruction entrypoint template to target file.
+  - Defaults to <cwd>/.instructions.md when --out is not provided.
+  - If target exists, command fails unless --force is set.

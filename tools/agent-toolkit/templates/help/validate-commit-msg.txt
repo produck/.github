@@ -1,0 +1,7 @@
+Usage:
+  agent-toolkit validate-commit-msg --file <message-file>
+
+Rules:
+  - Every line must start with [TAG]
+  - No empty lines are allowed
+  - Optional target form: [TAG] <target>: <summary>

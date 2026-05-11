@@ -1,0 +1,3 @@
+Usage:
+  agent-toolkit preflight [--cwd <dir>] [--require <path>] ...
+    [--ensure-dir <path>] ... [--json <file>]

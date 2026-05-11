@@ -19,7 +19,8 @@
     "release": "node ./bin/release.mjs"
   },
   "files": [
-    "bin"
+    "bin",
+    "templates"
   ],
   "publishConfig": {
     "access": "public"

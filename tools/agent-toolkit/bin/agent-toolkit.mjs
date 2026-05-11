@@ -1,10 +1,35 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
 const ALLOWED_TAGS = ['INIT', 'ADD', 'REMOVE', 'FIX', 'REFACTOR', 'UPGRADE'];
 const ALLOWED_TARGETS = ['docs', 'test', 'ci', 'deps', 'api', 'schema', 'infra'];
+const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const TEMPLATE_ROOT = path.resolve(SCRIPT_DIR, '../templates');
+const DEFAULT_INSTRUCTIONS_TEMPLATE_PATH = path.resolve(
+  TEMPLATE_ROOT,
+  'default.instructions.md',
+);
+
+function loadTemplateFile(relativePath) {
+  const templatePath = path.resolve(TEMPLATE_ROOT, relativePath);
+  if (!fs.existsSync(templatePath)) {
+    console.error(`Template file not found: ${templatePath}`);
+    process.exit(2);
+  }
+
+  return fs.readFileSync(templatePath, 'utf8');
+}
+
+function printTemplate(relativePath) {
+  let content = loadTemplateFile(relativePath);
+  if (!content.endsWith('\n')) {
+    content = `${content}\n`;
+  }
+  process.stdout.write(content);
+}
 
 function parseCommonArgs(argv) {
   const positional = [];
@@ -53,92 +78,36 @@ function hasFlag(options, key) {
 }
 
 function printMainHelp() {
-  console.log([
-    'agent-toolkit commands:',
-    '  preflight',
-    '  run-capture',
-    '  summarize-log',
-    '  validate-commit-msg',
-    '  sync-instructions',
-    '',
-    'Use:',
-    '  agent-toolkit <command> --help',
-  ].join('\n'));
+  printTemplate('help/main.txt');
 }
 
 function printPreflightHelp() {
-  console.log([
-    'Usage:',
-    '  agent-toolkit preflight [--cwd <dir>] [--require <path>] ...',
-    '    [--ensure-dir <path>] ... [--json <file>]',
-  ].join('\n'));
+  printTemplate('help/preflight.txt');
 }
 
 function printRunCaptureHelp() {
-  console.log([
-    'Usage:',
-    '  agent-toolkit run-capture --out <logFile> --cmd <command>',
-    '    [--cwd <directory>] [--meta <metaFile>] [--allow-pipe]',
-  ].join('\n'));
+  printTemplate('help/run-capture.txt');
 }
 
 function printSummarizeHelp() {
-  console.log([
-    'Usage:',
-    '  agent-toolkit summarize-log --file <logFile>',
-    '    [--last <lineCount>] [--match <regex>] [--max <lineCount>]',
-  ].join('\n'));
+  printTemplate('help/summarize-log.txt');
 }
 
 function printValidateHelp() {
-  console.log([
-    'Usage:',
-    '  agent-toolkit validate-commit-msg --file <message-file>',
-    '',
-    'Rules:',
-    '  - Every line must start with [TAG]',
-    '  - No empty lines are allowed',
-    '  - Optional target form: [TAG] <target>: <summary>',
-  ].join('\n'));
+  printTemplate('help/validate-commit-msg.txt');
 }
 
 function printSyncInstructionsHelp() {
-  console.log([
-    'Usage:',
-    '  agent-toolkit sync-instructions [--cwd <dir>] [--out <file>]',
-    '    [--source <file>] [--force] [--dry-run]',
-    '',
-    'Behavior:',
-    '  - Writes organization instruction entrypoint template to target file.',
-    '  - Defaults to <cwd>/.instructions.md when --out is not provided.',
-    '  - If target exists, command fails unless --force is set.',
-  ].join('\n'));
+  printTemplate('help/sync-instructions.txt');
 }
 
-const DEFAULT_INSTRUCTIONS_TEMPLATE = [
-  '# Organization Collaboration Instructions',
-  '',
-  'This repository follows organization-level AI and engineering rules.',
-  '',
-  '## Required Rules',
-  '',
-  '- Commit message format must follow bracketed TAG policy.',
-  '- Keep root .editorconfig aligned with organization baseline:',
-  '  - If missing, create from organization sample.',
-  '  - If present, add missing required keys only (minimal merge).',
-  '- Repository owners generate and own eslint.config.mjs.',
-  '- AI must not rewrite full eslint config; only add missing',
-  '  @produck/eslint-rules integration as minimal patch.',
-  '- Repository-specific ESLint overrides must layer on top of',
-  '  @produck/eslint-rules.',
-  '',
-  '## References',
-  '',
-  '- docs/ai-collaboration.md',
-  '- docs/commit-convention.md',
-  '- docs/nodejs-initialization.md',
-  '',
-].join('\n');
+function loadDefaultInstructionsTemplate() {
+  let content = loadTemplateFile('default.instructions.md');
+  if (!content.endsWith('\n')) {
+    content = `${content}\n`;
+  }
+  return content;
+}
 
 function runPreflight(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
@@ -409,7 +378,7 @@ function runSyncInstructions(options) {
   }
 
   const outPath = path.resolve(cwd, outArg);
-  let content = DEFAULT_INSTRUCTIONS_TEMPLATE;
+  let content = loadDefaultInstructionsTemplate();
 
   if (sourceArg) {
     const sourcePath = path.resolve(cwd, sourceArg);
@@ -433,7 +402,9 @@ function runSyncInstructions(options) {
   const report = {
     cwd,
     outPath,
-    source: sourceArg ? path.resolve(cwd, sourceArg) : 'built-in-template',
+    source: sourceArg
+      ? path.resolve(cwd, sourceArg)
+      : DEFAULT_INSTRUCTIONS_TEMPLATE_PATH,
     exists,
     overwritten: exists && force,
     dryRun,

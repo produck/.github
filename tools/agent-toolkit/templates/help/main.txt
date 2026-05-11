@@ -1,0 +1,9 @@
+agent-toolkit commands:
+  preflight
+  run-capture
+  summarize-log
+  validate-commit-msg
+  sync-instructions
+
+Use:
+  agent-toolkit <command> --help
