@@ -53,6 +53,12 @@ Built-in template location (for review and updates):
 - `templates/default.instructions.md`
 - `templates/help/*.txt`
 
+Publish-time generated instruction assets:
+
+- `publish-assets/instructions/org.instructions.md`
+- Generated from `docs/*.md` via `prepack`
+- Included in npm package, ignored in git working tree
+
 ## Local verification
 
 From repository root:

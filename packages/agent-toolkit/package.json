@@ -12,12 +12,14 @@
     "agent-toolkit": "bin/agent-toolkit.mjs"
   },
   "scripts": {
+    "prepack": "node ./bin/build-publish-assets.mjs",
     "verify": "node ./bin/agent-toolkit.mjs --help && node ./bin/agent-toolkit.mjs preflight --cwd . --require package.json",
     "pack:check": "npm pack --dry-run"
   },
   "files": [
     "bin",
-    "templates"
+    "templates",
+    "publish-assets"
   ],
   "publishConfig": {
     "access": "public"
