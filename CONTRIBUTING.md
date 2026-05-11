@@ -51,7 +51,10 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+max_line_length = 80
 ```
+
+- Organization-wide requirement: all Markdown files should keep each line at 80 characters or fewer.
 
 Language conventions:
 
@@ -67,8 +70,13 @@ Use bracketed commit style:
 
 - `[TAG] summary`
 
-Allowed tags are `[INIT]`, `[ADDED]`, `[REMOVED]`, `[FIXED]`, `[REFACTOR]`, and `[UPGRADE]`.
+Allowed tags are `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, and `[UPGRADE]`.
+Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` -> `[REMOVE]`, and `[FIXED]` -> `[FIX]`.
 Tags must be uppercase, and bracketed summaries must be in English.
+Summary may optionally use a target noun prefix: `[TAG] <target>: <summary>`.
+Allowed targets are `docs`, `test`, `ci`, `deps`, `api`, `schema`, and `infra`.
+If target syntax is used, target must be wrapped in angle brackets and must be from the allowed target list.
+Targets are summary nouns, not commit tags.
 For grouped notes in monorepos, package/workspace labels can appear as section headers outside each message line.
 For non-monorepo repositories, do not use package/workspace section headers; use `[TAG] summary` directly.
 Special rule for `[UPGRADE]`:
@@ -77,15 +85,19 @@ Special rule for `[UPGRADE]`:
 
 Examples:
 
-- `[FIXED] race conditions in createTeam/acceptInvitation/acceptRequest by using one transaction`
-- `[ADDED] screenshot-upload-fail cross-endpoint test covering uploadFile response.ok branch`
-- `[REMOVED] deprecated score-field prompt template`
+- `[FIX] race conditions in createTeam/acceptInvitation/acceptRequest by using one transaction`
+- `[ADD] screenshot-upload-fail cross-endpoint test covering uploadFile response.ok branch`
+- `[REMOVE] deprecated score-field prompt template`
+- `[ADD] <docs>: onboarding section for standalone mode`
+- `[FIX] <test>: cover uploadFile response.ok branch`
 
 Avoid vague messages such as:
 
-- `[ADDED] update things`
-- `[FIXED] issue`
+- `[ADD] update things`
+- `[FIX] issue`
 - `[UPGRADE] dependencies` when the commit includes specific artifact/call updates that should be named
+- `[ADD] docs: ...` (target syntax without angle brackets)
+- `[ADD] <feature>: ...` (target outside allowed target list)
 
 ## Pull requests
 

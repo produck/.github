@@ -58,9 +58,11 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+max_line_length = 80
 ```
 
 - Repository-specific exceptions are allowed but must be documented in repository instructions.
+- Organization-wide requirement: all Markdown files should keep each line at 80 characters or fewer.
 
 ## Language conventions
 
@@ -73,7 +75,11 @@ trim_trailing_whitespace = false
 ## Commit and PR conventions
 
 - Commit messages use bracketed tags: `[TAG] summary`.
-- Use uppercase tags from this whitelist: `[INIT]`, `[ADDED]`, `[REMOVED]`, `[FIXED]`, `[REFACTOR]`, `[UPGRADE]`.
+- Use uppercase tags from this whitelist: `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`, `[REFACTOR]`, `[UPGRADE]`.
+- Legacy tag mapping for migration is `[ADDED]` -> `[ADD]`, `[REMOVED]` -> `[REMOVE]`, and `[FIXED]` -> `[FIX]`.
+- To express content domain, summary may use target syntax: `[TAG] <target>: <summary>`.
+- Allowed targets are `docs`, `test`, `ci`, `deps`, `api`, `schema`, and `infra`.
+- If target syntax is used, target must be wrapped in angle brackets and must be from the allowed target list.
 - For non-monorepo repositories, use `[TAG] summary` directly (no package/workspace section headers).
 - Bracketed commit summaries should be in English
 - `[UPGRADE] deps` is allowed for pure dependency upgrades; if IFF artifacts or IPC-related artifacts/calls are updated, the summary must name those updates explicitly.
