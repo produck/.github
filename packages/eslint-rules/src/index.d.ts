@@ -8,15 +8,9 @@ export const config: EsLint.Linter.Config;
 
 /**
  * Generate an ESLint config that excludes paths
- * listed in the project's `.gitignore` file.
- * Requires @eslint/config-helpers as peer dependency.
+ * listed in `.gitignore` file.
  *
- * @param eslintConfigPath - Pass `import.meta.url`
- *   to locate the `.gitignore` file relative to
- *   the project root.
- * @returns Promise resolving to ESLint config with gitignore exclusions
+ * @param eslintConfigPath - Pass import.meta.url to
+ * locate `.gitignore` relative to project root.
  */
-export function excludeGitIgnore(
-	eslintConfigPath: string,
-): Promise<EsLint.Linter.Config>;
-
+export function excludeGitIgnore(eslintConfigPath: string): EsLint.Linter.Config;
