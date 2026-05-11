@@ -40,6 +40,10 @@ npm --prefix tools/agent-toolkit run pack:check
 
 ## Manual publish
 
+Prepare next patch release (bump + verify + dry-run):
+
+npm --prefix tools/agent-toolkit run release:patch
+
 Dry-run publish:
 
 npm --prefix tools/agent-toolkit run publish:dry-run
@@ -47,6 +51,10 @@ npm --prefix tools/agent-toolkit run publish:dry-run
 Publish latest:
 
 npm --prefix tools/agent-toolkit run publish:latest
+
+Publish with release guard (verify + publish):
+
+npm --prefix tools/agent-toolkit run release:publish
 
 ## GitHub workflow
 
