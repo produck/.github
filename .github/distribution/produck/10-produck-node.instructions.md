@@ -167,6 +167,11 @@ Script placement:
 - `publish` may be defined at root or package level based on release workflow.
 - Workspace subpackage `coverage` scripts must be synchronized by
   `agent-toolkit sync-coverage-script`.
+- Root `package.json` must define a `produck:baseline` script for organization
+  baseline enforcement:
+  ```json
+  "produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd . --workspace"
+  ```
 
 Release tooling policy (required):
 
@@ -226,6 +231,11 @@ Script placement:
 
 - The repository root `package.json` must define `deps:install`, `test`,
   `coverage`, `lint`, and `publish`.
+- Root `package.json` must define a `produck:baseline` script for organization
+  baseline enforcement:
+  ```json
+  "produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd ."
+  ```
 
 Ignore strategy:
 
