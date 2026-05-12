@@ -8,12 +8,14 @@
     "packages/eslint-rules"
   ],
   "scripts": {
+    "prepare": "husky",
     "deps:install": "npm install",
     "test": "npm run test --workspaces --if-present",
     "coverage": "npm run coverage --workspaces --if-present",
     "lint": "eslint --fix . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "precommit:check": "npm run format:check && npm run lint",
     "type-check": "tsc --noEmit",
     "publish:checks": "npm run format:check && npm run test",
     "publish": "npm run publish:checks && node ./scripts/lerna-publish.mjs",
@@ -32,6 +34,7 @@
     "@types/node": "^25.6.2",
     "eslint": "^10.3.0",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "lerna": "^9.0.7",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
