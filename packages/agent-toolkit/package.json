@@ -17,7 +17,8 @@
     "coverage:check": "npm exec --yes -- c8 --check-coverage --lines 100 --functions 100 --branches 100 --statements 100 node --test test/index.mjs",
     "test": "node --test test/index.mjs",
     "verify": "node ./bin/agent-toolkit.mjs --help && node ./bin/agent-toolkit.mjs preflight --cwd . --require package.json",
-    "pack:check": "npm pack --dry-run"
+    "pack:check": "npm pack --dry-run",
+    "produck:coverage": "c8@11.0.0 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "files": [
     "bin",
@@ -30,5 +31,8 @@
     "node": ">=18.0.0"
   },
   "license": "MIT",
-  "gitHead": "c041717449d8b49a0bd300843b9b1053955e3aa9"
+  "gitHead": "c041717449d8b49a0bd300843b9b1053955e3aa9",
+  "devDependencies": {
+    "c8": "11.0.0"
+  }
 }

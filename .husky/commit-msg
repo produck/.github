@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-node packages/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"
+node ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"

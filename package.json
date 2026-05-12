@@ -24,7 +24,8 @@
     "toolkit:verify": "npm --workspace @produck/agent-toolkit run verify",
     "toolkit:pack-check": "npm --workspace @produck/agent-toolkit run pack:check",
     "eslint-rules:verify": "npm --workspace @produck/eslint-rules run verify",
-    "eslint-rules:pack-check": "npm --workspace @produck/eslint-rules run pack:check"
+    "eslint-rules:pack-check": "npm --workspace @produck/eslint-rules run pack:check",
+    "produck:precommit-check": "npm run format:check && npm run lint"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -35,10 +36,12 @@
     "@types/node": "^25.6.2",
     "eslint": "^10.3.0",
     "globals": "^17.6.0",
-    "husky": "^9.1.7",
-    "lerna": "^9.0.7",
+    "husky": "9.1.7",
+    "lerna": "9.0.7",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.2"
+    "typescript-eslint": "^8.59.2",
+    "c8": "11.0.0",
+    "@produck/agent-toolkit": "0.3.3"
   }
 }

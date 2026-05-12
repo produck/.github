@@ -27,7 +27,8 @@
     "test": "node --test test/index.mjs",
     "coverage": "node --test --experimental-test-coverage test/index.mjs",
     "lint": "eslint src test",
-    "verify": "node -e \"import('./src/index.mjs').then(() => console.log('[eslint-rules] package loaded successfully')).catch((e) => { console.error(e); process.exit(1); })\""
+    "verify": "node -e \"import('./src/index.mjs').then(() => console.log('[eslint-rules] package loaded successfully')).catch((e) => { console.error(e); process.exit(1); })\"",
+    "produck:coverage": "c8@11.0.0 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "keywords": [
     "eslint",
@@ -37,5 +38,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "c8": "11.0.0"
   }
 }

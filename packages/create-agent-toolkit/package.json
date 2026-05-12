@@ -12,7 +12,8 @@
     "create-agent-toolkit": "bin/create-agent-toolkit.mjs"
   },
   "scripts": {
-    "pack:check": "npm pack --dry-run"
+    "pack:check": "npm pack --dry-run",
+    "produck:coverage": "c8@11.0.0 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "files": [
     "bin"
@@ -26,5 +27,8 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "c8": "11.0.0"
+  }
 }

@@ -98,15 +98,10 @@ export function runEnforceNodeBaseline(options) {
     syncInstructionsArgs.push('--dry-run');
   }
 
-  const preflightArgs = [
-    'preflight',
-    '--cwd',
-    cwd,
-    '--require',
-    'package.json',
-    '--check-workspace-package-json',
-    'package.json',
-  ];
+  const preflightArgs = ['preflight', '--cwd', cwd, '--require', 'package.json'];
+  if (mode !== 'sync') {
+    preflightArgs.push('--check-workspace-package-json', 'package.json');
+  }
 
   const syncCoverageArgs = ['sync-coverage-script', '--cwd', cwd];
   for (const workspacePath of workspaces) {
