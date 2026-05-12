@@ -45,8 +45,11 @@ Notes:
     version specified in `tooling-version-baseline.json`.
   - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
     in shared scripts/CI.
-  - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned
-    to organization baseline fixed versions via `agent-toolkit sync-husky-hooks`.
+  - Root local governance must pin `devDependencies.c8`,
+    `devDependencies.husky`, `devDependencies.lerna`,
+    `devDependencies.@produck/eslint-rules`, and
+    `devDependencies.@produck/agent-toolkit` via
+    `agent-toolkit sync-husky-hooks`.
 
 - Testing strategy and framework are repository-defined.
 - `test` script implementation is repository-defined and is not overwritten by
@@ -160,14 +163,20 @@ Script placement:
   `npm run produck:format && npm run produck:lint`.
 - Root `package.json` must reserve `prepare` for husky setup with required
   value: `husky`.
+- Root `package.json` must reserve `produck:format` and `produck:lint` for
+  organization-controlled format/lint gates.
 - `publish` may be defined at root or package level based on release workflow.
 - Workspace subpackage `produck:coverage` scripts must be synchronized by
   `agent-toolkit sync-coverage-script`.
 - Root local hook governance must be synchronized by
   `agent-toolkit sync-husky-hooks`.
 - Root local hook governance must pin root `devDependencies.c8`,
-  `devDependencies.husky`, `devDependencies.lerna`, and
+  `devDependencies.husky`, `devDependencies.lerna`,
+  `devDependencies.@produck/eslint-rules`, and
   `devDependencies.@produck/agent-toolkit` via
+  `agent-toolkit sync-husky-hooks`.
+- Root local hook governance must initialize `.prettierrc` and
+  `eslint.config.mjs` (with `@produck/eslint-rules` integration) via
   `agent-toolkit sync-husky-hooks`.
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:

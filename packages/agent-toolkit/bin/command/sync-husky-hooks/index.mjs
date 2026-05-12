@@ -11,6 +11,8 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const TOOLKIT_PACKAGE_JSON = path.resolve(PACKAGE_ROOT, 'package.json');
+const PRETTIER_CONFIG_FILE = '.prettierrc';
+const ESLINT_CONFIG_FILE = 'eslint.config.mjs';
 const TOOLING_BASELINE_CANDIDATE_PATHS = [
   path.resolve(REPO_ROOT, '.github/distribution/produck/tooling-version-baseline.json'),
   path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
@@ -32,6 +34,34 @@ const REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run
 const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:precommit-check\n';
 const REQUIRED_COMMIT_MSG_HOOK =
   '#!/usr/bin/env sh\nnode ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"\n';
+const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
+  {
+    semi: true,
+    singleQuote: true,
+    tabWidth: 2,
+    useTabs: false,
+    trailingComma: 'all',
+    bracketSpacing: true,
+    arrowParens: 'always',
+    printWidth: 100,
+  },
+  null,
+  2,
+)}\n`;
+const REQUIRED_ESLINT_CONFIG = `import globals from 'globals';
+import pluginJs from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import * as ProduckRule from '@produck/eslint-rules';
+
+export default [
+  { files: ['**/*.{js,mjs,cjs,ts,mts}'] },
+  { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
+  pluginJs.configs.recommended,
+  ...tseslint.configs.recommended,
+  ProduckRule.config,
+  ProduckRule.excludeGitIgnore(import.meta.url),
+];
+`;
 
 export function printSyncHuskyHooksHelp() {
   printTextResource(HELP_FILE);
@@ -54,6 +84,28 @@ function getRequiredToolkitDevDependency() {
 
   const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   const latestResult = spawnSync(npmCommand, ['view', '@produck/agent-toolkit', 'version'], {
+    encoding: 'utf8',
+  });
+
+  const latestVersion = String(latestResult.stdout || '').trim();
+  if (latestResult.status === 0 && latestVersion) {
+    return latestVersion;
+  }
+
+  const pkg = parseJsonFile(TOOLKIT_PACKAGE_JSON, 'Toolkit package.json');
+  const version = typeof pkg.version === 'string' ? pkg.version.trim() : '';
+
+  if (!version) {
+    console.error(`Toolkit package version is missing: ${TOOLKIT_PACKAGE_JSON}`);
+    process.exit(2);
+  }
+
+  return version;
+}
+
+function getRequiredEslintRulesDevDependency() {
+  const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+  const latestResult = spawnSync(npmCommand, ['view', '@produck/eslint-rules', 'version'], {
     encoding: 'utf8',
   });
 
@@ -156,6 +208,10 @@ function buildDevDependencyState(pkg) {
       c8: typeof devDependencies.c8 === 'string' ? devDependencies.c8 : null,
       husky: typeof devDependencies.husky === 'string' ? devDependencies.husky : null,
       lerna: typeof devDependencies.lerna === 'string' ? devDependencies.lerna : null,
+      '@produck/eslint-rules':
+        typeof devDependencies['@produck/eslint-rules'] === 'string'
+          ? devDependencies['@produck/eslint-rules']
+          : null,
       '@produck/agent-toolkit':
         typeof devDependencies['@produck/agent-toolkit'] === 'string'
           ? devDependencies['@produck/agent-toolkit']
@@ -185,19 +241,25 @@ export function runSyncHuskyHooks(options) {
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const toolingBaseline = loadToolingBaseline();
   const requiredToolkitDependency = getRequiredToolkitDevDependency();
+  const requiredEslintRulesDependency = getRequiredEslintRulesDevDependency();
   const requiredDevDependencies = {
     c8: toolingBaseline.c8Version,
     husky: toolingBaseline.huskyVersion,
     lerna: toolingBaseline.lernaVersion,
+    '@produck/eslint-rules': requiredEslintRulesDependency,
     '@produck/agent-toolkit': requiredToolkitDependency,
   };
   const scriptState = buildScriptState(pkg);
   const dependencyState = buildDevDependencyState(pkg);
 
   const huskyDir = path.resolve(cwd, '.husky');
+  const prettierConfigPath = path.resolve(cwd, PRETTIER_CONFIG_FILE);
+  const eslintConfigPath = path.resolve(cwd, ESLINT_CONFIG_FILE);
   const preCommitHookPath = path.resolve(huskyDir, 'pre-commit');
   const commitMsgHookPath = path.resolve(huskyDir, 'commit-msg');
 
+  const previousPrettierConfig = readFileIfExists(prettierConfigPath);
+  const previousEslintConfig = readFileIfExists(eslintConfigPath);
   const previousPreCommitHook = readFileIfExists(preCommitHookPath);
   const previousCommitMsgHook = readFileIfExists(commitMsgHookPath);
 
@@ -212,6 +274,8 @@ export function runSyncHuskyHooks(options) {
       return dependencyState.previousManaged[name] === version;
     },
   );
+  const matchesRequiredPrettierConfig = previousPrettierConfig === REQUIRED_PRETTIER_CONFIG;
+  const matchesRequiredEslintConfig = previousEslintConfig === REQUIRED_ESLINT_CONFIG;
   const matchesRequiredPreCommitHook = previousPreCommitHook === REQUIRED_PRE_COMMIT_HOOK;
   const matchesRequiredCommitMsgHook = previousCommitMsgHook === REQUIRED_COMMIT_MSG_HOOK;
 
@@ -222,6 +286,8 @@ export function runSyncHuskyHooks(options) {
     !matchesRequiredLint ||
     !matchesRequiredPrecommitCheck ||
     !matchesRequiredManagedDevDependencies ||
+    !matchesRequiredPrettierConfig ||
+    !matchesRequiredEslintConfig ||
     !matchesRequiredPreCommitHook ||
     !matchesRequiredCommitMsgHook;
 
@@ -240,6 +306,8 @@ export function runSyncHuskyHooks(options) {
     pkg.devDependencies = dependencyState.devDependencies;
 
     fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(prettierConfigPath, REQUIRED_PRETTIER_CONFIG, 'utf8');
+    fs.writeFileSync(eslintConfigPath, REQUIRED_ESLINT_CONFIG, 'utf8');
 
     fs.mkdirSync(huskyDir, { recursive: true });
     fs.writeFileSync(preCommitHookPath, REQUIRED_PRE_COMMIT_HOOK, 'utf8');
@@ -263,6 +331,8 @@ export function runSyncHuskyHooks(options) {
       precommitCheckScriptKey: REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY,
       precommitCheckScriptValue: REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE,
       managedDevDependencies: requiredDevDependencies,
+      prettierConfigPath: path.relative(cwd, prettierConfigPath),
+      eslintConfigPath: path.relative(cwd, eslintConfigPath),
       preCommitHookPath: path.relative(cwd, preCommitHookPath),
       commitMsgHookPath: path.relative(cwd, commitMsgHookPath),
     },
@@ -273,6 +343,8 @@ export function runSyncHuskyHooks(options) {
       matchesRequiredLintBefore: matchesRequiredLint,
       matchesRequiredPrecommitCheckBefore: matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesBefore: matchesRequiredManagedDevDependencies,
+      matchesRequiredPrettierConfigBefore: matchesRequiredPrettierConfig,
+      matchesRequiredEslintConfigBefore: matchesRequiredEslintConfig,
       matchesRequiredPreCommitHookBefore: matchesRequiredPreCommitHook,
       matchesRequiredCommitMsgHookBefore: matchesRequiredCommitMsgHook,
       matchesRequiredPrepareAfter:
@@ -285,6 +357,10 @@ export function runSyncHuskyHooks(options) {
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredManagedDevDependencies,
+      matchesRequiredPrettierConfigAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredPrettierConfig,
+      matchesRequiredEslintConfigAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredEslintConfig,
       matchesRequiredPreCommitHookAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPreCommitHook,
       matchesRequiredCommitMsgHookAfter:

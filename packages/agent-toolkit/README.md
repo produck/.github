@@ -70,7 +70,9 @@ failure:
 3. `sync-coverage-script` — deploy pinned `produck:coverage` script and `c8`
    devDependency into each workspace package
 4. `sync-husky-hooks` — deploy `.husky/pre-commit` and `.husky/commit-msg`,
-   and pin `c8`, `husky`, `lerna`, `@produck/agent-toolkit` in root
+   initialize `.prettierrc` and `eslint.config.mjs` (with
+   `@produck/eslint-rules`), and pin `c8`, `husky`, `lerna`,
+   `@produck/eslint-rules`, `@produck/agent-toolkit` in root
    `devDependencies`
 
 Add to downstream repository root `package.json` for one-command enforcement:
@@ -134,9 +136,11 @@ Deploy organization local anti-drift husky hooks to repository root:
 npm exec -- agent-toolkit sync-husky-hooks --cwd .
 ```
 
-This command pins root local hook dependencies (`c8`, `husky`, `lerna`, and
-`@produck/agent-toolkit`) to organization baseline fixed versions and syncs
-`.husky/pre-commit` and `.husky/commit-msg`.
+This command initializes root `.prettierrc` and `eslint.config.mjs` (using
+`@produck/eslint-rules`), pins root local hook dependencies (`c8`, `husky`,
+`lerna`, `@produck/eslint-rules`, and `@produck/agent-toolkit`) to
+organization baseline fixed versions, and syncs `.husky/pre-commit` and
+`.husky/commit-msg`.
 
 Validate commit message format:
 

@@ -11,6 +11,34 @@ const REQUIRED_LINT_SCRIPT =
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT = 'npm run produck:format && npm run produck:lint';
 const REQUIRED_BASELINE_SCRIPT =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
+const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
+  {
+    semi: true,
+    singleQuote: true,
+    tabWidth: 2,
+    useTabs: false,
+    trailingComma: 'all',
+    bracketSpacing: true,
+    arrowParens: 'always',
+    printWidth: 100,
+  },
+  null,
+  2,
+)}\n`;
+const REQUIRED_ESLINT_CONFIG = `import globals from 'globals';
+import pluginJs from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import * as ProduckRule from '@produck/eslint-rules';
+
+export default [
+  { files: ['**/*.{js,mjs,cjs,ts,mts}'] },
+  { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
+  pluginJs.configs.recommended,
+  ...tseslint.configs.recommended,
+  ProduckRule.config,
+  ProduckRule.excludeGitIgnore(import.meta.url),
+];
+`;
 const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:precommit-check\n';
 const REQUIRED_COMMIT_MSG_HOOK =
   '#!/usr/bin/env sh\nnode ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"\n';
@@ -25,6 +53,9 @@ describe('sync-husky-hooks command', () => {
     assert.match(result.stdout, /produck:format/);
     assert.match(result.stdout, /produck:lint/);
     assert.match(result.stdout, /produck:precommit-check/);
+    assert.match(result.stdout, /\.prettierrc/);
+    assert.match(result.stdout, /eslint\.config\.mjs/);
+    assert.match(result.stdout, /@produck\/eslint-rules/);
   });
 
   it('fails when --cwd does not exist', () => {
@@ -54,7 +85,13 @@ describe('sync-husky-hooks command', () => {
       assert.match(pkg.devDependencies.husky, /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies.c8, /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies.lerna, /^\d+\.\d+\.\d+$/);
+      assert.match(pkg.devDependencies['@produck/eslint-rules'], /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies['@produck/agent-toolkit'], /^\d+\.\d+\.\d+$/);
+
+      const prettierConfig = fs.readFileSync(path.join(tempDir, '.prettierrc'), 'utf8');
+      const eslintConfig = fs.readFileSync(path.join(tempDir, 'eslint.config.mjs'), 'utf8');
+      assert.equal(prettierConfig, REQUIRED_PRETTIER_CONFIG);
+      assert.equal(eslintConfig, REQUIRED_ESLINT_CONFIG);
 
       const preCommit = fs.readFileSync(path.join(tempDir, '.husky/pre-commit'), 'utf8');
       const commitMsg = fs.readFileSync(path.join(tempDir, '.husky/commit-msg'), 'utf8');
@@ -70,6 +107,10 @@ describe('sync-husky-hooks command', () => {
       assert.equal(report.required.baselineScriptValue, REQUIRED_BASELINE_SCRIPT);
       assert.equal(report.required.formatScriptValue, REQUIRED_FORMAT_SCRIPT);
       assert.equal(report.required.lintScriptValue, REQUIRED_LINT_SCRIPT);
+      assert.equal(report.status.matchesRequiredPrettierConfigAfter, true);
+      assert.equal(report.status.matchesRequiredEslintConfigAfter, true);
+      assert.equal(report.required.prettierConfigPath, '.prettierrc');
+      assert.equal(report.required.eslintConfigPath, 'eslint.config.mjs');
       assert.match(
         report.required.managedDevDependencies['@produck/agent-toolkit'],
         /^\d+\.\d+\.\d+$/,
