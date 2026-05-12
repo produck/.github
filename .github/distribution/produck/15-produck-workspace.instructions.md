@@ -160,7 +160,7 @@ npm run coverage
   `.github/distribution/produck/tooling-version-baseline.json`.
 - `lerna` execution version is governed at organization level, not per
   repository.
-- Required execution baseline: `lerna@9.0.7`.
+- Required execution baseline: version specified in `tooling-version-baseline.json`.
 - Required `lerna` invocation:
   `npm exec -- lerna <subcommand>`.
 - Shared scripts/CI must not use unversioned `npx lerna` or `lerna@latest`.
@@ -172,10 +172,10 @@ npm run coverage
 - Root anti-drift local hook baseline is organization-governed.
 - Deploy/repair root local hooks via central remediation command:
   `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
-- Deployed coverage scripts use local fixed baseline `devDependencies.c8`
-  version `11.0.0` in each governed workspace package.
-- Deployed local hook baseline uses root `devDependencies.husky` fixed version
-  `^9.1.7`.
+- Deployed coverage scripts use the `c8` version specified in
+  `tooling-version-baseline.json` for each governed workspace package.
+- Deployed local hook baseline uses the `husky` version specified in
+  `tooling-version-baseline.json` for root `devDependencies.husky`.
 - Deployed local hook baseline also pins root
   `devDependencies.@produck/agent-toolkit` to the fixed version managed by the organization baseline.
 - Shared scripts/CI must not use unversioned `npx c8` or `c8@latest`.

@@ -151,9 +151,6 @@ max_line_length = 80
 - For non-monorepo repositories, use `[TAG] summary` directly (no
   package/workspace section headers).
 - Bracketed commit summaries should be in English
-- `[UPGRADE] deps` is allowed for pure dependency upgrades; if IFF artifacts or
-  IPC-related artifacts/calls are updated, the summary must name those updates
-  explicitly.
 - PR title format is repository-defined; no organization-level title format
   restriction
 - In PR descriptions, summarize what changed, why it changed, how it was

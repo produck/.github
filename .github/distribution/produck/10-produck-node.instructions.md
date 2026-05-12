@@ -41,8 +41,8 @@ Notes:
     `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
   - Use central remediation command to deploy local anti-drift hook baseline:
     `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
-  - `c8` execution baseline for deployed coverage scripts is fixed to local
-    workspace `devDependencies.c8` version `11.0.0`.
+  - `c8` execution baseline for deployed coverage scripts is fixed to the
+    version specified in `tooling-version-baseline.json`.
   - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
     in shared scripts/CI.
   - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned
@@ -182,7 +182,7 @@ Release tooling policy (required):
   repository.
 - Source of truth for `lerna` version baseline:
   `.github/distribution/produck/tooling-version-baseline.json`.
-- Required execution baseline: `lerna@9.0.7`.
+- Required execution baseline: version specified in `tooling-version-baseline.json`.
 - Required invocation:
   `npm exec -- lerna <subcommand>`.
 - Downstream repositories must not use unversioned `npx lerna` or
