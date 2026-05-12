@@ -1,0 +1,30 @@
+{
+  "name": "@produck/create-agent-toolkit",
+  "version": "0.1.0",
+  "description": "Bootstrap downstream repositories with the produck organization baseline",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/produck/.github.git",
+    "directory": "packages/create-agent-toolkit"
+  },
+  "bin": {
+    "create-agent-toolkit": "bin/create-agent-toolkit.mjs"
+  },
+  "scripts": {
+    "pack:check": "npm pack --dry-run"
+  },
+  "files": [
+    "bin"
+  ],
+  "dependencies": {
+    "@produck/agent-toolkit": ">=0.3.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

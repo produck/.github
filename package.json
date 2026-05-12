@@ -5,6 +5,7 @@
   "description": "Produck organization policy repository monorepo",
   "workspaces": [
     "packages/agent-toolkit",
+    "packages/create-agent-toolkit",
     "packages/eslint-rules"
   ],
   "scripts": {

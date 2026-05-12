@@ -2,6 +2,40 @@
 
 Central CLI toolkit for organization-level AI execution workflows.
 
+## First-time bootstrap (downstream repositories)
+
+For a new or existing downstream repository that has not yet applied the
+organization baseline, run:
+
+```
+npm create @produck/agent-toolkit@latest
+```
+
+This command installs `@produck/create-agent-toolkit` and runs
+`enforce-node-baseline` in the current directory. No prior installation is
+required — npm handles the download automatically.
+
+What it does (in order):
+
+1. Syncs organization AI instruction files into `.github/instructions/produck/`
+2. Runs preflight to verify required files and directories
+3. Deploys the pinned `produck:coverage` script and `c8` devDependency
+4. Deploys `.husky/pre-commit` and `.husky/commit-msg`, and pins `c8`, `husky`,
+   `lerna`, `@produck/agent-toolkit` in root `devDependencies`
+
+After running, add the persistent enforcement entry to the repository
+`package.json`:
+
+```json
+"produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd ."
+```
+
+Then future enforcement runs via:
+
+```
+npm run produck:baseline
+```
+
 ## Commands
 
 - agent-toolkit enforce-node-baseline
