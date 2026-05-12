@@ -5,8 +5,9 @@ import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
-const REQUIRED_FORMAT_SCRIPT = 'npm run format:check && npm run format --if-present';
-const REQUIRED_LINT_SCRIPT = 'npm run lint';
+const REQUIRED_FORMAT_SCRIPT = 'npm exec -- prettier --check . && npm run format --if-present';
+const REQUIRED_LINT_SCRIPT =
+  'npm exec -- eslint --fix . --max-warnings=0 && npm run lint --if-present';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT = 'npm run produck:format && npm run produck:lint';
 const REQUIRED_BASELINE_SCRIPT =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';

@@ -21,9 +21,11 @@ const REQUIRED_BASELINE_SCRIPT_KEY = 'produck:baseline';
 const REQUIRED_BASELINE_SCRIPT_VALUE =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
 const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
-const REQUIRED_FORMAT_SCRIPT_VALUE = 'npm run format:check && npm run format --if-present';
+const REQUIRED_FORMAT_SCRIPT_VALUE =
+  'npm exec -- prettier --check . && npm run format --if-present';
 const REQUIRED_LINT_SCRIPT_KEY = 'produck:lint';
-const REQUIRED_LINT_SCRIPT_VALUE = 'npm run lint';
+const REQUIRED_LINT_SCRIPT_VALUE =
+  'npm exec -- eslint --fix . --max-warnings=0 && npm run lint --if-present';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY = 'produck:precommit-check';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run produck:lint';
 
