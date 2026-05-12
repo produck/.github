@@ -17,6 +17,9 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
 ];
 
 const REQUIRED_PREPARE_SCRIPT = 'husky';
+const REQUIRED_BASELINE_SCRIPT_KEY = 'produck:baseline';
+const REQUIRED_BASELINE_SCRIPT_VALUE =
+  'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY = 'produck:precommit-check';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE = 'npm run format:check && npm run lint';
 
@@ -114,6 +117,10 @@ function buildScriptState(pkg) {
   return {
     scripts,
     previousPrepare: typeof scripts.prepare === 'string' ? scripts.prepare : null,
+    previousBaseline:
+      typeof scripts[REQUIRED_BASELINE_SCRIPT_KEY] === 'string'
+        ? scripts[REQUIRED_BASELINE_SCRIPT_KEY]
+        : null,
     previousPrecommitCheck:
       typeof scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] === 'string'
         ? scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY]
@@ -181,6 +188,7 @@ export function runSyncHuskyHooks(options) {
   const previousCommitMsgHook = readFileIfExists(commitMsgHookPath);
 
   const matchesRequiredPrepare = scriptState.previousPrepare === REQUIRED_PREPARE_SCRIPT;
+  const matchesRequiredBaseline = scriptState.previousBaseline === REQUIRED_BASELINE_SCRIPT_VALUE;
   const matchesRequiredPrecommitCheck =
     scriptState.previousPrecommitCheck === REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE;
   const matchesRequiredManagedDevDependencies = Object.entries(requiredDevDependencies).every(
@@ -193,6 +201,7 @@ export function runSyncHuskyHooks(options) {
 
   const requiresUpdate =
     !matchesRequiredPrepare ||
+    !matchesRequiredBaseline ||
     !matchesRequiredPrecommitCheck ||
     !matchesRequiredManagedDevDependencies ||
     !matchesRequiredPreCommitHook ||
@@ -200,6 +209,7 @@ export function runSyncHuskyHooks(options) {
 
   if (mode === 'sync' && requiresUpdate) {
     scriptState.scripts.prepare = REQUIRED_PREPARE_SCRIPT;
+    scriptState.scripts[REQUIRED_BASELINE_SCRIPT_KEY] = REQUIRED_BASELINE_SCRIPT_VALUE;
     scriptState.scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] =
       REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE;
     pkg.scripts = scriptState.scripts;
@@ -224,6 +234,8 @@ export function runSyncHuskyHooks(options) {
     toolingBaselinePath: toolingBaseline.toolingBaselinePath,
     required: {
       prepareScript: REQUIRED_PREPARE_SCRIPT,
+      baselineScriptKey: REQUIRED_BASELINE_SCRIPT_KEY,
+      baselineScriptValue: REQUIRED_BASELINE_SCRIPT_VALUE,
       precommitCheckScriptKey: REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY,
       precommitCheckScriptValue: REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE,
       managedDevDependencies: requiredDevDependencies,
@@ -232,12 +244,15 @@ export function runSyncHuskyHooks(options) {
     },
     status: {
       matchesRequiredPrepareBefore: matchesRequiredPrepare,
+      matchesRequiredBaselineBefore: matchesRequiredBaseline,
       matchesRequiredPrecommitCheckBefore: matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesBefore: matchesRequiredManagedDevDependencies,
       matchesRequiredPreCommitHookBefore: matchesRequiredPreCommitHook,
       matchesRequiredCommitMsgHookBefore: matchesRequiredCommitMsgHook,
       matchesRequiredPrepareAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrepare,
+      matchesRequiredBaselineAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredBaseline,
       matchesRequiredPrecommitCheckAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesAfter:
