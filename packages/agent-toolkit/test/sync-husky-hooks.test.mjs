@@ -5,7 +5,9 @@ import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
-const REQUIRED_PRECOMMIT_CHECK_SCRIPT = 'npm run format:check && npm run lint';
+const REQUIRED_FORMAT_SCRIPT = 'npm run format:check && npm run format --if-present';
+const REQUIRED_LINT_SCRIPT = 'npm run lint';
+const REQUIRED_PRECOMMIT_CHECK_SCRIPT = 'npm run produck:format && npm run produck:lint';
 const REQUIRED_BASELINE_SCRIPT =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
 const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:precommit-check\n';
@@ -19,6 +21,8 @@ describe('sync-husky-hooks command', () => {
     assert.equal(result.status, 0);
     assert.match(result.stdout, /Usage:/);
     assert.match(result.stdout, /produck:baseline/);
+    assert.match(result.stdout, /produck:format/);
+    assert.match(result.stdout, /produck:lint/);
     assert.match(result.stdout, /produck:precommit-check/);
   });
 
@@ -43,6 +47,8 @@ describe('sync-husky-hooks command', () => {
       const pkg = await readJson(path.join(tempDir, 'package.json'));
       assert.equal(pkg.scripts.prepare, 'husky');
       assert.equal(pkg.scripts['produck:baseline'], REQUIRED_BASELINE_SCRIPT);
+      assert.equal(pkg.scripts['produck:format'], REQUIRED_FORMAT_SCRIPT);
+      assert.equal(pkg.scripts['produck:lint'], REQUIRED_LINT_SCRIPT);
       assert.equal(pkg.scripts['produck:precommit-check'], REQUIRED_PRECOMMIT_CHECK_SCRIPT);
       assert.match(pkg.devDependencies.husky, /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies.c8, /^\d+\.\d+\.\d+$/);
@@ -58,7 +64,11 @@ describe('sync-husky-hooks command', () => {
       assert.equal(report.ok, true);
       assert.equal(report.status.updated, true);
       assert.equal(report.status.matchesRequiredBaselineAfter, true);
+      assert.equal(report.status.matchesRequiredFormatAfter, true);
+      assert.equal(report.status.matchesRequiredLintAfter, true);
       assert.equal(report.required.baselineScriptValue, REQUIRED_BASELINE_SCRIPT);
+      assert.equal(report.required.formatScriptValue, REQUIRED_FORMAT_SCRIPT);
+      assert.equal(report.required.lintScriptValue, REQUIRED_LINT_SCRIPT);
       assert.match(
         report.required.managedDevDependencies['@produck/agent-toolkit'],
         /^\d+\.\d+\.\d+$/,

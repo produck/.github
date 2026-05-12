@@ -20,8 +20,12 @@ const REQUIRED_PREPARE_SCRIPT = 'husky';
 const REQUIRED_BASELINE_SCRIPT_KEY = 'produck:baseline';
 const REQUIRED_BASELINE_SCRIPT_VALUE =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
+const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
+const REQUIRED_FORMAT_SCRIPT_VALUE = 'npm run format:check && npm run format --if-present';
+const REQUIRED_LINT_SCRIPT_KEY = 'produck:lint';
+const REQUIRED_LINT_SCRIPT_VALUE = 'npm run lint';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY = 'produck:precommit-check';
-const REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE = 'npm run format:check && npm run lint';
+const REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run produck:lint';
 
 const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:precommit-check\n';
 const REQUIRED_COMMIT_MSG_HOOK =
@@ -121,6 +125,14 @@ function buildScriptState(pkg) {
       typeof scripts[REQUIRED_BASELINE_SCRIPT_KEY] === 'string'
         ? scripts[REQUIRED_BASELINE_SCRIPT_KEY]
         : null,
+    previousFormat:
+      typeof scripts[REQUIRED_FORMAT_SCRIPT_KEY] === 'string'
+        ? scripts[REQUIRED_FORMAT_SCRIPT_KEY]
+        : null,
+    previousLint:
+      typeof scripts[REQUIRED_LINT_SCRIPT_KEY] === 'string'
+        ? scripts[REQUIRED_LINT_SCRIPT_KEY]
+        : null,
     previousPrecommitCheck:
       typeof scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] === 'string'
         ? scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY]
@@ -189,6 +201,8 @@ export function runSyncHuskyHooks(options) {
 
   const matchesRequiredPrepare = scriptState.previousPrepare === REQUIRED_PREPARE_SCRIPT;
   const matchesRequiredBaseline = scriptState.previousBaseline === REQUIRED_BASELINE_SCRIPT_VALUE;
+  const matchesRequiredFormat = scriptState.previousFormat === REQUIRED_FORMAT_SCRIPT_VALUE;
+  const matchesRequiredLint = scriptState.previousLint === REQUIRED_LINT_SCRIPT_VALUE;
   const matchesRequiredPrecommitCheck =
     scriptState.previousPrecommitCheck === REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE;
   const matchesRequiredManagedDevDependencies = Object.entries(requiredDevDependencies).every(
@@ -202,6 +216,8 @@ export function runSyncHuskyHooks(options) {
   const requiresUpdate =
     !matchesRequiredPrepare ||
     !matchesRequiredBaseline ||
+    !matchesRequiredFormat ||
+    !matchesRequiredLint ||
     !matchesRequiredPrecommitCheck ||
     !matchesRequiredManagedDevDependencies ||
     !matchesRequiredPreCommitHook ||
@@ -210,6 +226,8 @@ export function runSyncHuskyHooks(options) {
   if (mode === 'sync' && requiresUpdate) {
     scriptState.scripts.prepare = REQUIRED_PREPARE_SCRIPT;
     scriptState.scripts[REQUIRED_BASELINE_SCRIPT_KEY] = REQUIRED_BASELINE_SCRIPT_VALUE;
+    scriptState.scripts[REQUIRED_FORMAT_SCRIPT_KEY] = REQUIRED_FORMAT_SCRIPT_VALUE;
+    scriptState.scripts[REQUIRED_LINT_SCRIPT_KEY] = REQUIRED_LINT_SCRIPT_VALUE;
     scriptState.scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] =
       REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE;
     pkg.scripts = scriptState.scripts;
@@ -236,6 +254,10 @@ export function runSyncHuskyHooks(options) {
       prepareScript: REQUIRED_PREPARE_SCRIPT,
       baselineScriptKey: REQUIRED_BASELINE_SCRIPT_KEY,
       baselineScriptValue: REQUIRED_BASELINE_SCRIPT_VALUE,
+      formatScriptKey: REQUIRED_FORMAT_SCRIPT_KEY,
+      formatScriptValue: REQUIRED_FORMAT_SCRIPT_VALUE,
+      lintScriptKey: REQUIRED_LINT_SCRIPT_KEY,
+      lintScriptValue: REQUIRED_LINT_SCRIPT_VALUE,
       precommitCheckScriptKey: REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY,
       precommitCheckScriptValue: REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE,
       managedDevDependencies: requiredDevDependencies,
@@ -245,6 +267,8 @@ export function runSyncHuskyHooks(options) {
     status: {
       matchesRequiredPrepareBefore: matchesRequiredPrepare,
       matchesRequiredBaselineBefore: matchesRequiredBaseline,
+      matchesRequiredFormatBefore: matchesRequiredFormat,
+      matchesRequiredLintBefore: matchesRequiredLint,
       matchesRequiredPrecommitCheckBefore: matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesBefore: matchesRequiredManagedDevDependencies,
       matchesRequiredPreCommitHookBefore: matchesRequiredPreCommitHook,
@@ -253,6 +277,8 @@ export function runSyncHuskyHooks(options) {
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrepare,
       matchesRequiredBaselineAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredBaseline,
+      matchesRequiredFormatAfter: requiresUpdate && mode === 'sync' ? true : matchesRequiredFormat,
+      matchesRequiredLintAfter: requiresUpdate && mode === 'sync' ? true : matchesRequiredLint,
       matchesRequiredPrecommitCheckAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesAfter:
