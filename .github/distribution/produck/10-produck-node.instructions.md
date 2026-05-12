@@ -157,7 +157,7 @@ Script placement:
   and `lint` orchestration scripts.
 - Root `package.json` must reserve `produck:precommit-check` for organization
   anti-drift gate with required value:
-  `npm run format:check && npm run lint`.
+  `npm run produck:format && npm run produck:lint`.
 - Root `package.json` must reserve `prepare` for husky setup with required
   value: `husky`.
 - `publish` may be defined at root or package level based on release workflow.
