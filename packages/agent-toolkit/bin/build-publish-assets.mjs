@@ -8,6 +8,8 @@ const PACKAGE_ROOT = path.resolve(SCRIPT_DIR, '..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const SOURCE_DIR = path.resolve(REPO_ROOT, '.github/distribution/produck');
 const OUTPUT_DIR = path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck');
+const SOURCE_TOOLING_BASELINE_PATH = path.resolve(SOURCE_DIR, 'tooling-version-baseline.json');
+const OUTPUT_TOOLING_BASELINE_PATH = path.resolve(OUTPUT_DIR, 'tooling-version-baseline.json');
 const LEGACY_OUTPUT_PATH = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/instructions/org.instructions.md',
@@ -37,6 +39,47 @@ function validateSourceFile(fileName, text) {
   if (!text.includes(MANAGED_MARKER)) {
     throw new Error(`Missing managed marker in source file: ${fileName}`);
   }
+}
+
+function readAndValidateToolingBaseline() {
+  if (!fs.existsSync(SOURCE_TOOLING_BASELINE_PATH)) {
+    throw new Error(`Missing tooling baseline source file: ${SOURCE_TOOLING_BASELINE_PATH}`);
+  }
+
+  let baseline;
+  try {
+    baseline = JSON.parse(fs.readFileSync(SOURCE_TOOLING_BASELINE_PATH, 'utf8'));
+  } catch {
+    throw new Error(`Invalid tooling baseline JSON: ${SOURCE_TOOLING_BASELINE_PATH}`);
+  }
+
+  const c8Version = baseline?.tools?.c8?.version;
+  const lernaVersion = baseline?.tools?.lerna?.version;
+  const coverageScriptTemplate = baseline?.coverage?.scriptTemplate;
+
+  if (typeof baseline.schemaVersion !== 'number') {
+    throw new Error(`Invalid tooling baseline schemaVersion in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+  }
+
+  if (typeof c8Version !== 'string' || c8Version.trim() === '') {
+    throw new Error(`Invalid tools.c8.version in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+  }
+
+  if (typeof lernaVersion !== 'string' || lernaVersion.trim() === '') {
+    throw new Error(`Invalid tools.lerna.version in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+  }
+
+  if (typeof coverageScriptTemplate !== 'string' || coverageScriptTemplate.trim() === '') {
+    throw new Error(`Invalid coverage.scriptTemplate in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+  }
+
+  if (!coverageScriptTemplate.includes('{c8.version}')) {
+    throw new Error(
+      `coverage.scriptTemplate must include {c8.version} in: ${SOURCE_TOOLING_BASELINE_PATH}`,
+    );
+  }
+
+  return `${JSON.stringify(baseline, null, 2)}\n`;
 }
 
 function readSourceEntries() {
@@ -93,6 +136,12 @@ function run() {
     fs.writeFileSync(outPath, entry.text, 'utf8');
     process.stdout.write(`Generated ${outPath} from ${entry.sourcePath}\n`);
   }
+
+  const toolingBaselineText = readAndValidateToolingBaseline();
+  fs.writeFileSync(OUTPUT_TOOLING_BASELINE_PATH, toolingBaselineText, 'utf8');
+  process.stdout.write(
+    `Generated ${OUTPUT_TOOLING_BASELINE_PATH} from ${SOURCE_TOOLING_BASELINE_PATH}\n`,
+  );
 
   cleanStaleManagedFiles(expectedNames);
 

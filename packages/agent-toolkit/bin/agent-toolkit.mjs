@@ -4,6 +4,10 @@ import { printPreflightHelp, runPreflight } from './command/preflight/index.mjs'
 import { printRunCaptureHelp, runCapture } from './command/run-capture/index.mjs';
 import { printSummarizeHelp, runSummarize } from './command/summarize-log/index.mjs';
 import {
+  printSyncCoverageScriptHelp,
+  runSyncCoverageScript,
+} from './command/sync-coverage-script/index.mjs';
+import {
   printSyncInstructionsHelp,
   runSyncInstructions,
 } from './command/sync-instructions/index.mjs';
@@ -25,6 +29,10 @@ const COMMANDS = {
   'summarize-log': {
     printHelp: printSummarizeHelp,
     run: runSummarize,
+  },
+  'sync-coverage-script': {
+    printHelp: printSyncCoverageScriptHelp,
+    run: runSyncCoverageScript,
   },
   'validate-commit-msg': {
     printHelp: printValidateCommitMsgHelp,

@@ -45,8 +45,24 @@ Notes:
 - Script key names are fixed and must match exactly.
 - `publish` may be a no-op when repository-specific release workflow does not
   use npm publishing.
+- Coverage governance policy:
+  - Keep the script key name `coverage` (organization-reserved key).
+  - In monorepo mode, workspace subpackage `scripts.coverage` is fully governed
+    by organization baseline.
+  - Source of truth for tooling versions/template:
+    `.github/distribution/produck/tooling-version-baseline.json`.
+  - Use central remediation command to deploy coverage scripts:
+    `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .`.
+  - `c8` execution baseline for deployed coverage scripts is fixed to
+    `c8@11.0.0`.
+  - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
+    in shared scripts/CI.
+  - Do not require a root `devDependencies` entry for `c8` unless repository
+    constraints require pinned/offline installation.
 
 - Testing strategy and framework are repository-defined.
+- `test` script implementation is repository-defined and is not overwritten by
+  organization coverage remediation.
 - Repositories should keep `npm run test` and `npm run coverage` executable in
   steady state.
 - For intermediate commits, temporary non-executable state or failing tests are
@@ -123,6 +139,24 @@ Script placement:
 - Root `package.json` must provide `deps:install`, `test`, `coverage`, and
   `lint` orchestration scripts.
 - `publish` may be defined at root or package level based on release workflow.
+- Workspace subpackage `coverage` scripts must be synchronized by
+  `agent-toolkit sync-coverage-script`.
+
+Release tooling policy (required):
+
+- Monorepo release workflow must use `lerna`.
+- `lerna` execution version is governed at organization level, not per
+  repository.
+- Source of truth for `lerna` version baseline:
+  `.github/distribution/produck/tooling-version-baseline.json`.
+- Required execution baseline: `lerna@9.0.7`.
+- Required invocation:
+  `npm exec --package=lerna@9.0.7 -- lerna <subcommand>`.
+- Downstream repositories must not use unversioned `npx lerna` or
+  `lerna@latest` in shared scripts/CI.
+- For high-impact release commands, run dry-run/preview before publish.
+- Keep an emergency organization-level rollback path when baseline version is
+  updated.
 
 Root workspace `package.json` minimal baseline (required):
 

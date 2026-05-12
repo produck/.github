@@ -2,6 +2,7 @@ agent-toolkit commands:
   preflight
   run-capture
   summarize-log
+  sync-coverage-script
   validate-commit-msg
   sync-instructions
 

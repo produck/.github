@@ -7,6 +7,7 @@ Central CLI toolkit for organization-level AI execution workflows.
 - agent-toolkit preflight
 - agent-toolkit run-capture
 - agent-toolkit summarize-log
+- agent-toolkit sync-coverage-script
 - agent-toolkit validate-commit-msg
 - agent-toolkit sync-instructions
 
@@ -34,6 +35,12 @@ Summarize captured output:
 
 ```
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
+```
+
+Deploy organization coverage script to workspace packages:
+
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .
 ```
 
 Validate commit message format:

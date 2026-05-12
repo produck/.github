@@ -1,0 +1,18 @@
+Usage:
+  agent-toolkit sync-coverage-script [--cwd <dir>]
+    [--workspace <path>] ... [--check] [--dry-run] [--json <file>]
+
+Behavior:
+  - Applies organization-required coverage script to workspace package.json files
+  - Target script is rendered from organization tooling baseline file
+    (lookup order):
+    1) publish-assets/instructions/produck/tooling-version-baseline.json
+    2) .github/distribution/produck/tooling-version-baseline.json
+  - Baseline template:
+    npm exec --package=c8@{c8.version} -- c8 --reporter=lcov --reporter=html --reporter=text-summary npm test
+
+Rules:
+  - When --workspace is omitted, root package.json workspaces are used
+  - Root workspaces must be explicit paths (no glob tokens)
+  - --check validates without writing and exits non-zero on mismatch
+  - --dry-run prints planned changes without writing

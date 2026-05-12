@@ -261,6 +261,12 @@ automatic PR rollout.
 When bridge mechanism uses a central npm package, default execution strategy is
 `@latest` to deliver new capabilities quickly.
 
+Exception rule:
+
+- If a downstream baseline defines organization-mandated fixed tool versions
+  (for example `lerna`/`c8` in Node.js baseline), those fixed versions override
+  the generic `@latest` strategy.
+
 Local implementation reference in this repository:
 
 - `packages/agent-toolkit` stores the central CLI bridge package source.
@@ -306,6 +312,8 @@ Use the following template text in organization AI instructions:
   - Avoid fragile shell pipeline post-processing for long-output commands.
 - Central package policy:
   - Default to `<pkg>@latest` for organization tooling commands.
+  - If a downstream baseline mandates fixed versions for specific tools,
+    follow those fixed versions instead of `@latest`.
   - Print resolved package version before high-impact execution.
   - Use dry-run first for risky operations; keep rollback path to pinned version.
 - Commit message policy:

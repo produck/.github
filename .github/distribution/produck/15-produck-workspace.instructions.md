@@ -167,6 +167,29 @@ npm run toolkit:pack-check
 npm run eslint-rules:pack-check
 ```
 
+### Release & Coverage Tooling
+
+- Monorepo release workflow is `lerna`-based and required.
+- Source of truth for `lerna`/`c8` versions and coverage script template:
+  `.github/distribution/produck/tooling-version-baseline.json`.
+- `lerna` execution version is governed at organization level, not per
+  repository.
+- Required execution baseline: `lerna@9.0.7`.
+- Required `lerna` invocation:
+  `npm exec --package=lerna@9.0.7 -- lerna <subcommand>`.
+- Shared scripts/CI must not use unversioned `npx lerna` or `lerna@latest`.
+- Wrapper scripts are allowed, but should keep parity with organization version
+  policy.
+- Workspace subpackage coverage scripts are fully organization-governed.
+- Deploy/repair coverage scripts via central remediation command:
+  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .`.
+- Deployed coverage scripts use fixed baseline `c8@11.0.0`.
+- Shared scripts/CI must not use unversioned `npx c8` or `c8@latest`.
+- `test` script implementation remains repository-defined and is not overwritten
+  by coverage remediation.
+- Do not require root `devDependencies` entries for `c8` by default; pin only
+  when repository reproducibility constraints require it.
+
 ## Package Integration
 
 ### Adding a New Package
@@ -175,10 +198,9 @@ npm run eslint-rules:pack-check
 2. Create `packages/my-package/package.json` with workspace configuration
 3. Inherit root configs:
    - ESLint: extend `../../eslint.config.mjs`
-
-- TypeScript (when root `tsconfig.json` exists): extend
-  `../../tsconfig.json`
-- Prettier: uses root `.prettierrc` automatically
+   - TypeScript (when root `tsconfig.json` exists): extend
+     `../../tsconfig.json`
+   - Prettier: uses root `.prettierrc` automatically
 
 ### Package-Level Overrides
 

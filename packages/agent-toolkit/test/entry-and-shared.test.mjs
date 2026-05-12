@@ -105,6 +105,7 @@ describe('main command router', () => {
     });
 
     assert.match(output, /agent-toolkit commands:/);
+    assert.match(output, /sync-coverage-script/);
     assert.match(output, /validate-commit-msg/);
   });
 
