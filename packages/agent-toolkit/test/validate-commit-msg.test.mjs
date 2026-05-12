@@ -153,6 +153,17 @@ describe('validate-commit-msg', () => {
     });
   });
 
+  it('allows multi-line lerna [PUBLISH] message in monorepo mode', async () => {
+    const message = '[PUBLISH]\n\n - @produck/agent-toolkit@0.3.1\n';
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 0);
+      assert.match(result.stdout, /validation passed/i);
+    });
+  });
+
   it('rejects disallowed tags', async () => {
     const message = ['workspace:', '[CHANGED] update config', ''].join('\n');
 
