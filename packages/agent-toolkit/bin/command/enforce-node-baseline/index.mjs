@@ -120,9 +120,17 @@ export function runEnforceNodeBaseline(options) {
     syncHuskyArgs.push('--dry-run');
   }
 
+  const syncWorkspaceConfigArgs = ['sync-workspace-config', '--cwd', cwd];
+  if (check) {
+    syncWorkspaceConfigArgs.push('--check');
+  } else if (dryRun) {
+    syncWorkspaceConfigArgs.push('--dry-run');
+  }
+
   const plan = [
     { name: 'sync-instructions', args: syncInstructionsArgs },
     { name: 'preflight', args: preflightArgs },
+    { name: 'sync-workspace-config', args: syncWorkspaceConfigArgs },
     { name: 'sync-coverage-script', args: syncCoverageArgs },
     { name: 'sync-husky-hooks', args: syncHuskyArgs },
   ];

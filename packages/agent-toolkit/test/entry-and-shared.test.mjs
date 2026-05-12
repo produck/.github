@@ -107,6 +107,7 @@ describe('main command router', () => {
     assert.match(output, /agent-toolkit commands:/);
     assert.match(output, /enforce-node-baseline/);
     assert.match(output, /sync-coverage-script/);
+    assert.match(output, /sync-workspace-config/);
     assert.match(output, /sync-husky-hooks/);
     assert.match(output, /validate-commit-msg/);
   });
@@ -142,7 +143,13 @@ describe('main command router', () => {
       assert.equal(report.ok, true);
       assert.deepEqual(
         report.steps.map((step) => step.name),
-        ['sync-instructions', 'preflight', 'sync-coverage-script', 'sync-husky-hooks'],
+        [
+          'sync-instructions',
+          'preflight',
+          'sync-workspace-config',
+          'sync-coverage-script',
+          'sync-husky-hooks',
+        ],
       );
     });
   });

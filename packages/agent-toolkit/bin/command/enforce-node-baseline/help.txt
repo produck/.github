@@ -7,13 +7,14 @@ Behavior:
   - Runs mandatory baseline flow in fixed order:
     1) sync-instructions
     2) preflight
-    3) sync-coverage-script
-    4) sync-husky-hooks
+    3) sync-workspace-config
+    4) sync-coverage-script
+    5) sync-husky-hooks
   - Stops at first failed step and exits non-zero
   - Prints one combined JSON report for all executed steps
 
 Rules:
-  - --check runs non-mutating validation mode for step 1, step 3, and step 4
-  - --dry-run runs non-mutating preview mode for step 1, step 3, and step 4
+  - --check runs non-mutating validation mode for step 1, step 3, step 4, and step 5
+  - --dry-run runs non-mutating preview mode for step 1, step 3, step 4, and step 5
   - --check takes precedence over --dry-run
   - --workspace filters coverage sync targets in step 3

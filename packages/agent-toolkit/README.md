@@ -43,6 +43,7 @@ npm run produck:baseline
 - agent-toolkit run-capture
 - agent-toolkit summarize-log
 - agent-toolkit sync-coverage-script
+- agent-toolkit sync-workspace-config
 - agent-toolkit sync-husky-hooks
 - agent-toolkit validate-commit-msg
 - agent-toolkit sync-instructions
@@ -61,19 +62,19 @@ Equivalent explicit form:
 npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
-`enforce-node-baseline` runs four steps in fixed order and stops at the first
+`enforce-node-baseline` runs five steps in fixed order and stops at the first
 failure:
 
 1. `sync-instructions` — distribute organization AI instruction files into
    `.github/instructions/produck/`
 2. `preflight` — verify required files and directories exist
-3. `sync-coverage-script` — deploy pinned `produck:coverage` script and `c8`
+3. `sync-workspace-config` — deploy organization scripts (`produck:baseline`,
+   `produck:format`, `produck:lint`, `produck:precommit-check`), initialize
+   `.prettierrc` and `eslint.config.mjs`, and ensure
+   `@produck/eslint-rules` integration
+4. `sync-coverage-script` — deploy pinned `produck:coverage` script and `c8`
    devDependency into each workspace package
-4. `sync-husky-hooks` — deploy `.husky/pre-commit` and `.husky/commit-msg`,
-   initialize `.prettierrc` and `eslint.config.mjs` (with
-   `@produck/eslint-rules`), and pin `c8`, `husky`, `lerna`,
-   `@produck/eslint-rules`, `@produck/agent-toolkit` in root
-   `devDependencies`
+5. `sync-husky-hooks` — deploy `.husky/pre-commit` and `.husky/commit-msg`
 
 Add to downstream repository root `package.json` for one-command enforcement:
 
@@ -130,17 +131,26 @@ workspace packages:
 npm exec -- agent-toolkit sync-coverage-script --cwd .
 ```
 
+Deploy organization workspace scripts/config files and eslint-rules integration
+to repository root:
+
+```
+npm exec -- agent-toolkit sync-workspace-config --cwd .
+```
+
+This command manages `produck:*` root scripts, initializes `.prettierrc` and
+`eslint.config.mjs`, appends `@produck/eslint-rules` integration when an
+existing `eslint.config.mjs` does not include it, and pins `c8`, `husky`,
+`lerna`, `@produck/eslint-rules`, and `@produck/agent-toolkit` in root
+`devDependencies`.
+
 Deploy organization local anti-drift husky hooks to repository root:
 
 ```
 npm exec -- agent-toolkit sync-husky-hooks --cwd .
 ```
 
-This command initializes root `.prettierrc` and `eslint.config.mjs` (using
-`@produck/eslint-rules`), pins root local hook dependencies (`c8`, `husky`,
-`lerna`, `@produck/eslint-rules`, and `@produck/agent-toolkit`) to
-organization baseline fixed versions, and syncs `.husky/pre-commit` and
-`.husky/commit-msg`.
+This command syncs only `.husky/pre-commit` and `.husky/commit-msg`.
 
 Validate commit message format:
 

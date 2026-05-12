@@ -16,6 +16,10 @@ import {
   printSyncInstructionsHelp,
   runSyncInstructions,
 } from './command/sync-instructions/index.mjs';
+import {
+  printSyncWorkspaceConfigHelp,
+  runSyncWorkspaceConfig,
+} from './command/sync-workspace-config/index.mjs';
 import { hasFlag, parseCommonArgs } from './command/shared/args.mjs';
 import {
   printValidateCommitMsgHelp,
@@ -42,6 +46,10 @@ const COMMANDS = {
   'sync-coverage-script': {
     printHelp: printSyncCoverageScriptHelp,
     run: runSyncCoverageScript,
+  },
+  'sync-workspace-config': {
+    printHelp: printSyncWorkspaceConfigHelp,
+    run: runSyncWorkspaceConfig,
   },
   'sync-husky-hooks': {
     printHelp: printSyncHuskyHooksHelp,

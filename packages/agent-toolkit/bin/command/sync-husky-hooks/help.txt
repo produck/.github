@@ -3,22 +3,7 @@ Usage:
     [--json <file>]
 
 Behavior:
-  - Applies organization-required root scripts for local hook gates:
-    - scripts.prepare = husky
-    - scripts.produck:baseline = npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .
-    - scripts.produck:format = npm exec -- prettier --check . && npm run format --if-present
-    - scripts.produck:lint = npm exec -- eslint --fix . --max-warnings=0 && npm run lint --if-present
-    - scripts.produck:precommit-check = npm run produck:format && npm run produck:lint
-  - Applies organization-required root config files:
-    - .prettierrc
-    - eslint.config.mjs (uses @produck/eslint-rules)
-  - Applies organization-required root managed devDependencies:
-    - devDependencies.c8 = <fixed-version-from-baseline>
-    - devDependencies.husky = <fixed-version-from-baseline>
-    - devDependencies.lerna = <fixed-version-from-baseline>
-    - devDependencies.@produck/eslint-rules = <latest-version-resolved-at-runtime>
-    - devDependencies.@produck/agent-toolkit = <latest-version-resolved-at-runtime>
-  - Applies organization-required hook files:
+  - Applies organization-required hook files only:
     - .husky/pre-commit
     - .husky/commit-msg
   - commit-msg hook validates message via local node_modules toolkit path
