@@ -104,7 +104,7 @@ describe('enforce-node-baseline command', () => {
     });
   });
 
-  it('supports check mode as non-mutating flow and exits non-zero on coverage mismatch', async () => {
+  it('supports check mode as non-mutating flow and exits non-zero on first mismatch', async () => {
     await withTempDir('agent-toolkit-enforce-node-baseline-check-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample\n');
@@ -130,9 +130,9 @@ describe('enforce-node-baseline command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, false);
-      assert.equal(report.steps.length, 4);
-      assert.equal(report.steps[3].name, 'sync-coverage-script');
-      assert.equal(report.steps[3].ok, false);
+      assert.equal(report.steps.length, 3);
+      assert.equal(report.steps[2].name, 'sync-workspace-config');
+      assert.equal(report.steps[2].ok, false);
 
       const copiedInstruction = path.join(
         tempDir,
