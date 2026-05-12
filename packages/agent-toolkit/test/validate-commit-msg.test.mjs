@@ -144,6 +144,15 @@ describe('validate-commit-msg', () => {
     });
   });
 
+  it('allows [PUBLISH] without a section header in monorepo mode', async () => {
+    await withMessage('[PUBLISH]\n', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 0);
+      assert.match(result.stdout, /validation passed/i);
+    });
+  });
+
   it('rejects disallowed tags', async () => {
     const message = ['workspace:', '[CHANGED] update config', ''].join('\n');
 
