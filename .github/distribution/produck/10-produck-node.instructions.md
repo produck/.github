@@ -38,9 +38,9 @@ Notes:
   - Source of truth for tooling versions/template:
     `.github/distribution/produck/tooling-version-baseline.json`.
   - Use central remediation command to deploy coverage scripts:
-    `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .`.
+    `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
   - Use central remediation command to deploy local anti-drift hook baseline:
-    `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-husky-hooks --cwd .`.
+    `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
   - `c8` execution baseline for deployed coverage scripts is fixed to local
     workspace `devDependencies.c8` version `11.0.0`.
   - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
@@ -72,9 +72,9 @@ Central toolkit command role model:
   governance and is mandatory in monorepo mode.
 - For simplified downstream execution of mandatory flow (1 -> 2 -> 3 -> 4),
   use:
-  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit`.
+  `npm exec -- agent-toolkit`.
 - Equivalent explicit form:
-  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .`.
+  `npm exec -- agent-toolkit enforce-node-baseline --cwd .`.
 - `agent-toolkit validate-commit-msg` is a hard guard for AI-agent-authored
   `git commit` and `git commit --amend` operations.
 - For human engineers, commit-message validation is recommended rather than
@@ -184,7 +184,7 @@ Release tooling policy (required):
   `.github/distribution/produck/tooling-version-baseline.json`.
 - Required execution baseline: `lerna@9.0.7`.
 - Required invocation:
-  `npm exec --package=lerna@9.0.7 -- lerna <subcommand>`.
+  `npm exec -- lerna <subcommand>`.
 - Downstream repositories must not use unversioned `npx lerna` or
   `lerna@latest` in shared scripts/CI.
 - For high-impact release commands, run dry-run/preview before publish.

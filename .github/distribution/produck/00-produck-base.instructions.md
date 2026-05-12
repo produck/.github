@@ -141,8 +141,7 @@ max_line_length = 80
 - If details are needed, use additional tagged lines.
 - Do not keep summary as an untagged standalone line.
 - Recommended local validation:
-  `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-validate-commit-msg --file <message-file>`.
+  `npm exec -- agent-toolkit validate-commit-msg --file <message-file>`.
 - Commit precheck policy follows
   `.github/distribution/produck/20-produck-commit.instructions.md`.
 - Canonical source for commit tag/target whitelists, legacy mapping, and
@@ -184,14 +183,10 @@ Recommended three-step flow:
 
 Recommended local tools:
 
-- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit preflight
---cwd . --require package.json --ensure-dir logs`
-- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit run-capture
---out logs/run.log --cmd "<command>"`
-- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit summarize-log
---file logs/run.log --last 120`
-- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit summarize-log
---file logs/run.log --match "FAIL|ERROR"`
+- `npm exec -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs`
+- `npm exec -- agent-toolkit run-capture --out logs/run.log --cmd "<command>"`
+- `npm exec -- agent-toolkit summarize-log --file logs/run.log --last 120`
+- `npm exec -- agent-toolkit summarize-log --file logs/run.log --match "FAIL|ERROR"`
 
 Guardrails:
 
@@ -248,10 +243,10 @@ When CI enforcement is deferred, use manual sync per repository:
 
 Recommended command:
 
-- `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source <path-to-org>/.github/distribution/produck --force --prune`
+- `npm exec -- agent-toolkit sync-instructions --cwd . --source <path-to-org>/.github/distribution/produck --force --prune`
 
-If the package has been published, `--source` can be omitted to use built-in
-assets from `@produck/agent-toolkit`.
+If the installed package includes bundled assets, `--source` can be omitted to
+use those built-in assets.
 
 This keeps instruction entrypoints aligned without requiring submodule or
 automatic PR rollout.
@@ -274,12 +269,12 @@ Local implementation reference in this repository:
 - This local path is the implementation source, not an automatic runtime mount
   for other repositories.
 
-Required safeguards for `@latest`:
+Required safeguards for central tooling:
 
 - Print resolved package version before running high-impact commands.
 - For high-risk operations, run dry-run/preview first, then execute.
 - Keep an emergency fallback path to a pinned version for incident mitigation.
-- Prefer `npm exec --package=<pkg>@latest <bin> ...` for predictable invocation.
+- Prefer `npm exec -- <bin> ...` for predictable invocation.
 
 Version observability (required before high-impact operations):
 

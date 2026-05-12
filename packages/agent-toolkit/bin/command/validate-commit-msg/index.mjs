@@ -10,6 +10,7 @@ const ALLOWED_TARGETS = ['docs', 'test', 'ci', 'deps', 'api', 'schema', 'infra',
 const SECTION_HEADER_RE = /^(?:@[\w.-]+\/)?[\w.-]+:$/;
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
+const ROOT_PACKAGE_FILE = path.resolve(COMMAND_DIR, '../../../../../package.json');
 
 export function printValidateCommitMsgHelp() {
   printTextResource(HELP_FILE);
@@ -52,6 +53,19 @@ function validateCommitLine(line, lineNo) {
 
 function isSectionHeaderLine(line) {
   return SECTION_HEADER_RE.test(line.trim());
+}
+
+function isMonorepoRoot() {
+  if (!fs.existsSync(ROOT_PACKAGE_FILE)) {
+    return false;
+  }
+
+  try {
+    const rootPackage = JSON.parse(fs.readFileSync(ROOT_PACKAGE_FILE, 'utf8'));
+    return Array.isArray(rootPackage.workspaces) && rootPackage.workspaces.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 function validateSectionFormat(lines) {
@@ -128,7 +142,14 @@ export function runValidateCommitMsg(options) {
     process.exit(2);
   }
 
+  const mustUseSectionHeaders = isMonorepoRoot();
   const hasSectionHeaders = lines.some((line) => isSectionHeaderLine(line));
+
+  if (mustUseSectionHeaders && !hasSectionHeaders) {
+    console.error('Commit message validation failed:');
+    console.error('- Line 1: section header is required before tagged lines in monorepo mode');
+    process.exit(1);
+  }
 
   const errors = hasSectionHeaders ? validateSectionFormat(lines) : [];
   if (!hasSectionHeaders) {

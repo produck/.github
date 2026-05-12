@@ -18,56 +18,56 @@ Central CLI toolkit for organization-level AI execution workflows.
 Run default mandatory baseline flow in downstream repository root:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit
+npm exec -- agent-toolkit
 ```
 
 Equivalent explicit form:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .
+npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
 Run preflight checks:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
+npm exec -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
 ```
 
 Run one-shot mandatory baseline steps for downstream monorepo (1 -> 2 -> 3):
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .
+npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
 Validate monorepo root workspace package.json baseline:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit preflight --cwd . --check-workspace-package-json package.json
+npm exec -- agent-toolkit preflight --cwd . --check-workspace-package-json package.json
 ```
 
 Capture long output safely:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
+npm exec -- agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
 ```
 
 Summarize captured output:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
+npm exec -- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
 ```
 
 Deploy organization coverage script and pinned local c8 devDependency to
 workspace packages:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .
+npm exec -- agent-toolkit sync-coverage-script --cwd .
 ```
 
 Deploy organization local anti-drift husky hooks to repository root:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-husky-hooks --cwd .
+npm exec -- agent-toolkit sync-husky-hooks --cwd .
 ```
 
 This command pins root local hook dependencies (`husky` and
@@ -77,13 +77,13 @@ This command pins root local hook dependencies (`husky` and
 Validate commit message format:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
+npm exec -- agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
 ```
 
 Manual per-repository instruction distribution (write .github/instructions/produck/\*.instructions.md):
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd .
+npm exec -- agent-toolkit sync-instructions --cwd .
 ```
 
 Legacy repository bootstrap behavior:
@@ -96,7 +96,7 @@ Legacy repository bootstrap behavior:
 Use organization source directory instead of built-in assets:
 
 ```
-npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source path/to/org/.github/distribution/produck --force --prune
+npm exec -- agent-toolkit sync-instructions --cwd . --source path/to/org/.github/distribution/produck --force --prune
 ```
 
 Built-in command-local resource locations (for review and updates):

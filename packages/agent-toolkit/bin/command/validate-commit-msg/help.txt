@@ -2,6 +2,7 @@ Usage:
   agent-toolkit validate-commit-msg --file <message-file>
 
 Rules:
+  - In monorepo mode, a section header is required before tagged lines
   - Non-empty lines must be either a section header (for example workspace: or @scope/pkg:) or start with [TAG]
   - If section headers are used, each section header must be followed by at least one tagged line
   - No empty lines are allowed

@@ -26,12 +26,12 @@ Maintenance rule:
 When syncing from local organization sources (without relying on npm publish),
 use the downstream source directory explicitly:
 
-- `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-instructions --cwd . --source <path-to-org>/.github/distribution/produck --force --prune`
+- `npm exec -- agent-toolkit sync-instructions --cwd . --source <path-to-org>/.github/distribution/produck --force --prune`
 
 ## Central package execution policy
 
-When bridge mechanism uses a central npm package, default execution strategy is
-`@latest` to deliver new capabilities quickly.
+When bridge mechanism uses a central npm package, the package is installed
+locally in downstream repositories and invoked from the workspace install.
 
 Required safeguards for `@latest`:
 

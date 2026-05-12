@@ -59,12 +59,6 @@ Allowed tags (fixed whitelist):
 - `[UPGRADE]`
 - `[PUBLISH]`
 
-Legacy-to-canonical mapping (for migration):
-
-- `[ADDED]` -> `[ADD]`
-- `[REMOVED]` -> `[REMOVE]`
-- `[FIXED]` -> `[FIX]`
-
 When using this style:
 
 - `TAG` must be uppercase and must be one of the allowed tags above.
@@ -186,8 +180,7 @@ Commit precheck gate (AI-agent required, human recommended):
 - Before merge or release, restore executable test commands and fix failing
   tests.
 
-- `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
-validate-commit-msg --file <message-file>`
+- `npm exec -- agent-toolkit validate-commit-msg --file <message-file>`
 
 If validation fails, fix the message and rerun until it passes.
 

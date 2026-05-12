@@ -176,22 +176,22 @@ npm run eslint-rules:pack-check
   repository.
 - Required execution baseline: `lerna@9.0.7`.
 - Required `lerna` invocation:
-  `npm exec --package=lerna@9.0.7 -- lerna <subcommand>`.
+  `npm exec -- lerna <subcommand>`.
 - Shared scripts/CI must not use unversioned `npx lerna` or `lerna@latest`.
 - Wrapper scripts are allowed, but should keep parity with organization version
   policy.
 - Workspace subpackage coverage scripts are fully organization-governed.
 - Deploy/repair coverage scripts via central remediation command:
-  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .`.
+  `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
 - Root anti-drift local hook baseline is organization-governed.
 - Deploy/repair root local hooks via central remediation command:
-  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-husky-hooks --cwd .`.
+  `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
 - Deployed coverage scripts use local fixed baseline `devDependencies.c8`
   version `11.0.0` in each governed workspace package.
 - Deployed local hook baseline uses root `devDependencies.husky` fixed version
   `^9.1.7`.
 - Deployed local hook baseline also pins root
-  `devDependencies.@produck/agent-toolkit` to latest registry version resolved at execution time and written as a fixed version.
+  `devDependencies.@produck/agent-toolkit` to the fixed version managed by the organization baseline.
 - Shared scripts/CI must not use unversioned `npx c8` or `c8@latest`.
 - `test` script implementation remains repository-defined and is not overwritten
   by coverage remediation.

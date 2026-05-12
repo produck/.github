@@ -59,8 +59,10 @@ describe('validate-commit-msg', () => {
     });
   });
 
-  it('accepts standalone tagged commit lines', async () => {
-    await withMessage('[FIX] <docs>: clarify validate command output\n', async (messageFile) => {
+  it('accepts sectioned tagged commit lines', async () => {
+    const message = ['workspace:', '[FIX] <docs>: clarify validate command output', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 0);
@@ -118,17 +120,34 @@ describe('validate-commit-msg', () => {
     });
   });
 
-  it('rejects standalone lines without [TAG]', async () => {
+  it('rejects standalone lines without a section header in monorepo mode', async () => {
     await withMessage('summary without tag\n', async (messageFile) => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
-      assert.match(result.stderr, /must start with \[TAG\] followed by a space/i);
+      assert.match(
+        result.stderr,
+        /section header is required before tagged lines in monorepo mode/i,
+      );
+    });
+  });
+
+  it('rejects monorepo messages without a section header', async () => {
+    await withMessage('[FIX] <docs>: missing scope line\n', async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(
+        result.stderr,
+        /section header is required before tagged lines in monorepo mode/i,
+      );
     });
   });
 
   it('rejects disallowed tags', async () => {
-    await withMessage('[CHANGED] update config\n', async (messageFile) => {
+    const message = ['workspace:', '[CHANGED] update config', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
@@ -137,7 +156,9 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects disallowed targets', async () => {
-    await withMessage('[FIX] <feature>: add capability\n', async (messageFile) => {
+    const message = ['workspace:', '[FIX] <feature>: add capability', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
@@ -146,7 +167,9 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects missing summary after tag', async () => {
-    await withMessage('[FIX]    \n', async (messageFile) => {
+    const message = ['workspace:', '[FIX]    ', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
@@ -155,7 +178,9 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects empty summary after target', async () => {
-    await withMessage('[FIX] <docs>:    \n', async (messageFile) => {
+    const message = ['workspace:', '[FIX] <docs>:    ', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
@@ -164,7 +189,7 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects empty lines in commit message', async () => {
-    const message = ['[FIX] first line', '', '[FIX] second line', ''].join('\n');
+    const message = ['workspace:', '[FIX] first line', '', '[FIX] second line', ''].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -218,6 +243,7 @@ describe('validate-commit-msg', () => {
 
   it('accepts publish tag and fmt target', async () => {
     const message = [
+      'workspace:',
       '[PUBLISH] release @produck/agent-toolkit v0.2.1',
       '[FIX] <fmt>: normalize commit policy examples',
       '',
