@@ -4,6 +4,7 @@ Central CLI toolkit for organization-level AI execution workflows.
 
 ## Commands
 
+- agent-toolkit enforce-node-baseline
 - agent-toolkit preflight
 - agent-toolkit run-capture
 - agent-toolkit summarize-log
@@ -13,10 +14,28 @@ Central CLI toolkit for organization-level AI execution workflows.
 
 ## Examples
 
+Run default mandatory baseline flow in downstream repository root:
+
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit
+```
+
+Equivalent explicit form:
+
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .
+```
+
 Run preflight checks:
 
 ```
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
+```
+
+Run one-shot mandatory baseline steps for downstream monorepo (1 -> 2 -> 3):
+
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
 Validate monorepo root workspace package.json baseline:

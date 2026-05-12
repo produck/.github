@@ -105,12 +105,49 @@ describe('main command router', () => {
     });
 
     assert.match(output, /agent-toolkit commands:/);
+    assert.match(output, /enforce-node-baseline/);
     assert.match(output, /sync-coverage-script/);
     assert.match(output, /validate-commit-msg/);
   });
 
-  it('prints main help when no command is provided', () => {
-    const result = runCli([]);
+  it('runs enforce-node-baseline as default when no command is provided', async () => {
+    await withTempDir('agent-toolkit-default-command-', async (tempDir) => {
+      const sourceDir = path.join(tempDir, 'source');
+      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample\n');
+
+      const rootPackageJson = {
+        name: 'tmp-workspace',
+        private: true,
+        workspaces: ['packages/a'],
+        scripts: {
+          'deps:install': 'npm install',
+          test: 'npm run test --workspaces --if-present',
+          coverage: 'npm run coverage --workspaces --if-present',
+          lint: 'eslint --fix . --max-warnings=0',
+        },
+      };
+
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(rootPackageJson, null, 2)}\n`,
+      );
+      await writeTextFile(path.join(tempDir, 'packages/a/package.json'), '{"name":"a"}\n');
+
+      const result = runCli(['--cwd', tempDir, '--source', sourceDir, '--dry-run']);
+
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, true);
+      assert.deepEqual(
+        report.steps.map((step) => step.name),
+        ['sync-instructions', 'preflight', 'sync-coverage-script'],
+      );
+    });
+  });
+
+  it('prints main help when --help is provided without command', () => {
+    const result = runCli(['--help']);
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /agent-toolkit commands:/);

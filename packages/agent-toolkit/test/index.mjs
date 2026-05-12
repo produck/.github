@@ -1,3 +1,4 @@
+import './enforce-node-baseline.test.mjs';
 import './entry-and-shared.test.mjs';
 import './preflight-summarize-run-capture.test.mjs';
 import './sync-coverage-script.test.mjs';

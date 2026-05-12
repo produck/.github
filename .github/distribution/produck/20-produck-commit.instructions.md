@@ -163,13 +163,23 @@ Avoid vague or low-signal messages such as:
 
 Use the local validator before commit:
 
-- Validation is required before both `git commit` and `git commit --amend`.
-- Do not create or amend a commit when validation fails.
+- AI-agent-authored commits/amends:
+  validation is required before both `git commit` and `git commit --amend`.
+- For AI-agent-authored operations, do not create or amend a commit when
+  validation fails.
+- Human engineer-authored commits/amends:
+  validation is recommended by default and may be enforced by
+  repository-specific hooks/CI.
+- Do not require retroactive rewrite/amend of historical commits solely for
+  commit-message style compliance.
 
-Commit precheck gate (required):
+Commit precheck gate (AI-agent required, human recommended):
 
-- Complete repository style gates before both `git commit` and
-  `git commit --amend` (for example `format:check` and `lint`).
+- For AI-agent-authored operations, complete repository style gates before both
+  `git commit` and `git commit --amend` (for example `format:check` and
+  `lint`).
+- For human engineer-authored operations, style gates are recommended baseline
+  practice unless repository-specific hooks/CI enforce them.
 - Temporary non-executable state or failing tests are allowed for
   intermediate commits.
 - Test/coverage pass status is not a hard blocker at commit time.

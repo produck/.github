@@ -70,6 +70,32 @@ Notes:
 - Commit prechecks still require passing repository style gates (for example
   `format:check` and `lint`).
 
+Central toolkit command role model:
+
+- `agent-toolkit sync-instructions` is guidance-first distribution for
+  organization baseline instructions.
+- `sync-instructions` is not a hard gate; use it to reduce instruction drift,
+  but do not assume it can fully prevent AI hallucination or iterative drift.
+- `agent-toolkit preflight` is the hard guard for organization engineering
+  baseline and is mandatory for required baseline checks.
+- `agent-toolkit sync-coverage-script` is the hard guard for monorepo coverage
+  governance and is mandatory in monorepo mode.
+- For simplified downstream execution of mandatory flow (1 -> 2 -> 3), use:
+  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit`.
+- Equivalent explicit form:
+  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .`.
+- `agent-toolkit validate-commit-msg` is a hard guard for AI-agent-authored
+  `git commit` and `git commit --amend` operations.
+- For human engineers, commit-message validation is recommended rather than
+  mandatory unless repository-specific hooks/CI enforce it.
+- Do not require retroactive rewrite/amend of historical commits solely to
+  satisfy commit-message validator rules.
+- `agent-toolkit run-capture` and `agent-toolkit summarize-log` are AI-agent
+  execution guardrails.
+- These guardrails pair with node-first execution policy: prefer Node.js
+  interpreter workflows for parsing/filtering over brittle OS-shell pipelines.
+- For human engineers, `run-capture` and `summarize-log` are optional helpers.
+
 Test authoring baseline (required):
 
 - Prefer Node.js standard library test runner (`node:test`) with `describe` and

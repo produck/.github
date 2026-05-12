@@ -1,10 +1,15 @@
 agent-toolkit commands:
+  enforce-node-baseline
   preflight
   run-capture
   summarize-log
   sync-coverage-script
   validate-commit-msg
   sync-instructions
+
+Default:
+  agent-toolkit
+  # equivalent to: agent-toolkit enforce-node-baseline
 
 Use:
   agent-toolkit <command> --help
