@@ -9,6 +9,7 @@ Central CLI toolkit for organization-level AI execution workflows.
 - agent-toolkit run-capture
 - agent-toolkit summarize-log
 - agent-toolkit sync-coverage-script
+- agent-toolkit sync-husky-hooks
 - agent-toolkit validate-commit-msg
 - agent-toolkit sync-instructions
 
@@ -56,11 +57,22 @@ Summarize captured output:
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
 ```
 
-Deploy organization coverage script to workspace packages:
+Deploy organization coverage script and pinned local c8 devDependency to
+workspace packages:
 
 ```
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .
 ```
+
+Deploy organization local anti-drift husky hooks to repository root:
+
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-husky-hooks --cwd .
+```
+
+This command pins root local hook dependencies (`husky` and
+`@produck/agent-toolkit`) and syncs `.husky/pre-commit` and
+`.husky/commit-msg`.
 
 Validate commit message format:
 

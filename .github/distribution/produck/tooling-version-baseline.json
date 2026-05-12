@@ -7,6 +7,11 @@
       "policy": "pinned",
       "allowLatest": false
     },
+    "husky": {
+      "version": "9.1.7",
+      "policy": "pinned",
+      "allowLatest": false
+    },
     "lerna": {
       "version": "9.0.7",
       "policy": "pinned",
@@ -14,7 +19,7 @@
     }
   },
   "coverage": {
-    "scriptTemplate": "npm exec --package=c8@{c8.version} -- c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
+    "scriptTemplate": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "enforce": {
     "sharedScriptsDisallow": ["npx c8", "c8@latest", "npx lerna", "lerna@latest"]

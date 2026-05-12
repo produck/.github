@@ -6,4 +6,4 @@ Usage:
 Rules for --check-workspace-package-json:
   - `private` must be true
   - `workspaces` must be a non-empty array of explicit paths (no glob tokens)
-  - `scripts` must include deps:install, test, coverage, lint
+  - `scripts` must include deps:install, test, produck:coverage, lint

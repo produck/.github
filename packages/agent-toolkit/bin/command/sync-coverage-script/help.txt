@@ -4,15 +4,19 @@ Usage:
 
 Behavior:
   - Applies organization-required coverage script to workspace package.json files
+  - Organization-reserved script key is scripts.produck:coverage
+  - Applies organization-required pinned local c8 devDependency to workspace
+    package.json files
   - Target script is rendered from organization tooling baseline file
     (lookup order):
-    1) publish-assets/instructions/produck/tooling-version-baseline.json
-    2) .github/distribution/produck/tooling-version-baseline.json
+    1) .github/distribution/produck/tooling-version-baseline.json
+    2) publish-assets/instructions/produck/tooling-version-baseline.json
   - Baseline template:
-    npm exec --package=c8@{c8.version} -- c8 --reporter=lcov --reporter=html --reporter=text-summary npm test
+    c8 --reporter=lcov --reporter=html --reporter=text-summary npm test
 
 Rules:
   - When --workspace is omitted, root package.json workspaces are used
   - Root workspaces must be explicit paths (no glob tokens)
+  - Workspace package.json files must pin devDependencies.c8 to baseline version
   - --check validates without writing and exits non-zero on mismatch
   - --dry-run prints planned changes without writing

@@ -118,10 +118,18 @@ export function runEnforceNodeBaseline(options) {
     syncCoverageArgs.push('--dry-run');
   }
 
+  const syncHuskyArgs = ['sync-husky-hooks', '--cwd', cwd];
+  if (check) {
+    syncHuskyArgs.push('--check');
+  } else if (dryRun) {
+    syncHuskyArgs.push('--dry-run');
+  }
+
   const plan = [
     { name: 'sync-instructions', args: syncInstructionsArgs },
     { name: 'preflight', args: preflightArgs },
     { name: 'sync-coverage-script', args: syncCoverageArgs },
+    { name: 'sync-husky-hooks', args: syncHuskyArgs },
   ];
 
   for (const step of plan) {

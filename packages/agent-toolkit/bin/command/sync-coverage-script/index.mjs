@@ -10,10 +10,11 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const TOOLING_BASELINE_CANDIDATE_PATHS = [
-  path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
   path.resolve(REPO_ROOT, '.github/distribution/produck/tooling-version-baseline.json'),
+  path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
 ];
 const GLOB_TOKEN_PATTERN = /[*?{}[\]]/;
+const REQUIRED_COVERAGE_SCRIPT_KEY = 'produck:coverage';
 
 export function printSyncCoverageScriptHelp() {
   printTextResource(HELP_FILE);
@@ -55,13 +56,6 @@ function loadToolingBaseline() {
     process.exit(2);
   }
 
-  if (!coverageTemplate.includes('{c8.version}')) {
-    console.error(
-      `Tooling baseline coverage.scriptTemplate must include {c8.version}: ${toolingBaselinePath}`,
-    );
-    process.exit(2);
-  }
-
   return {
     baseline,
     toolingBaselinePath,
@@ -72,6 +66,10 @@ function buildRequiredCoverageScript(baseline) {
   const c8Version = String(baseline.tools.c8.version);
   const coverageTemplate = String(baseline.coverage.scriptTemplate);
   return coverageTemplate.replace(/\{c8\.version\}/g, c8Version);
+}
+
+function buildRequiredC8DevDependency(baseline) {
+  return String(baseline.tools.c8.version);
 }
 
 function parseJsonFile(filePath, label) {
@@ -116,7 +114,13 @@ function resolveWorkspacePaths(cwd, options) {
   return workspaces;
 }
 
-function reconcileCoverageScript(cwd, workspacePath, mode, requiredCoverageScript) {
+function reconcileCoverageScript(
+  cwd,
+  workspacePath,
+  mode,
+  requiredCoverageScript,
+  requiredC8Version,
+) {
   const packageDir = path.resolve(cwd, workspacePath);
   const packageJsonPath = path.resolve(packageDir, 'package.json');
 
@@ -128,8 +132,12 @@ function reconcileCoverageScript(cwd, workspacePath, mode, requiredCoverageScrip
     validJson: false,
     previousCoverage: null,
     coverageScript: null,
+    previousC8DevDependency: null,
+    c8DevDependency: null,
     matchesRequiredCoverageBefore: false,
     matchesRequiredCoverageAfter: false,
+    matchesRequiredC8DevDependencyBefore: false,
+    matchesRequiredC8DevDependencyAfter: false,
     updated: false,
     error: '',
   };
@@ -153,14 +161,32 @@ function reconcileCoverageScript(cwd, workspacePath, mode, requiredCoverageScrip
     pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
+  const devDependencies =
+    pkg.devDependencies &&
+    typeof pkg.devDependencies === 'object' &&
+    !Array.isArray(pkg.devDependencies)
+      ? { ...pkg.devDependencies }
+      : {};
 
-  const previousCoverage = typeof scripts.coverage === 'string' ? scripts.coverage : null;
+  const previousCoverage =
+    typeof scripts[REQUIRED_COVERAGE_SCRIPT_KEY] === 'string'
+      ? scripts[REQUIRED_COVERAGE_SCRIPT_KEY]
+      : null;
+  const previousC8DevDependency =
+    typeof devDependencies.c8 === 'string' ? devDependencies.c8 : null;
   result.previousCoverage = previousCoverage;
+  result.previousC8DevDependency = previousC8DevDependency;
   result.matchesRequiredCoverageBefore = previousCoverage === requiredCoverageScript;
+  result.matchesRequiredC8DevDependencyBefore = previousC8DevDependency === requiredC8Version;
 
-  if (!result.matchesRequiredCoverageBefore && mode === 'sync') {
-    scripts.coverage = requiredCoverageScript;
+  if (
+    (!result.matchesRequiredCoverageBefore || !result.matchesRequiredC8DevDependencyBefore) &&
+    mode === 'sync'
+  ) {
+    scripts[REQUIRED_COVERAGE_SCRIPT_KEY] = requiredCoverageScript;
+    devDependencies.c8 = requiredC8Version;
     pkg.scripts = scripts;
+    pkg.devDependencies = devDependencies;
     fs.writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
     result.updated = true;
   }
@@ -169,8 +195,14 @@ function reconcileCoverageScript(cwd, workspacePath, mode, requiredCoverageScrip
     mode === 'sync' && !result.matchesRequiredCoverageBefore
       ? requiredCoverageScript
       : previousCoverage;
+  result.c8DevDependency =
+    mode === 'sync' && !result.matchesRequiredC8DevDependencyBefore
+      ? requiredC8Version
+      : previousC8DevDependency;
 
   result.matchesRequiredCoverageAfter = result.updated || result.matchesRequiredCoverageBefore;
+  result.matchesRequiredC8DevDependencyAfter =
+    result.updated || result.matchesRequiredC8DevDependencyBefore;
   return result;
 }
 
@@ -181,6 +213,7 @@ export function runSyncCoverageScript(options) {
   const jsonFile = getSingle(options, '--json', '');
   const { baseline: toolingBaseline, toolingBaselinePath } = loadToolingBaseline();
   const requiredCoverageScript = buildRequiredCoverageScript(toolingBaseline);
+  const requiredC8Version = buildRequiredC8DevDependency(toolingBaseline);
 
   if (!fs.existsSync(cwd)) {
     console.error(`CWD does not exist: ${cwd}`);
@@ -199,6 +232,7 @@ export function runSyncCoverageScript(options) {
       c8Version: toolingBaseline.tools.c8.version,
     },
     requiredCoverageScript,
+    requiredC8DevDependency: requiredC8Version,
     workspaces: workspacePaths,
     results: [],
     ok: true,
@@ -206,7 +240,13 @@ export function runSyncCoverageScript(options) {
 
   for (const workspacePath of workspacePaths) {
     const effectiveMode = mode === 'sync' ? 'sync' : 'check';
-    const item = reconcileCoverageScript(cwd, workspacePath, effectiveMode, requiredCoverageScript);
+    const item = reconcileCoverageScript(
+      cwd,
+      workspacePath,
+      effectiveMode,
+      requiredCoverageScript,
+      requiredC8Version,
+    );
     report.results.push(item);
 
     if (item.error) {
@@ -214,7 +254,10 @@ export function runSyncCoverageScript(options) {
       continue;
     }
 
-    if (mode === 'check' && !item.matchesRequiredCoverageAfter) {
+    if (
+      mode === 'check' &&
+      (!item.matchesRequiredCoverageAfter || !item.matchesRequiredC8DevDependencyAfter)
+    ) {
       report.ok = false;
     }
   }

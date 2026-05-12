@@ -30,7 +30,7 @@ function createRootWorkspacePackageJson() {
     scripts: {
       'deps:install': 'npm install',
       test: 'npm run test --workspaces --if-present',
-      coverage: 'npm run coverage --workspaces --if-present',
+      'produck:coverage': 'npm run coverage --workspaces --if-present',
       lint: 'eslint --fix . --max-warnings=0',
     },
   };
@@ -45,7 +45,7 @@ describe('enforce-node-baseline command', () => {
     assert.match(result.stdout, /1\) sync-instructions/);
   });
 
-  it('runs sync-instructions, preflight, and sync-coverage-script in order', async () => {
+  it('runs sync-instructions, preflight, sync-coverage-script, and sync-husky-hooks in order', async () => {
     await withTempDir('agent-toolkit-enforce-node-baseline-sync-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       const instructionFile = path.join(sourceDir, '00-sample.instructions.md');
@@ -73,10 +73,10 @@ describe('enforce-node-baseline command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.steps.length, 3);
+      assert.equal(report.steps.length, 4);
       assert.deepEqual(
         report.steps.map((step) => step.name),
-        ['sync-instructions', 'preflight', 'sync-coverage-script'],
+        ['sync-instructions', 'preflight', 'sync-coverage-script', 'sync-husky-hooks'],
       );
       assert.equal(
         report.steps.every((step) => step.ok),
@@ -94,7 +94,7 @@ describe('enforce-node-baseline command', () => {
       assert.match(copiedInstructionText, /sample-instruction/);
 
       const workspacePackage = await readJson(path.join(tempDir, 'packages/a/package.json'));
-      assert.equal(workspacePackage.scripts.coverage, REQUIRED_COVERAGE_SCRIPT);
+      assert.equal(workspacePackage.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
     });
   });
 
@@ -108,7 +108,7 @@ describe('enforce-node-baseline command', () => {
       );
       await writeTextFile(
         path.join(tempDir, 'packages/a/package.json'),
-        `${JSON.stringify({ name: 'a', scripts: { coverage: 'echo old' } }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'a', scripts: { 'produck:coverage': 'echo old' } }, null, 2)}\n`,
       );
 
       const result = runCli([
@@ -138,7 +138,7 @@ describe('enforce-node-baseline command', () => {
       assert.equal(fs.existsSync(copiedInstruction), false);
 
       const workspacePackage = await readJson(path.join(tempDir, 'packages/a/package.json'));
-      assert.equal(workspacePackage.scripts.coverage, 'echo old');
+      assert.equal(workspacePackage.scripts['produck:coverage'], 'echo old');
     });
   });
 });

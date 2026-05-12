@@ -11,6 +11,7 @@ import {
   printSyncCoverageScriptHelp,
   runSyncCoverageScript,
 } from './command/sync-coverage-script/index.mjs';
+import { printSyncHuskyHooksHelp, runSyncHuskyHooks } from './command/sync-husky-hooks/index.mjs';
 import {
   printSyncInstructionsHelp,
   runSyncInstructions,
@@ -41,6 +42,10 @@ const COMMANDS = {
   'sync-coverage-script': {
     printHelp: printSyncCoverageScriptHelp,
     run: runSyncCoverageScript,
+  },
+  'sync-husky-hooks': {
+    printHelp: printSyncHuskyHooksHelp,
+    run: runSyncHuskyHooks,
   },
   'validate-commit-msg': {
     printHelp: printValidateCommitMsgHelp,

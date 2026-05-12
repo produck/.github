@@ -4,6 +4,7 @@ agent-toolkit commands:
   run-capture
   summarize-log
   sync-coverage-script
+  sync-husky-hooks
   validate-commit-msg
   sync-instructions
 

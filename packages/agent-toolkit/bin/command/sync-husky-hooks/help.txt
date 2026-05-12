@@ -1,0 +1,22 @@
+Usage:
+  agent-toolkit sync-husky-hooks [--cwd <dir>] [--check] [--dry-run]
+    [--json <file>]
+
+Behavior:
+  - Applies organization-required root scripts for local hook gates:
+    - scripts.prepare = husky
+    - scripts.produck:precommit-check = npm run format:check && npm run lint
+  - Applies organization-required root managed devDependencies:
+    - devDependencies.c8 = <fixed-version-from-baseline>
+    - devDependencies.husky = <fixed-version-from-baseline>
+    - devDependencies.lerna = <fixed-version-from-baseline>
+    - devDependencies.@produck/agent-toolkit = <latest-version-resolved-at-runtime>
+  - Applies organization-required hook files:
+    - .husky/pre-commit
+    - .husky/commit-msg
+  - commit-msg hook validates message via local node_modules toolkit path
+
+Rules:
+  - --check validates without writing and exits non-zero on mismatch
+  - --dry-run prints planned changes without writing
+  - --check takes precedence over --dry-run

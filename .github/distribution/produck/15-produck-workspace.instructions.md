@@ -183,12 +183,23 @@ npm run eslint-rules:pack-check
 - Workspace subpackage coverage scripts are fully organization-governed.
 - Deploy/repair coverage scripts via central remediation command:
   `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .`.
-- Deployed coverage scripts use fixed baseline `c8@11.0.0`.
+- Root anti-drift local hook baseline is organization-governed.
+- Deploy/repair root local hooks via central remediation command:
+  `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-husky-hooks --cwd .`.
+- Deployed coverage scripts use local fixed baseline `devDependencies.c8`
+  version `11.0.0` in each governed workspace package.
+- Deployed local hook baseline uses root `devDependencies.husky` fixed version
+  `^9.1.7`.
+- Deployed local hook baseline also pins root
+  `devDependencies.@produck/agent-toolkit` to latest registry version resolved at execution time and written as a fixed version.
 - Shared scripts/CI must not use unversioned `npx c8` or `c8@latest`.
 - `test` script implementation remains repository-defined and is not overwritten
   by coverage remediation.
-- Do not require root `devDependencies` entries for `c8` by default; pin only
-  when repository reproducibility constraints require it.
+- Do not require root `devDependencies` entries for `c8`; coverage remediation
+  pins `devDependencies.c8` in each governed workspace package.
+- Root local hooks may be bypassed intentionally by developers (for example via
+  `--no-verify`) and are treated as local strong guardrails rather than
+  immutable release gates.
 
 ## Package Integration
 

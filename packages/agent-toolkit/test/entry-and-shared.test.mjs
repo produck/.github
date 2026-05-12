@@ -107,6 +107,7 @@ describe('main command router', () => {
     assert.match(output, /agent-toolkit commands:/);
     assert.match(output, /enforce-node-baseline/);
     assert.match(output, /sync-coverage-script/);
+    assert.match(output, /sync-husky-hooks/);
     assert.match(output, /validate-commit-msg/);
   });
 
@@ -122,7 +123,7 @@ describe('main command router', () => {
         scripts: {
           'deps:install': 'npm install',
           test: 'npm run test --workspaces --if-present',
-          coverage: 'npm run coverage --workspaces --if-present',
+          'produck:coverage': 'npm run coverage --workspaces --if-present',
           lint: 'eslint --fix . --max-warnings=0',
         },
       };
@@ -141,7 +142,7 @@ describe('main command router', () => {
       assert.equal(report.ok, true);
       assert.deepEqual(
         report.steps.map((step) => step.name),
-        ['sync-instructions', 'preflight', 'sync-coverage-script'],
+        ['sync-instructions', 'preflight', 'sync-coverage-script', 'sync-husky-hooks'],
       );
     });
   });

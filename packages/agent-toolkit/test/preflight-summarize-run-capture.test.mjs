@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs/promises';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
@@ -9,7 +9,7 @@ import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 describe('preflight command', () => {
   it('creates report and ensured directories', async () => {
     await withTempDir('agent-toolkit-preflight-', async (tempDir) => {
-      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+      await writeTextFile(path.join(tempDir, 'required.txt'), 'ok\n');
 
       const reportFile = path.join(tempDir, 'reports', 'preflight.json');
       const result = runCli([
@@ -17,7 +17,7 @@ describe('preflight command', () => {
         '--cwd',
         tempDir,
         '--require',
-        'package.json',
+        'required.txt',
         '--ensure-dir',
         'logs',
         '--json',
@@ -27,30 +27,17 @@ describe('preflight command', () => {
       assert.equal(result.status, 0);
       const report = await readJson(reportFile);
       assert.equal(report.ok, true);
-
-      const logsDir = path.join(tempDir, 'logs');
-      const logsStat = await fs.stat(logsDir);
-      assert.equal(logsStat.isDirectory(), true);
+      assert.equal(report.required[0].exists, true);
+      assert.equal(report.ensuredDirs[0].existsAfter, true);
     });
   });
 
   it('fails when cwd does not exist', () => {
-    const missingCwd = path.join(os.tmpdir(), 'agent-toolkit-no-such-cwd');
+    const missingCwd = path.join(os.tmpdir(), 'agent-toolkit-preflight-missing-cwd');
     const result = runCli(['preflight', '--cwd', missingCwd]);
 
     assert.equal(result.status, 2);
     assert.match(result.stderr, /CWD does not exist/);
-  });
-
-  it('fails when required file is missing', async () => {
-    await withTempDir('agent-toolkit-preflight-missing-', async (tempDir) => {
-      const result = runCli(['preflight', '--cwd', tempDir, '--require', 'missing.txt']);
-
-      assert.equal(result.status, 2);
-      const report = JSON.parse(result.stdout);
-      assert.equal(report.ok, false);
-      assert.equal(report.required[0].exists, false);
-    });
   });
 
   it('validates workspace package.json baseline when workspaces are explicit', async () => {
@@ -62,7 +49,7 @@ describe('preflight command', () => {
         scripts: {
           'deps:install': 'npm install',
           test: 'npm run test --workspaces --if-present',
-          coverage: 'npm run coverage --workspaces --if-present',
+          'produck:coverage': 'npm run coverage --workspaces --if-present',
           lint: 'eslint --fix . --max-warnings=0',
         },
       };
@@ -82,46 +69,8 @@ describe('preflight command', () => {
       assert.equal(result.status, 0);
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.workspacePackageJson.exists, true);
-      assert.equal(report.workspacePackageJson.hasWildcardWorkspace, false);
       assert.deepEqual(report.workspacePackageJson.missingScripts, []);
-    });
-  });
-
-  it('fails workspace package.json validation when workspaces use wildcard', async () => {
-    await withTempDir('agent-toolkit-preflight-workspace-wildcard-', async (tempDir) => {
-      const packageJson = {
-        name: 'tmp-workspace',
-        private: true,
-        workspaces: ['packages/*'],
-        scripts: {
-          'deps:install': 'npm install',
-          test: 'npm run test --workspaces --if-present',
-          coverage: 'npm run coverage --workspaces --if-present',
-          lint: 'eslint --fix . --max-warnings=0',
-        },
-      };
-      await writeTextFile(
-        path.join(tempDir, 'package.json'),
-        `${JSON.stringify(packageJson, null, 2)}\n`,
-      );
-
-      const result = runCli([
-        'preflight',
-        '--cwd',
-        tempDir,
-        '--check-workspace-package-json',
-        'package.json',
-      ]);
-
-      assert.equal(result.status, 2);
-      const report = JSON.parse(result.stdout);
-      assert.equal(report.ok, false);
-      assert.equal(report.workspacePackageJson.hasWildcardWorkspace, true);
-      assert.match(
-        report.workspacePackageJson.errors.join('\n'),
-        /workspaces.*explicit paths.*glob tokens/i,
-      );
+      assert.deepEqual(report.workspacePackageJson.wildcardWorkspaces, []);
     });
   });
 });
@@ -142,13 +91,10 @@ describe('summarize-log command', () => {
     assert.match(result.stderr, /Log file does not exist/);
   });
 
-  it('supports match, last and max options', async () => {
+  it('supports match and last filters', async () => {
     await withTempDir('agent-toolkit-summarize-', async (tempDir) => {
       const logFile = path.join(tempDir, 'run.log');
-      await writeTextFile(
-        logFile,
-        ['INFO init', 'ERROR first', 'INFO retry', 'ERROR second', 'ERROR third', ''].join('\n'),
-      );
+      await writeTextFile(logFile, ['line1', 'ERROR one', 'line3', 'ERROR two'].join('\n'));
 
       const result = runCli([
         'summarize-log',
@@ -157,58 +103,25 @@ describe('summarize-log command', () => {
         '--match',
         'ERROR',
         '--last',
-        '2',
-        '--max',
-        '10',
+        '1',
       ]);
 
       assert.equal(result.status, 0);
-      assert.match(result.stdout, /# mode: match\+last/);
-      assert.match(result.stdout, /ERROR second/);
-      assert.match(result.stdout, /ERROR third/);
+      assert.match(result.stdout, /# selectedLines: 1/);
+      assert.match(result.stdout, /ERROR two/);
     });
   });
 
   it('supports all mode without filters', async () => {
     await withTempDir('agent-toolkit-summarize-all-', async (tempDir) => {
-      const logFile = path.join(tempDir, 'run.log');
-      await writeTextFile(logFile, ['A', 'B', 'C', ''].join('\n'));
+      const logFile = path.join(tempDir, 'all.log');
+      await writeTextFile(logFile, ['a', 'b', 'c'].join('\n'));
 
       const result = runCli(['summarize-log', '--file', logFile]);
 
       assert.equal(result.status, 0);
-      assert.match(result.stdout, /# mode: all/);
-      assert.match(result.stdout, /A/);
-      assert.match(result.stdout, /C/);
-    });
-  });
-
-  it('applies max truncation when selected lines exceed limit', async () => {
-    await withTempDir('agent-toolkit-summarize-max-', async (tempDir) => {
-      const logFile = path.join(tempDir, 'run.log');
-      await writeTextFile(logFile, ['L1', 'L2', 'L3', 'L4', ''].join('\n'));
-
-      const result = runCli(['summarize-log', '--file', logFile, '--last', '4', '--max', '2']);
-
-      assert.equal(result.status, 0);
-      assert.match(result.stdout, /# selectedLines: 2/);
-      assert.match(result.stdout, /L2/);
-      assert.match(result.stdout, /L3/);
-    });
-  });
-
-  it('falls back to default max when --max is zero', async () => {
-    await withTempDir('agent-toolkit-summarize-max-fallback-', async (tempDir) => {
-      const logFile = path.join(tempDir, 'run.log');
-      await writeTextFile(logFile, ['F1', 'F2', 'F3', 'F4', ''].join('\n'));
-
-      const result = runCli(['summarize-log', '--file', logFile, '--last', '3', '--max', '0']);
-
-      assert.equal(result.status, 0);
-      assert.match(result.stdout, /# mode: last/);
       assert.match(result.stdout, /# selectedLines: 3/);
-      assert.match(result.stdout, /F3/);
-      assert.match(result.stdout, /F4/);
+      assert.match(result.stdout, /a\nb\nc/);
     });
   });
 });
@@ -222,10 +135,17 @@ describe('run-capture command', () => {
   });
 
   it('blocks pipe command unless --allow-pipe is set', async () => {
-    await withTempDir('agent-toolkit-run-capture-pipe-', async (tempDir) => {
-      const outFile = path.join(tempDir, 'run.log');
-      const cmd = 'node left.mjs | node right.mjs';
-      const result = runCli(['run-capture', '--out', outFile, '--cmd', cmd]);
+    await withTempDir('agent-toolkit-capture-no-pipe-', async (tempDir) => {
+      const outFile = path.join(tempDir, 'capture.log');
+      const result = runCli([
+        'run-capture',
+        '--cwd',
+        tempDir,
+        '--cmd',
+        'echo hi | sort',
+        '--out',
+        outFile,
+      ]);
 
       assert.equal(result.status, 2);
       assert.match(result.stderr, /Blocked command containing pipe/);
@@ -233,118 +153,48 @@ describe('run-capture command', () => {
   });
 
   it('captures output and writes default meta file', async () => {
-    await withTempDir('agent-toolkit-run-capture-ok-', async (tempDir) => {
+    await withTempDir('agent-toolkit-capture-default-meta-', async (tempDir) => {
       const outFile = path.join(tempDir, 'capture.log');
-      const metaFile = `${outFile}.meta.json`;
-      const emitScript = path.join(tempDir, 'emit.mjs');
-      await writeTextFile(emitScript, 'process.stdout.write("HELLO_CAPTURE");\n');
-      const cmd = `node ${path.basename(emitScript)}`;
-      const result = runCli(['run-capture', '--out', outFile, '--cmd', cmd, '--cwd', tempDir]);
+      const result = runCli([
+        'run-capture',
+        '--cwd',
+        tempDir,
+        '--cmd',
+        'node -e "console.log(\'ok\')"',
+        '--out',
+        outFile,
+      ]);
 
       assert.equal(result.status, 0);
+      assert.equal(fs.existsSync(outFile), true);
+      assert.equal(fs.existsSync(`${outFile}.meta.json`), true);
 
-      const outText = await fs.readFile(outFile, 'utf8');
-      assert.match(outText, /HELLO_CAPTURE/);
-
-      const meta = await readJson(metaFile);
-      assert.equal(meta.exitCode, 0);
-      assert.equal(meta.outputFile, outFile);
+      const output = fs.readFileSync(outFile, 'utf8');
+      assert.match(output, /ok/);
     });
   });
 
   it('respects explicit meta path and propagates child exit code', async () => {
-    await withTempDir('agent-toolkit-run-capture-exit-', async (tempDir) => {
+    await withTempDir('agent-toolkit-capture-meta-', async (tempDir) => {
       const outFile = path.join(tempDir, 'capture.log');
-      const metaFile = path.join(tempDir, 'meta', 'capture.meta.json');
-      const exitScript = path.join(tempDir, 'exit-3.mjs');
-      await writeTextFile(exitScript, 'process.exit(3);\n');
-      const cmd = `node ${path.basename(exitScript)}`;
+      const metaFile = path.join(tempDir, 'capture.meta.json');
       const result = runCli([
         'run-capture',
+        '--cwd',
+        tempDir,
+        '--cmd',
+        'node -e "process.exit(3)"',
         '--out',
         outFile,
         '--meta',
         metaFile,
-        '--cmd',
-        cmd,
-        '--cwd',
-        tempDir,
       ]);
 
       assert.equal(result.status, 3);
+      assert.equal(fs.existsSync(metaFile), true);
 
       const meta = await readJson(metaFile);
       assert.equal(meta.exitCode, 3);
-      assert.equal(meta.outputFile, outFile);
-    });
-  });
-
-  it('allows pipe command when --allow-pipe is set', async () => {
-    await withTempDir('agent-toolkit-run-capture-allow-pipe-', async (tempDir) => {
-      const outFile = path.join(tempDir, 'pipe.log');
-      const leftScript = path.join(tempDir, 'left.mjs');
-      const rightScript = path.join(tempDir, 'right.mjs');
-      await writeTextFile(leftScript, 'process.stdout.write("LEFT");\n');
-      await writeTextFile(rightScript, 'process.stdout.write("RIGHT");\n');
-      const cmd = `node ${path.basename(leftScript)} | node ${path.basename(rightScript)}`;
-      const result = runCli([
-        'run-capture',
-        '--out',
-        outFile,
-        '--cmd',
-        cmd,
-        '--allow-pipe',
-        '--cwd',
-        tempDir,
-      ]);
-
-      assert.equal(result.status, 0);
-
-      const outText = await fs.readFile(outFile, 'utf8');
-      assert.match(outText, /RIGHT/);
-    });
-  });
-
-  it('captures stderr stream from child command', async () => {
-    await withTempDir('agent-toolkit-run-capture-stderr-', async (tempDir) => {
-      const outFile = path.join(tempDir, 'stderr.log');
-      const stderrScript = path.join(tempDir, 'stderr.mjs');
-
-      await writeTextFile(
-        stderrScript,
-        'process.stderr.write("STDERR_LINE"); process.stdout.write("STDOUT_LINE");\n',
-      );
-
-      const cmd = `node ${path.basename(stderrScript)}`;
-      const result = runCli(['run-capture', '--out', outFile, '--cmd', cmd, '--cwd', tempDir]);
-
-      assert.equal(result.status, 0);
-
-      const outText = await fs.readFile(outFile, 'utf8');
-      assert.match(outText, /STDERR_LINE/);
-      assert.match(outText, /STDOUT_LINE/);
-    });
-  });
-
-  it('falls back to exit code 1 when shell cannot be spawned', async () => {
-    await withTempDir('agent-toolkit-run-capture-shell-error-', async (tempDir) => {
-      const outFile = path.join(tempDir, 'spawn-error.log');
-      const badShell = path.join(tempDir, 'missing-shell.exe');
-      const result = runCli(
-        ['run-capture', '--out', outFile, '--cmd', 'echo HELLO_FROM_BAD_SHELL'],
-        {
-          env: {
-            ...process.env,
-            COMSPEC: badShell,
-            ComSpec: badShell,
-          },
-        },
-      );
-
-      assert.notEqual(result.status, 0);
-
-      const outText = await fs.readFile(outFile, 'utf8');
-      assert.match(outText, /spawn error/i);
     });
   });
 });

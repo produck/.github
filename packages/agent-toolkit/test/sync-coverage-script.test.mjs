@@ -87,14 +87,20 @@ describe('sync-coverage-script command', () => {
       const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
       const b = await readJson(path.join(tempDir, 'packages/b/package.json'));
 
-      assert.equal(a.scripts.coverage, REQUIRED_COVERAGE_SCRIPT);
-      assert.equal(b.scripts.coverage, REQUIRED_COVERAGE_SCRIPT);
+      assert.equal(a.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
+      assert.equal(b.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
+      assert.equal(a.devDependencies.c8, String(TOOLING_BASELINE.tools.c8.version));
+      assert.equal(b.devDependencies.c8, String(TOOLING_BASELINE.tools.c8.version));
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
       assert.equal(report.results.length, 2);
       assert.equal(
         report.results.every((item) => item.matchesRequiredCoverageAfter),
+        true,
+      );
+      assert.equal(
+        report.results.every((item) => item.matchesRequiredC8DevDependencyAfter),
         true,
       );
     });
@@ -113,7 +119,7 @@ describe('sync-coverage-script command', () => {
       );
       await writeTextFile(
         path.join(tempDir, 'packages/a/package.json'),
-        `${JSON.stringify({ name: 'a', scripts: { coverage: 'echo custom' } }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'a', scripts: { 'produck:coverage': 'echo custom' }, devDependencies: { c8: '10.0.0' } }, null, 2)}\n`,
       );
 
       const result = runCli(['sync-coverage-script', '--cwd', tempDir, '--check']);
@@ -122,9 +128,11 @@ describe('sync-coverage-script command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, false);
       assert.equal(report.results[0].matchesRequiredCoverageAfter, false);
+      assert.equal(report.results[0].matchesRequiredC8DevDependencyAfter, false);
 
       const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
-      assert.equal(a.scripts.coverage, 'echo custom');
+      assert.equal(a.scripts['produck:coverage'], 'echo custom');
+      assert.equal(a.devDependencies.c8, '10.0.0');
     });
   });
 
@@ -170,7 +178,7 @@ describe('sync-coverage-script command', () => {
       );
       await writeTextFile(
         path.join(tempDir, 'packages/a/package.json'),
-        `${JSON.stringify({ name: 'a', scripts: { coverage: 'echo old' } }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'a', scripts: { 'produck:coverage': 'echo old' } }, null, 2)}\n`,
       );
 
       const result = runCli(['sync-coverage-script', '--cwd', tempDir, '--dry-run']);
@@ -181,7 +189,8 @@ describe('sync-coverage-script command', () => {
       assert.equal(report.results[0].updated, false);
 
       const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
-      assert.equal(a.scripts.coverage, 'echo old');
+      assert.equal(a.scripts['produck:coverage'], 'echo old');
+      assert.equal(a.devDependencies, undefined);
     });
   });
 });

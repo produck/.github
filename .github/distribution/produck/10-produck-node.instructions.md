@@ -1,32 +1,17 @@
 ---
-applyTo: '**/*.{js,cjs,mjs,ts,tsx,json,yaml,yml}'
+applyTo: '**'
 ---
 
 <!-- managed-by: @produck/agent-toolkit -->
 <!-- source: .github/distribution/produck/10-produck-node.instructions.md -->
 
-# Node.js Initialization Baseline
-
-This document defines the organization-level initialization baseline for Node.js
-repositories.
+# Node.js Baseline (Monorepo + Standalone)
 
 ## Scope
 
-- Applies to all Node.js repositories in the `produck` organization, including
-  services, CLI tools, and script/tooling repositories.
-- Supports two repository modes: monorepo and standalone.
-
-## Mode selection
-
-- Monorepo mode: one repository contains multiple Node.js packages/apps.
-- Standalone mode: one repository represents one Node.js package/app.
-- Repository owners should declare the selected mode in the repository README.
-
-## Common baseline (all modes)
-
-- Node.js version policy: LTS required (no fixed major version at organization
-  level).
-- Package manager: npm only.
+- Applies to Node.js repositories in the organization.
+- Default package manager: npm.
+- Default language level: modern stable Node.js for current LTS.
 - Module system: ESM by default for executable/publishable Node.js packages
   (`"type": "module"` in package-level `package.json`).
 - Follow the organization `.gitattributes` baseline (LF default for text files).
@@ -36,7 +21,7 @@ Required script keys:
 
 - `deps:install`
 - `test`
-- `coverage`
+- `produck:coverage`
 - `lint`
 - `publish`
 
@@ -46,25 +31,28 @@ Notes:
 - `publish` may be a no-op when repository-specific release workflow does not
   use npm publishing.
 - Coverage governance policy:
-  - Keep the script key name `coverage` (organization-reserved key).
-  - In monorepo mode, workspace subpackage `scripts.coverage` is fully governed
-    by organization baseline.
+  - Keep the script key name `produck:coverage` (organization-reserved key).
+  - In monorepo mode, workspace subpackage `scripts.produck:coverage` and
+    workspace `devDependencies.c8` are fully governed by organization
+    baseline.
   - Source of truth for tooling versions/template:
     `.github/distribution/produck/tooling-version-baseline.json`.
   - Use central remediation command to deploy coverage scripts:
     `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-coverage-script --cwd .`.
-  - `c8` execution baseline for deployed coverage scripts is fixed to
-    `c8@11.0.0`.
+  - Use central remediation command to deploy local anti-drift hook baseline:
+    `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit sync-husky-hooks --cwd .`.
+  - `c8` execution baseline for deployed coverage scripts is fixed to local
+    workspace `devDependencies.c8` version `11.0.0`.
   - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
     in shared scripts/CI.
-  - Do not require a root `devDependencies` entry for `c8` unless repository
-    constraints require pinned/offline installation.
+  - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned
+    to organization baseline fixed versions via `agent-toolkit sync-husky-hooks`.
 
 - Testing strategy and framework are repository-defined.
 - `test` script implementation is repository-defined and is not overwritten by
   organization coverage remediation.
-- Repositories should keep `npm run test` and `npm run coverage` executable in
-  steady state.
+- Repositories should keep `npm run test` and `npm run produck:coverage`
+  executable in steady state.
 - For intermediate commits, temporary non-executable state or failing tests are
   allowed.
 - Commit prechecks still require passing repository style gates (for example
@@ -80,7 +68,10 @@ Central toolkit command role model:
   baseline and is mandatory for required baseline checks.
 - `agent-toolkit sync-coverage-script` is the hard guard for monorepo coverage
   governance and is mandatory in monorepo mode.
-- For simplified downstream execution of mandatory flow (1 -> 2 -> 3), use:
+- `agent-toolkit sync-husky-hooks` is the hard guard for local anti-drift hook
+  governance and is mandatory in monorepo mode.
+- For simplified downstream execution of mandatory flow (1 -> 2 -> 3 -> 4),
+  use:
   `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit`.
 - Equivalent explicit form:
   `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .`.
@@ -162,15 +153,26 @@ Repository layout:
 
 Script placement:
 
-- Root `package.json` must provide `deps:install`, `test`, `coverage`, and
-  `lint` orchestration scripts.
+- Root `package.json` must provide `deps:install`, `test`, `produck:coverage`,
+  and `lint` orchestration scripts.
+- Root `package.json` must reserve `produck:precommit-check` for organization
+  anti-drift gate with required value:
+  `npm run format:check && npm run lint`.
+- Root `package.json` must reserve `prepare` for husky setup with required
+  value: `husky`.
 - `publish` may be defined at root or package level based on release workflow.
-- Workspace subpackage `coverage` scripts must be synchronized by
+- Workspace subpackage `produck:coverage` scripts must be synchronized by
   `agent-toolkit sync-coverage-script`.
+- Root local hook governance must be synchronized by
+  `agent-toolkit sync-husky-hooks`.
+- Root local hook governance must pin root `devDependencies.c8`,
+  `devDependencies.husky`, `devDependencies.lerna`, and
+  `devDependencies.@produck/agent-toolkit` via
+  `agent-toolkit sync-husky-hooks`.
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:
   ```json
-  "produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd . --workspace"
+  "produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd ."
   ```
 
 Release tooling policy (required):
@@ -193,7 +195,7 @@ Root workspace `package.json` minimal baseline (required):
 
 - `private`: `true`
 - `workspaces` (explicit package path list only)
-- `scripts` with at least: `deps:install`, `test`, `coverage`, `lint`
+- `scripts` with at least: `deps:install`, `test`, `produck:coverage`, `lint`
 - `publish` script is optional at root when release is managed per package or
   by external workflow.
 
@@ -230,7 +232,7 @@ Repository layout:
 Script placement:
 
 - The repository root `package.json` must define `deps:install`, `test`,
-  `coverage`, `lint`, and `publish`.
+  `produck:coverage`, `lint`, and `publish`.
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:
   ```json
