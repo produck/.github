@@ -312,7 +312,6 @@ export function runSyncWorkspaceConfig(options) {
   if (previousEslintConfig === null) {
     eslintConfigAction = 'initialized';
     nextEslintConfigText = REQUIRED_ESLINT_CONFIG;
-    matchesRequiredEslintConfig = false;
   } else if (previousEslintConfig === REQUIRED_ESLINT_CONFIG) {
     matchesRequiredEslintConfig = true;
   } else if (previousEslintConfig.includes('@produck/eslint-rules')) {
@@ -322,10 +321,8 @@ export function runSyncWorkspaceConfig(options) {
     if (patched.ok) {
       eslintConfigAction = 'patched';
       nextEslintConfigText = patched.output;
-      matchesRequiredEslintConfig = false;
     } else {
       eslintConfigAction = 'unpatchable';
-      matchesRequiredEslintConfig = false;
     }
   }
 
