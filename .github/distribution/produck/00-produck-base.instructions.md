@@ -253,14 +253,15 @@ automatic PR rollout.
 
 ### Central package execution policy
 
-When bridge mechanism uses a central npm package, default execution strategy is
-`@latest` to deliver new capabilities quickly.
+When bridge mechanism uses a central npm package, the package is installed
+locally in downstream repositories at a fixed version managed by the
+organization baseline.
 
-Exception rule:
-
-- If a downstream baseline defines organization-mandated fixed tool versions
-  (for example `lerna`/`c8` in Node.js baseline), those fixed versions override
-  the generic `@latest` strategy.
+- Local install and pinned version are deployed by
+  `agent-toolkit sync-husky-hooks`.
+- Invocation uses the locally installed copy:
+  `npm exec -- <bin> ...`.
+- Do not use `npm exec --package=<pkg>@latest` for routine invocations.
 
 Local implementation reference in this repository:
 
@@ -306,9 +307,8 @@ Use the following template text in organization AI instructions:
   - For large output tasks, use two phases: capture full output, then analyze.
   - Avoid fragile shell pipeline post-processing for long-output commands.
 - Central package policy:
-  - Default to `<pkg>@latest` for organization tooling commands.
-  - If a downstream baseline mandates fixed versions for specific tools,
-    follow those fixed versions instead of `@latest`.
+  - Central package is installed locally at a fixed organization-baseline version.
+  - Invoke via `npm exec -- <bin> ...` to use the locally installed copy.
   - Print resolved package version before high-impact execution.
   - Use dry-run first for risky operations; keep rollback path to pinned version.
 - Commit message policy:
@@ -317,7 +317,7 @@ Use the following template text in organization AI instructions:
   - Use only allowed tags: `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`,
     `[REFACTOR]`, `[UPGRADE]`.
   - Optional target syntax is `[TAG] <target>: <summary>` with target in:
-    `docs`, `test`, `ci`, `deps`, `api`, `schema`, `infra`.
+    `docs`, `test`, `ci`, `deps`, `api`, `schema`, `infra`, `fmt`.
 - Do not assume scripts from organization `.github` repository exist in target
   repositories.
 - If a repository provides stricter rules, repository rules override

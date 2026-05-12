@@ -153,20 +153,6 @@ npm run test
 npm run coverage
 ```
 
-### Package-Specific Commands
-
-```bash
-# Verify toolkit package
-npm run toolkit:verify
-
-# Verify eslint-rules package
-npm run eslint-rules:verify
-
-# Check package distributions
-npm run toolkit:pack-check
-npm run eslint-rules:pack-check
-```
-
 ### Release & Coverage Tooling
 
 - Monorepo release workflow is `lerna`-based and required.
@@ -195,8 +181,9 @@ npm run eslint-rules:pack-check
 - Shared scripts/CI must not use unversioned `npx c8` or `c8@latest`.
 - `test` script implementation remains repository-defined and is not overwritten
   by coverage remediation.
-- Do not require root `devDependencies` entries for `c8`; coverage remediation
-  pins `devDependencies.c8` in each governed workspace package.
+- Root `devDependencies.c8` is pinned at root by `agent-toolkit sync-husky-hooks`;
+  workspace package `devDependencies.c8` is pinned per package by
+  `agent-toolkit sync-coverage-script`.
 - Root local hooks may be bypassed intentionally by developers (for example via
   `--no-verify`) and are treated as local strong guardrails rather than
   immutable release gates.
@@ -285,10 +272,6 @@ npm run lint
 # Testing
 npm run test
 npm run coverage
-
-# Package verification
-npm run toolkit:verify
-npm run eslint-rules:verify
 ```
 
 ## Best Practices
