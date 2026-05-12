@@ -79,11 +79,7 @@ indent_style = space
 indent_size = 2
 trim_trailing_whitespace = true
 
-[*.yml]
-indent_style = space
-indent_size = 2
-
-[*.yaml]
+[*.{yml,yaml}]
 indent_style = space
 indent_size = 2
 
@@ -147,6 +143,8 @@ max_line_length = 80
 - Recommended local validation:
   `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
 validate-commit-msg --file <message-file>`.
+- Commit precheck policy follows
+  `.github/distribution/produck/20-produck-commit.instructions.md`.
 - Canonical source for commit tag/target whitelists, legacy mapping, and
   target syntax is
   `.github/distribution/produck/20-produck-commit.instructions.md`.

@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "description": "Produck organization policy repository monorepo",
   "workspaces": [
-    "packages/*"
+    "packages/agent-toolkit",
+    "packages/eslint-rules"
   ],
   "scripts": {
     "deps:install": "npm install",

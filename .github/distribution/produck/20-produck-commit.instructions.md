@@ -166,6 +166,16 @@ Use the local validator before commit:
 - Validation is required before both `git commit` and `git commit --amend`.
 - Do not create or amend a commit when validation fails.
 
+Commit precheck gate (required):
+
+- Complete repository style gates before both `git commit` and
+  `git commit --amend` (for example `format:check` and `lint`).
+- Temporary non-executable state or failing tests are allowed for
+  intermediate commits.
+- Test/coverage pass status is not a hard blocker at commit time.
+- Before merge or release, restore executable test commands and fix failing
+  tests.
+
 - `npm exec --package=@produck/agent-toolkit@latest agent-toolkit
 validate-commit-msg --file <message-file>`
 

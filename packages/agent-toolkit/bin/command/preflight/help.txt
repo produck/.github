@@ -1,3 +1,9 @@
 Usage:
   agent-toolkit preflight [--cwd <dir>] [--require <path>] ...
     [--ensure-dir <path>] ... [--json <file>]
+    [--check-workspace-package-json <path>]
+
+Rules for --check-workspace-package-json:
+  - `private` must be true
+  - `workspaces` must be a non-empty array of explicit paths (no glob tokens)
+  - `scripts` must include deps:install, test, coverage, lint

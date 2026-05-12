@@ -52,6 +52,78 @@ describe('preflight command', () => {
       assert.equal(report.required[0].exists, false);
     });
   });
+
+  it('validates workspace package.json baseline when workspaces are explicit', async () => {
+    await withTempDir('agent-toolkit-preflight-workspace-ok-', async (tempDir) => {
+      const packageJson = {
+        name: 'tmp-workspace',
+        private: true,
+        workspaces: ['packages/agent-toolkit', 'packages/eslint-rules'],
+        scripts: {
+          'deps:install': 'npm install',
+          test: 'npm run test --workspaces --if-present',
+          coverage: 'npm run coverage --workspaces --if-present',
+          lint: 'eslint --fix . --max-warnings=0',
+        },
+      };
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(packageJson, null, 2)}\n`,
+      );
+
+      const result = runCli([
+        'preflight',
+        '--cwd',
+        tempDir,
+        '--check-workspace-package-json',
+        'package.json',
+      ]);
+
+      assert.equal(result.status, 0);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, true);
+      assert.equal(report.workspacePackageJson.exists, true);
+      assert.equal(report.workspacePackageJson.hasWildcardWorkspace, false);
+      assert.deepEqual(report.workspacePackageJson.missingScripts, []);
+    });
+  });
+
+  it('fails workspace package.json validation when workspaces use wildcard', async () => {
+    await withTempDir('agent-toolkit-preflight-workspace-wildcard-', async (tempDir) => {
+      const packageJson = {
+        name: 'tmp-workspace',
+        private: true,
+        workspaces: ['packages/*'],
+        scripts: {
+          'deps:install': 'npm install',
+          test: 'npm run test --workspaces --if-present',
+          coverage: 'npm run coverage --workspaces --if-present',
+          lint: 'eslint --fix . --max-warnings=0',
+        },
+      };
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(packageJson, null, 2)}\n`,
+      );
+
+      const result = runCli([
+        'preflight',
+        '--cwd',
+        tempDir,
+        '--check-workspace-package-json',
+        'package.json',
+      ]);
+
+      assert.equal(result.status, 2);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, false);
+      assert.equal(report.workspacePackageJson.hasWildcardWorkspace, true);
+      assert.match(
+        report.workspacePackageJson.errors.join('\n'),
+        /workspaces.*explicit paths.*glob tokens/i,
+      );
+    });
+  });
 });
 
 describe('summarize-log command', () => {

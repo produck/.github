@@ -27,7 +27,8 @@ repositories.
 - Node.js version policy: LTS required (no fixed major version at organization
   level).
 - Package manager: npm only.
-- Module system: ESM by default (`"type": "module"` in `package.json`).
+- Module system: ESM by default for executable/publishable Node.js packages
+  (`"type": "module"` in package-level `package.json`).
 - Follow the organization `.gitattributes` baseline (LF default for text files).
 - Follow the organization `.editorconfig` baseline.
 
@@ -46,7 +47,12 @@ Notes:
   use npm publishing.
 
 - Testing strategy and framework are repository-defined.
-- Repositories must keep `npm run test` and `npm run coverage` executable.
+- Repositories should keep `npm run test` and `npm run coverage` executable in
+  steady state.
+- For intermediate commits, temporary non-executable state or failing tests are
+  allowed.
+- Commit prechecks still require passing repository style gates (for example
+  `format:check` and `lint`).
 
 Test authoring baseline (required):
 
@@ -117,6 +123,32 @@ Script placement:
 - Root `package.json` must provide `deps:install`, `test`, `coverage`, and
   `lint` orchestration scripts.
 - `publish` may be defined at root or package level based on release workflow.
+
+Root workspace `package.json` minimal baseline (required):
+
+- `private`: `true`
+- `workspaces` (explicit package path list only)
+- `scripts` with at least: `deps:install`, `test`, `coverage`, `lint`
+- `publish` script is optional at root when release is managed per package or
+  by external workflow.
+
+`workspaces` field constraints (required):
+
+- Do not use wildcard/glob patterns (for example `packages/*`, `**`, `?`,
+  `{}` or `[]`).
+- List each workspace package path explicitly.
+
+Avoid unused root runtime/publish fields by default:
+
+- `type`
+- `main`
+- `exports`
+- `types`
+- `files`
+- `publishConfig`
+
+Add the fields above only when the monorepo root itself is an executable
+runtime package or is intentionally published.
 
 Ignore strategy:
 

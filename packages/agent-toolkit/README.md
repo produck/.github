@@ -18,6 +18,12 @@ Run preflight checks:
 npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
 ```
 
+Validate monorepo root workspace package.json baseline:
+
+```
+npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit preflight --cwd . --check-workspace-package-json package.json
+```
+
 Capture long output safely:
 
 ```

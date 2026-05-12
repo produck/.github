@@ -53,13 +53,20 @@ export default [
 ];
 ```
 
-### 2. TypeScript Configuration (`tsconfig.json`)
+### 2. TypeScript Configuration (`tsconfig.json`, conditional)
 
-**Location:** Root `tsconfig.json`
+**Location:** Root `tsconfig.json` (only when needed)
 
-**Applies to:** All TypeScript packages
+**Applies to:** TypeScript packages that opt in
 
-**Key settings:**
+**Decision rule:**
+
+- If the workspace has no TypeScript source files and no package-level need for
+  shared TypeScript options, do not create/deploy root `tsconfig.json`.
+- If any package uses TypeScript source files or needs centralized strict/type
+  options, create root `tsconfig.json` and let TypeScript packages extend it.
+
+**Recommended key settings when present:**
 
 - Target: ES2022
 - Strict mode: enabled
@@ -67,7 +74,7 @@ export default [
 - Source maps: enabled
 - Declaration files: generated
 
-**Usage in packages:**
+**Usage in TypeScript packages:**
 
 ```json
 {
@@ -127,7 +134,7 @@ export default [
 ### Verification & Quality
 
 ```bash
-# Type check all packages
+# Type check all packages (optional: only when root tsconfig.json is present)
 npm run type-check
 
 # Format check without writing
@@ -168,8 +175,10 @@ npm run eslint-rules:pack-check
 2. Create `packages/my-package/package.json` with workspace configuration
 3. Inherit root configs:
    - ESLint: extend `../../eslint.config.mjs`
-   - TypeScript: extend `../../tsconfig.json`
-   - Prettier: uses root `.prettierrc` automatically
+
+- TypeScript (when root `tsconfig.json` exists): extend
+  `../../tsconfig.json`
+- Prettier: uses root `.prettierrc` automatically
 
 ### Package-Level Overrides
 
@@ -213,8 +222,8 @@ Applies to all editors supporting EditorConfig (VSCode, Vim, Sublime, etc.):
 - `typescript-eslint`: TypeScript linting support
 - `globals`: Global variables (browser, node)
 - `prettier`: Code formatter
-- `typescript`: TypeScript compiler
-- `@types/node`: Node.js type definitions
+- `typescript`: TypeScript compiler (when TypeScript is used)
+- `@types/node`: Node.js type definitions (when TypeScript is used)
 
 ### Peer Dependencies (Packages)
 
@@ -236,6 +245,7 @@ Root scripts are designed for CI pipelines:
 ```bash
 # Pre-commit checks
 npm run format:check
+# Optional when root tsconfig.json is used
 npm run type-check
 npm run lint
 
@@ -273,7 +283,7 @@ Root `.prettierrc` and `eslint.config.mjs` are synchronized. If conflict occurs:
 1. Check both configs have matching rules
 2. Run `npm run format` first, then `npm run lint`
 
-### TypeScript includes too many files
+### TypeScript includes too many files (when root tsconfig.json is used)
 
 Update `tsconfig.json` `include` and `exclude` patterns:
 
