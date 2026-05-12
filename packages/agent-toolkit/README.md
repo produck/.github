@@ -27,22 +27,52 @@ Equivalent explicit form:
 npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
-Run preflight checks:
+`enforce-node-baseline` runs four steps in fixed order and stops at the first
+failure:
+
+1. `sync-instructions` — distribute organization AI instruction files into
+   `.github/instructions/produck/`
+2. `preflight` — verify required files and directories exist
+3. `sync-coverage-script` — deploy pinned `produck:coverage` script and `c8`
+   devDependency into each workspace package
+4. `sync-husky-hooks` — deploy `.husky/pre-commit` and `.husky/commit-msg`,
+   and pin `c8`, `husky`, `lerna`, `@produck/agent-toolkit` in root
+   `devDependencies`
+
+Add to downstream repository root `package.json` for one-command enforcement:
+
+```json
+"produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd ."
+```
+
+Then run:
 
 ```
-npm exec -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
+npm run produck:baseline
 ```
 
-Run one-shot mandatory baseline steps for downstream monorepo (1 -> 2 -> 3):
+Dry-run to preview changes without writing files:
 
 ```
-npm exec -- agent-toolkit enforce-node-baseline --cwd .
+npm exec -- agent-toolkit enforce-node-baseline --cwd . --dry-run
 ```
 
-Validate monorepo root workspace package.json baseline:
+Check-only mode to validate without writing:
+
+```
+npm exec -- agent-toolkit enforce-node-baseline --cwd . --check
+```
+
+Validate monorepo root `package.json` scripts and workspace structure:
 
 ```
 npm exec -- agent-toolkit preflight --cwd . --check-workspace-package-json package.json
+```
+
+Run preflight with required-file and directory guards:
+
+```
+npm exec -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
 ```
 
 Capture long output safely:
