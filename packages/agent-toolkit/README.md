@@ -70,9 +70,9 @@ Deploy organization local anti-drift husky hooks to repository root:
 npm exec -- agent-toolkit sync-husky-hooks --cwd .
 ```
 
-This command pins root local hook dependencies (`husky` and
-`@produck/agent-toolkit`) and syncs `.husky/pre-commit` and
-`.husky/commit-msg`.
+This command pins root local hook dependencies (`c8`, `husky`, `lerna`, and
+`@produck/agent-toolkit`) to organization baseline fixed versions and syncs
+`.husky/pre-commit` and `.husky/commit-msg`.
 
 Validate commit message format:
 
@@ -162,7 +162,8 @@ Workflow behavior:
 
 Release policy:
 
-- Default organization usage is @latest.
+- Central package is installed locally in downstream repositories at a fixed
+  version managed by `agent-toolkit sync-husky-hooks`.
 - Run format:check and test first, then workspace `publish:dry-run` before
   `publish`.
 - Keep rollback option by republishing previous stable version if needed.
