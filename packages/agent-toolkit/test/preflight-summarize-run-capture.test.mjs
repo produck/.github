@@ -75,14 +75,7 @@ describe('summarize-log command', () => {
       const logFile = path.join(tempDir, 'run.log');
       await writeTextFile(
         logFile,
-        [
-          'INFO init',
-          'ERROR first',
-          'INFO retry',
-          'ERROR second',
-          'ERROR third',
-          '',
-        ].join('\n'),
+        ['INFO init', 'ERROR first', 'INFO retry', 'ERROR second', 'ERROR third', ''].join('\n'),
       );
 
       const result = runCli([
@@ -123,15 +116,7 @@ describe('summarize-log command', () => {
       const logFile = path.join(tempDir, 'run.log');
       await writeTextFile(logFile, ['L1', 'L2', 'L3', 'L4', ''].join('\n'));
 
-      const result = runCli([
-        'summarize-log',
-        '--file',
-        logFile,
-        '--last',
-        '4',
-        '--max',
-        '2',
-      ]);
+      const result = runCli(['summarize-log', '--file', logFile, '--last', '4', '--max', '2']);
 
       assert.equal(result.status, 0);
       assert.match(result.stdout, /# selectedLines: 2/);
@@ -145,15 +130,7 @@ describe('summarize-log command', () => {
       const logFile = path.join(tempDir, 'run.log');
       await writeTextFile(logFile, ['F1', 'F2', 'F3', 'F4', ''].join('\n'));
 
-      const result = runCli([
-        'summarize-log',
-        '--file',
-        logFile,
-        '--last',
-        '3',
-        '--max',
-        '0',
-      ]);
+      const result = runCli(['summarize-log', '--file', logFile, '--last', '3', '--max', '0']);
 
       assert.equal(result.status, 0);
       assert.match(result.stdout, /# mode: last/);
@@ -188,7 +165,7 @@ describe('run-capture command', () => {
       const outFile = path.join(tempDir, 'capture.log');
       const metaFile = `${outFile}.meta.json`;
       const emitScript = path.join(tempDir, 'emit.mjs');
-      await writeTextFile(emitScript, "process.stdout.write('HELLO_CAPTURE');\n");
+      await writeTextFile(emitScript, 'process.stdout.write("HELLO_CAPTURE");\n');
       const cmd = `node ${path.basename(emitScript)}`;
       const result = runCli(['run-capture', '--out', outFile, '--cmd', cmd, '--cwd', tempDir]);
 
@@ -235,8 +212,8 @@ describe('run-capture command', () => {
       const outFile = path.join(tempDir, 'pipe.log');
       const leftScript = path.join(tempDir, 'left.mjs');
       const rightScript = path.join(tempDir, 'right.mjs');
-      await writeTextFile(leftScript, "process.stdout.write('LEFT');\n");
-      await writeTextFile(rightScript, "process.stdout.write('RIGHT');\n");
+      await writeTextFile(leftScript, 'process.stdout.write("LEFT");\n');
+      await writeTextFile(rightScript, 'process.stdout.write("RIGHT");\n');
       const cmd = `node ${path.basename(leftScript)} | node ${path.basename(rightScript)}`;
       const result = runCli([
         'run-capture',
@@ -263,19 +240,11 @@ describe('run-capture command', () => {
 
       await writeTextFile(
         stderrScript,
-        "process.stderr.write('STDERR_LINE'); process.stdout.write('STDOUT_LINE');\n",
+        'process.stderr.write("STDERR_LINE"); process.stdout.write("STDOUT_LINE");\n',
       );
 
       const cmd = `node ${path.basename(stderrScript)}`;
-      const result = runCli([
-        'run-capture',
-        '--out',
-        outFile,
-        '--cmd',
-        cmd,
-        '--cwd',
-        tempDir,
-      ]);
+      const result = runCli(['run-capture', '--out', outFile, '--cmd', cmd, '--cwd', tempDir]);
 
       assert.equal(result.status, 0);
 

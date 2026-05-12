@@ -69,7 +69,13 @@ describe('validate-commit-msg', () => {
   });
 
   it('accepts monorepo package/workspace section headers', async () => {
-    const message = ['workspace:', '[FIX] <docs>: align policy wording', 'core:', '[ADD] <test>: cover validator section mode', ''].join('\n');
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: align policy wording',
+      'core:',
+      '[ADD] <test>: cover validator section mode',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -86,7 +92,10 @@ describe('validate-commit-msg', () => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
-      assert.match(result.stderr, /section header "workspace:" must be followed by at least one tagged line/i);
+      assert.match(
+        result.stderr,
+        /section header "workspace:" must be followed by at least one tagged line/i,
+      );
     });
   });
 
@@ -166,7 +175,13 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects empty lines in section mode', async () => {
-    const message = ['workspace:', '[FIX] <docs>: first line', '', '[FIX] <docs>: second line', ''].join('\n');
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: first line',
+      '',
+      '[FIX] <docs>: second line',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -194,12 +209,19 @@ describe('validate-commit-msg', () => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
-      assert.match(result.stderr, /section header "core:" must be followed by at least one tagged line/i);
+      assert.match(
+        result.stderr,
+        /section header "core:" must be followed by at least one tagged line/i,
+      );
     });
   });
 
   it('accepts publish tag and fmt target', async () => {
-    const message = ['[PUBLISH] release @produck/agent-toolkit v0.2.1', '[FIX] <fmt>: normalize commit policy examples', ''].join('\n');
+    const message = [
+      '[PUBLISH] release @produck/agent-toolkit v0.2.1',
+      '[FIX] <fmt>: normalize commit policy examples',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);

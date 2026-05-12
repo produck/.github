@@ -7,12 +7,7 @@ import { describe, it } from 'node:test';
 import { PACKAGE_ROOT, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
 const MANAGED_MARKER = '<!-- managed-by: @produck/agent-toolkit -->';
-const BUILTIN_NAMESPACE_DIR = path.join(
-  PACKAGE_ROOT,
-  'publish-assets',
-  'instructions',
-  'produck',
-);
+const BUILTIN_NAMESPACE_DIR = path.join(PACKAGE_ROOT, 'publish-assets', 'instructions', 'produck');
 const USER_SPACE_BOOTSTRAP_TEMPLATE = path.join(
   PACKAGE_ROOT,
   'bin',
@@ -90,7 +85,10 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       ]);
 
       assert.equal(result.status, 2);
-      assert.match(result.stderr, /Target --out is a file path but source has multiple instruction files/);
+      assert.match(
+        result.stderr,
+        /Target --out is a file path but source has multiple instruction files/,
+      );
     });
   });
 
@@ -206,7 +204,10 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       assert.equal(realRun.status, 0);
 
       const instructions = await listInstructionFiles(outDir);
-      assert.deepEqual(instructions.sort(), ['00-sample.instructions.md', '91-unmanaged.instructions.md']);
+      assert.deepEqual(instructions.sort(), [
+        '00-sample.instructions.md',
+        '91-unmanaged.instructions.md',
+      ]);
 
       await assert.rejects(fs.stat(staleManaged));
       const unmanagedStat = await fs.stat(staleUnmanaged);

@@ -1,21 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 
 import { printMainHelp } from '../bin/command/main/index.mjs';
-import {
-  getMulti,
-  getSingle,
-  hasFlag,
-  parseCommonArgs,
-} from '../bin/command/shared/args.mjs';
-import {
-  loadTextResource,
-  printTextResource,
-} from '../bin/command/shared/text-resource.mjs';
+import { getMulti, getSingle, hasFlag, parseCommonArgs } from '../bin/command/shared/args.mjs';
+import { loadTextResource, printTextResource } from '../bin/command/shared/text-resource.mjs';
 
 import { PACKAGE_ROOT, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 

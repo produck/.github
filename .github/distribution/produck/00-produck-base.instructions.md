@@ -245,8 +245,8 @@ When CI enforcement is deferred, use manual sync per repository:
 2. Keep repository-specific exceptions in `.github/copilot-instructions.md`.
 3. Validate critical policies manually in each update cycle.
 4. After instruction sync, validate duplicated policy sections remain
-  consistent across instruction files, especially commit tag and target
-  whitelists.
+   consistent across instruction files, especially commit tag and target
+   whitelists.
 
 Recommended command:
 
