@@ -33,10 +33,10 @@ describe('sync-editorconfig command', () => {
   });
 
   it('prints help text via module function', () => {
-    const chunks = [];
-    const originalWrite = process.stdout.write.bind(process.stdout);
+    let output = '';
+    const originalWrite = process.stdout.write;
     process.stdout.write = (chunk) => {
-      chunks.push(String(chunk));
+      output += String(chunk);
       return true;
     };
 
@@ -46,7 +46,6 @@ describe('sync-editorconfig command', () => {
       process.stdout.write = originalWrite;
     }
 
-    const output = chunks.join('');
     assert.match(output, /Usage:/);
     assert.match(output, /\.editorconfig/);
   });
