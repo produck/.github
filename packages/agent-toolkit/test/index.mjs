@@ -8,3 +8,4 @@ import './sync-workspace-config.test.mjs';
 import './sync-husky-hooks.test.mjs';
 import './sync-instructions.test.mjs';
 import './validate-commit-msg.test.mjs';
+import './sync-editorconfig.test.mjs';
