@@ -88,4 +88,168 @@ describe('sync-workspace-config command', () => {
       assert.equal(fs.existsSync(path.join(tempDir, '.c8rc.json')), false);
     });
   });
+
+  it('fails when root package.json does not exist', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-missing-pkg-', async (tempDir) => {
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir]);
+
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Root package.json does not exist/);
+    });
+  });
+
+  it('fails when root package.json is invalid JSON', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-invalid-pkg-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{ invalid json\n');
+
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir]);
+
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Root package.json is not valid JSON/);
+    });
+  });
+
+  it('supports --dry-run without mutating files', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-dry-run-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' })}\n`,
+      );
+
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir, '--dry-run']);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, true);
+      assert.equal(report.status.updated, false);
+
+      const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.scripts, undefined);
+      assert.equal(fs.existsSync(path.join(tempDir, '.c8rc.json')), false);
+    });
+  });
+
+  it('supports --json output report file', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-json-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' })}\n`,
+      );
+
+      const result = runCli([
+        'sync-workspace-config',
+        '--cwd',
+        tempDir,
+        '--json',
+        'logs/workspace-report.json',
+      ]);
+      assert.equal(result.status, 0);
+
+      const reportPath = path.join(tempDir, 'logs', 'workspace-report.json');
+      assert.equal(fs.existsSync(reportPath), true);
+
+      const report = await readJson(reportPath);
+      assert.equal(report.ok, true);
+      assert.equal(report.status.updated, true);
+    });
+  });
+
+  it('is a no-op on second run after state is synchronized', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-no-op-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' })}\n`,
+      );
+
+      const first = runCli(['sync-workspace-config', '--cwd', tempDir]);
+      assert.equal(first.status, 0);
+
+      const beforePkg = fs.readFileSync(path.join(tempDir, 'package.json'), 'utf8');
+      const beforeC8 = fs.readFileSync(path.join(tempDir, '.c8rc.json'), 'utf8');
+
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir]);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, true);
+      assert.equal(report.status.updated, false);
+
+      const afterPkg = fs.readFileSync(path.join(tempDir, 'package.json'), 'utf8');
+      const afterC8 = fs.readFileSync(path.join(tempDir, '.c8rc.json'), 'utf8');
+      assert.equal(afterPkg, beforePkg);
+      assert.equal(afterC8, beforeC8);
+    });
+  });
+
+  it('uses PRODUCK_TOOLKIT_VERSION_OVERRIDE for managed dependency version', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-override-version-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' })}\n`,
+      );
+
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir], {
+        env: { PRODUCK_TOOLKIT_VERSION_OVERRIDE: '9.9.9' },
+      });
+      assert.equal(result.status, 0);
+
+      const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.devDependencies['@produck/agent-toolkit'], '9.9.9');
+    });
+  });
+
+  it('supports --check and --dry-run together with check taking precedence', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-check-dry-run-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' })}\n`,
+      );
+
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir, '--check', '--dry-run']);
+      assert.equal(result.status, 2);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.mode, 'check');
+      assert.equal(report.ok, false);
+      assert.equal(report.status.updated, false);
+    });
+  });
+
+  it('handles non-object scripts and devDependencies by normalizing required fields', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-non-object-fields-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', scripts: [], devDependencies: [] }, null, 2)}\n`,
+      );
+
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir]);
+      assert.equal(result.status, 0);
+
+      const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.scripts['produck:baseline'], REQUIRED_BASELINE_SCRIPT);
+      assert.equal(pkg.scripts['produck:coverage'], REQUIRED_WORKSPACE_COVERAGE_SCRIPT);
+      assert.equal(pkg.scripts['produck:precommit-check'], REQUIRED_PRECOMMIT_CHECK_SCRIPT);
+      assert.match(pkg.devDependencies.c8, /^\d+\.\d+\.\d+$/);
+      assert.match(pkg.devDependencies.husky, /^\d+\.\d+\.\d+$/);
+      assert.match(pkg.devDependencies.lerna, /^\d+\.\d+\.\d+$/);
+      assert.match(pkg.devDependencies['@produck/agent-toolkit'], /^\d+\.\d+\.\d+$/);
+    });
+  });
+
+  it('falls back to local toolkit package version when npm lookup is unavailable', async () => {
+    await withTempDir('agent-toolkit-sync-workspace-config-fallback-version-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' })}\n`,
+      );
+
+      const result = runCli(['sync-workspace-config', '--cwd', tempDir], {
+        env: { PATH: '' },
+      });
+      assert.equal(result.status, 0);
+
+      const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.match(pkg.devDependencies['@produck/agent-toolkit'], /^\d+\.\d+\.\d+$/);
+    });
+  });
 });

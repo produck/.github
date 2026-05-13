@@ -161,4 +161,142 @@ trim_trailing_whitespace = true
       assert.equal(workspacePackage.scripts['produck:coverage'], 'echo old');
     });
   });
+
+  it('supports --json output for report file', async () => {
+    await withTempDir('agent-toolkit-enforce-node-baseline-json-', async (tempDir) => {
+      const sourceDir = path.join(tempDir, 'source');
+      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample\n');
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(createRootWorkspacePackageJson(), null, 2)}\n`,
+      );
+      await writeTextFile(
+        path.join(tempDir, 'packages/a/package.json'),
+        `${JSON.stringify({ name: 'a', scripts: { test: 'npm test' } }, null, 2)}\n`,
+      );
+      await writeTextFile(
+        path.join(tempDir, '.editorconfig'),
+        `root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 80
+`,
+      );
+
+      const result = runCli([
+        'enforce-node-baseline',
+        '--cwd',
+        tempDir,
+        '--source',
+        sourceDir,
+        '--prune',
+        '--json',
+        'logs/baseline-report.json',
+      ]);
+
+      assert.equal(result.status, 0);
+
+      const jsonPath = path.join(tempDir, 'logs', 'baseline-report.json');
+      assert.equal(fs.existsSync(jsonPath), true);
+      const report = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+      assert.equal(report.ok, true);
+    });
+  });
+
+  it('fails when --cwd does not exist', () => {
+    const missingCwd = path.resolve('D:/tmp/agent-toolkit-enforce-node-baseline-missing-cwd');
+    const result = runCli(['enforce-node-baseline', '--cwd', missingCwd]);
+
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /CWD does not exist/);
+  });
+
+  it('supports --dry-run with forwarded --workspace and --force flags', async () => {
+    await withTempDir('agent-toolkit-enforce-node-baseline-dry-run-', async (tempDir) => {
+      const sourceDir = path.join(tempDir, 'source');
+      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample\n');
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(createRootWorkspacePackageJson(), null, 2)}\n`,
+      );
+      await writeTextFile(
+        path.join(tempDir, 'packages/a/package.json'),
+        `${JSON.stringify({ name: 'a', scripts: { test: 'npm test' } }, null, 2)}\n`,
+      );
+
+      const result = runCli([
+        'enforce-node-baseline',
+        '--cwd',
+        tempDir,
+        '--source',
+        sourceDir,
+        '--force',
+        '--workspace',
+        'packages/a',
+        '--dry-run',
+      ]);
+
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.mode, 'dry-run');
+      assert.equal(report.steps[0].name, 'sync-instructions');
+      assert.equal(report.steps[0].args.includes('--force'), true);
+      assert.equal(report.steps[0].args.includes('--dry-run'), true);
+
+      const coverageStep = report.steps.find((step) => step.name === 'sync-coverage-script');
+      assert.equal(Boolean(coverageStep), true);
+      assert.equal(coverageStep.args.includes('--workspace'), true);
+      assert.equal(coverageStep.args.includes('packages/a'), true);
+      assert.equal(coverageStep.args.includes('--dry-run'), true);
+      assert.equal(coverageStep.args.includes('--check'), false);
+    });
+  });
+
+  it('uses check mode when both --check and --dry-run are provided', async () => {
+    await withTempDir('agent-toolkit-enforce-node-baseline-check-dry-run-', async (tempDir) => {
+      const sourceDir = path.join(tempDir, 'source');
+      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample\n');
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(createRootWorkspacePackageJson(), null, 2)}\n`,
+      );
+      await writeTextFile(
+        path.join(tempDir, 'packages/a/package.json'),
+        `${JSON.stringify({ name: 'a', scripts: { test: 'npm test' } }, null, 2)}\n`,
+      );
+
+      const result = runCli([
+        'enforce-node-baseline',
+        '--cwd',
+        tempDir,
+        '--source',
+        sourceDir,
+        '--check',
+        '--dry-run',
+      ]);
+
+      assert.equal(result.status, 2);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.mode, 'check');
+
+      const coverageStep = report.steps.find((step) => step.name === 'sync-coverage-script');
+      if (coverageStep) {
+        assert.equal(coverageStep.args.includes('--check'), true);
+        assert.equal(coverageStep.args.includes('--dry-run'), false);
+      }
+    });
+  });
 });

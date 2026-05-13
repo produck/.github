@@ -228,4 +228,164 @@ describe('sync-coverage-script command', () => {
       assert.equal(a.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
     });
   });
+
+  it('fails when root package.json is invalid JSON', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-invalid-root-json-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{ invalid json\n');
+
+      const result = runCli(['sync-coverage-script', '--cwd', tempDir]);
+
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Root package\.json is not valid JSON/);
+    });
+  });
+
+  it('fails when root package.json is missing and no manual workspace is provided', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-missing-root-json-', async (tempDir) => {
+      const result = runCli(['sync-coverage-script', '--cwd', tempDir]);
+
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Root package\.json does not exist/);
+    });
+  });
+
+  it('fails when root workspaces is not an array', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-workspaces-not-array-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', private: true, workspaces: 'packages/a' }, null, 2)}\n`,
+      );
+
+      const result = runCli(['sync-coverage-script', '--cwd', tempDir]);
+
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /workspaces` must be an explicit array/);
+    });
+  });
+
+  it('fails when root workspaces is empty', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-workspaces-empty-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', private: true, workspaces: [] }, null, 2)}\n`,
+      );
+
+      const result = runCli(['sync-coverage-script', '--cwd', tempDir]);
+
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /workspaces` must not be empty/);
+    });
+  });
+
+  it('reports error when manual workspace package.json does not exist', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-manual-missing-workspace-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' }, null, 2)}\n`,
+      );
+
+      const result = runCli([
+        'sync-coverage-script',
+        '--cwd',
+        tempDir,
+        '--workspace',
+        'packages/missing',
+      ]);
+
+      assert.equal(result.status, 2);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, false);
+      assert.match(report.results[0].error, /Workspace package\.json does not exist/);
+    });
+  });
+
+  it('reports error when manual workspace package.json is invalid JSON', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-manual-invalid-workspace-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp' }, null, 2)}\n`,
+      );
+      await writeTextFile(path.join(tempDir, 'packages/a/package.json'), '{ invalid json\n');
+
+      const result = runCli([
+        'sync-coverage-script',
+        '--cwd',
+        tempDir,
+        '--workspace',
+        'packages/a',
+      ]);
+
+      assert.equal(result.status, 2);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, false);
+      assert.match(report.results[0].error, /Workspace package\.json is not valid JSON/);
+    });
+  });
+
+  it('uses dry-run mode when both --check and --dry-run are provided', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-check-plus-dry-run-', async (tempDir) => {
+      const rootPackage = {
+        name: 'tmp',
+        private: true,
+        workspaces: ['packages/a'],
+      };
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(rootPackage, null, 2)}\n`,
+      );
+      await writeTextFile(
+        path.join(tempDir, 'packages/a/package.json'),
+        `${JSON.stringify({ name: 'a', scripts: { 'produck:coverage': 'echo old' } }, null, 2)}\n`,
+      );
+
+      const result = runCli(['sync-coverage-script', '--cwd', tempDir, '--check', '--dry-run']);
+
+      assert.equal(result.status, 0);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.mode, 'dry-run');
+      assert.equal(report.ok, true);
+
+      const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
+      assert.equal(a.scripts['produck:coverage'], 'echo old');
+    });
+  });
+
+  it('passes in --check mode when workspace already matches required state', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-check-clean-', async (tempDir) => {
+      const rootPackage = {
+        name: 'tmp',
+        private: true,
+        workspaces: ['packages/a'],
+      };
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(rootPackage, null, 2)}\n`,
+      );
+      await writeTextFile(
+        path.join(tempDir, 'packages/a/package.json'),
+        `${JSON.stringify(
+          {
+            name: 'a',
+            scripts: {
+              test: REQUIRED_TEST_SCRIPT,
+              'produck:coverage': REQUIRED_COVERAGE_SCRIPT,
+            },
+            devDependencies: { c8: String(TOOLING_BASELINE.tools.c8.version) },
+          },
+          null,
+          2,
+        )}\n`,
+      );
+
+      const result = runCli(['sync-coverage-script', '--cwd', tempDir, '--check']);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, true);
+      assert.equal(report.results[0].matchesRequiredCoverageAfter, true);
+      assert.equal(report.results[0].hasRequiredTestScriptAfter, true);
+      assert.equal(report.results[0].matchesRequiredC8DevDependencyAfter, true);
+      assert.equal(report.results[0].updated, false);
+    });
+  });
 });
