@@ -21,6 +21,10 @@ import {
   runSyncPrettierConfig,
 } from './command/sync-prettier-config/index.mjs';
 import {
+  printSyncEditorconfigHelp,
+  runSyncEditorconfig,
+} from './command/sync-editorconfig/index.mjs';
+import {
   printSyncEslintConfigHelp,
   runSyncEslintConfig,
 } from './command/sync-eslint-config/index.mjs';
@@ -78,6 +82,10 @@ const COMMANDS = {
   'sync-instructions': {
     printHelp: printSyncInstructionsHelp,
     run: runSyncInstructions,
+  },
+  'sync-editorconfig': {
+    printHelp: printSyncEditorconfigHelp,
+    run: runSyncEditorconfig,
   },
 };
 

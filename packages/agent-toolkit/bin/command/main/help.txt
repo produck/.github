@@ -4,6 +4,7 @@ agent-toolkit commands:
   run-capture
   summarize-log
   sync-coverage-script
+  sync-editorconfig
   sync-prettier-config
   sync-eslint-config
   sync-workspace-config
