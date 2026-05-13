@@ -3,7 +3,8 @@ Usage:
 
 Rules:
   - In monorepo mode, a section header is required before tagged lines
-  - Non-empty lines must be either a section header (for example workspace: or @scope/pkg:) or start with [TAG]
+  - In monorepo mode, section headers must use one of: workspace:, *:, or a workspace package name section (for example @produck/agent-toolkit:)
+  - Non-empty lines must be either a section header or start with [TAG]
   - If section headers are used, each section header must be followed by at least one tagged line
   - No empty lines are allowed
   - Optional target form: [TAG] <target>: <summary>

@@ -74,7 +74,7 @@ describe('validate-commit-msg', () => {
     const message = [
       'workspace:',
       '[FIX] <docs>: align policy wording',
-      'core:',
+      '@produck/agent-toolkit:',
       '[ADD] <test>: cover validator section mode',
       '',
     ].join('\n');
@@ -88,7 +88,12 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects orphaned section headers', async () => {
-    const message = ['workspace:', 'core:', '[FIX] <docs>: keep one tagged line', ''].join('\n');
+    const message = [
+      'workspace:',
+      '@produck/agent-toolkit:',
+      '[FIX] <docs>: keep one tagged line',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -248,7 +253,12 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects trailing orphan section header', async () => {
-    const message = ['workspace:', '[FIX] <docs>: section entry', 'core:', ''].join('\n');
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: section entry',
+      '@produck/eslint-rules:',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -256,8 +266,30 @@ describe('validate-commit-msg', () => {
       assert.equal(result.status, 1);
       assert.match(
         result.stderr,
-        /section header "core:" must be followed by at least one tagged line/i,
+        /section header "@produck\/eslint-rules:" must be followed by at least one tagged line/i,
       );
+    });
+  });
+
+  it('accepts wildcard scope for mixed monorepo commits', async () => {
+    const message = ['*:', '[FIX] <infra>: align mixed workspace/package changes', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 0);
+      assert.match(result.stdout, /validation passed/i);
+    });
+  });
+
+  it('rejects section scope outside workspace/package-name/* convention', async () => {
+    const message = ['core:', '[FIX] <docs>: invalid scope name', ''].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /section header "core:" is not allowed in monorepo mode/i);
     });
   });
 

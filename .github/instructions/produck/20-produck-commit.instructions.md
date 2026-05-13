@@ -28,6 +28,11 @@ Monorepo format (required for multi-package repositories):
 
 - Package/workspace labels appear as **section headers** followed by a colon
   (format: `package-name:` or `@scope/package:`).
+- Section scope naming convention:
+  - For subpackage changes, use the package `name` as section header
+    (for example `@produck/agent-toolkit:`).
+  - For non-subpackage or root-level changes, use `workspace:`.
+  - For complex mixed commits across multiple scopes, `*:` is allowed.
 - All lines under a package header belong to that package.
 - Every line under a package header must start with `[TAG]`.
 - No empty lines between tagged lines within a package section.
