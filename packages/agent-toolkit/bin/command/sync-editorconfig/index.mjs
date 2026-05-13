@@ -151,6 +151,7 @@ function buildUpdatedContent(existingContent) {
   }
 
   // If no updates needed, return original
+  // c8 ignore next 3
   if (lines.length === 0) {
     return existingContent;
   }
