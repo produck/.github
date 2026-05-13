@@ -21,8 +21,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Verify CLI
-        run: npm run verify
+      - name: Run Tests
+        run: npm run test
 
       - name: Pack dry-run
         run: npm run pack:check

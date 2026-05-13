@@ -62,6 +62,10 @@ Notes:
     via `agent-toolkit sync-eslint-config`.
 
 - Testing strategy and framework are repository-defined.
+- `verify` scripts are optional repository-local health checks and are not
+  organization-required script keys.
+- `verify` is not part of organization commit gates; style gates remain
+  repository `format:check` and `lint` policy.
 - `test` script implementation is repository-defined and is not overwritten by
   organization coverage remediation.
 - Repositories should keep `npm run test` and `npm run produck:coverage`

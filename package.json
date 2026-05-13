@@ -16,15 +16,10 @@
     "lint": "eslint --fix . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "precommit:check": "npm run format:check && npm run lint",
     "type-check": "tsc --noEmit",
     "publish:checks": "npm run format:check && npm run test",
     "publish": "npm run publish:checks && node ./scripts/lerna-publish.mjs",
     "publish:dry-run": "npm run publish:checks && lerna exec --no-private -- npm pack --dry-run",
-    "toolkit:verify": "npm --workspace @produck/agent-toolkit run verify",
-    "toolkit:pack-check": "npm --workspace @produck/agent-toolkit run pack:check",
-    "eslint-rules:verify": "npm --workspace @produck/eslint-rules run verify",
-    "eslint-rules:pack-check": "npm --workspace @produck/eslint-rules run pack:check",
     "produck:precommit-check": "npm run format:check && npm run lint"
   },
   "engines": {

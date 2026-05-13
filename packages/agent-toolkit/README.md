@@ -240,11 +240,18 @@ Organization-only instruction source (not published):
 
 ## Local verification
 
+`verify` is an optional package-level health check and is not a commit gate.
+Use repository style gates first, then run package checks when needed.
+
 From repository root:
 
 ```bash
-npm --workspace @produck/agent-toolkit run verify
+npm run format:check
+npm run lint
+npm --workspace @produck/agent-toolkit run test
 npm --workspace @produck/agent-toolkit run pack:check
+# optional health check
+npm --workspace @produck/agent-toolkit run verify
 ```
 
 ## Publishing
@@ -275,7 +282,7 @@ Repository includes manual workflow:
 
 Workflow behavior:
 
-- Always runs verify and pack:check for `@produck/agent-toolkit`.
+- Runs test and pack:check for `@produck/agent-toolkit`.
 - Does not publish to npm.
 - Used as release gate before workspace-level publish.
 
