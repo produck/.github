@@ -127,6 +127,13 @@ export function runEnforceNodeBaseline(options) {
     syncWorkspaceConfigArgs.push('--dry-run');
   }
 
+  const syncEditorconfigArgs = ['sync-editorconfig', '--cwd', cwd];
+  if (check) {
+    syncEditorconfigArgs.push('--check');
+  } else if (dryRun) {
+    syncEditorconfigArgs.push('--dry-run');
+  }
+
   const syncPrettierConfigArgs = ['sync-prettier-config', '--cwd', cwd];
   if (check) {
     syncPrettierConfigArgs.push('--check');
@@ -144,6 +151,7 @@ export function runEnforceNodeBaseline(options) {
   const plan = [
     { name: 'sync-instructions', args: syncInstructionsArgs },
     { name: 'preflight', args: preflightArgs },
+    { name: 'sync-editorconfig', args: syncEditorconfigArgs },
     { name: 'sync-prettier-config', args: syncPrettierConfigArgs },
     { name: 'sync-eslint-config', args: syncEslintConfigArgs },
     { name: 'sync-workspace-config', args: syncWorkspaceConfigArgs },

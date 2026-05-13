@@ -73,12 +73,13 @@ describe('enforce-node-baseline command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.steps.length, 7);
+      assert.equal(report.steps.length, 8);
       assert.deepEqual(
         report.steps.map((step) => step.name),
         [
           'sync-instructions',
           'preflight',
+          'sync-editorconfig',
           'sync-prettier-config',
           'sync-eslint-config',
           'sync-workspace-config',
@@ -133,7 +134,7 @@ describe('enforce-node-baseline command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, false);
       assert.equal(report.steps.length, 3);
-      assert.equal(report.steps[2].name, 'sync-prettier-config');
+      assert.equal(report.steps[2].name, 'sync-editorconfig');
       assert.equal(report.steps[2].ok, false);
 
       const copiedInstruction = path.join(

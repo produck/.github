@@ -155,4 +155,139 @@ charset = utf-8
       assert.equal(jsonReport.ok, true);
     });
   });
+
+  it('fails with exit code 2 when cwd does not exist', () => {
+    const result = runCli(['sync-editorconfig', '--cwd', 'd:\\nonexistent\\path']);
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /does not exist/);
+  });
+
+  it('appends missing sections to an existing partial .editorconfig via merge flow', async () => {
+    await withTempDir('agent-toolkit-sync-editorconfig-merge-sections-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, '.editorconfig'),
+        `root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+`,
+      );
+
+      const result = runCli(['sync-editorconfig', '--cwd', tempDir]);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.status.updated, true);
+
+      const content = fs.readFileSync(path.join(tempDir, '.editorconfig'), 'utf8');
+      assert.ok(content.includes('[*.{yml,yaml}]'));
+      assert.ok(content.includes('[*.md]'));
+      assert.ok(content.includes('max_line_length = 80'));
+    });
+  });
+
+  it('appends missing root flag to existing file without root', async () => {
+    await withTempDir('agent-toolkit-sync-editorconfig-missing-root-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, '.editorconfig'),
+        `[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 80
+`,
+      );
+
+      const result = runCli(['sync-editorconfig', '--cwd', tempDir]);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.status.updated, true);
+
+      const content = fs.readFileSync(path.join(tempDir, '.editorconfig'), 'utf8');
+      assert.ok(content.includes('root = true'));
+    });
+  });
+
+  it('reports planned changes in dry-run mode with missing sections', async () => {
+    await withTempDir('agent-toolkit-sync-editorconfig-dryrun-missing-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, '.editorconfig'),
+        `root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+`,
+      );
+
+      const result = runCli(['sync-editorconfig', '--cwd', tempDir, '--dry-run']);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, true);
+      assert.equal(report.status.updated, false);
+      assert.ok(report.status.mismatchesBefore.length > 0);
+
+      // Verify file was not modified
+      const content = fs.readFileSync(path.join(tempDir, '.editorconfig'), 'utf8');
+      assert.equal(content.includes('[*.{yml,yaml}]'), false);
+    });
+  });
+
+  it('check mode exits non-zero when root is missing', async () => {
+    await withTempDir('agent-toolkit-sync-editorconfig-check-root-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, '.editorconfig'),
+        `[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = 80
+`,
+      );
+
+      const result = runCli(['sync-editorconfig', '--cwd', tempDir, '--check']);
+      assert.equal(result.status, 2);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, false);
+      assert.ok(report.status.mismatchesBefore.some((m) => m.section === '_root'));
+    });
+  });
+
+  it('handles invalid .editorconfig with no sections gracefully', async () => {
+    await withTempDir('agent-toolkit-sync-editorconfig-invalid-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, '.editorconfig'), 'some junk content\n');
+
+      const result = runCli(['sync-editorconfig', '--cwd', tempDir]);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.status.updated, true);
+      // Missing root and all sections should be reported
+      assert.ok(report.status.mismatchesBefore.length > 0);
+    });
+  });
 });

@@ -148,6 +148,7 @@ describe('main command router', () => {
         [
           'sync-instructions',
           'preflight',
+          'sync-editorconfig',
           'sync-prettier-config',
           'sync-eslint-config',
           'sync-workspace-config',
