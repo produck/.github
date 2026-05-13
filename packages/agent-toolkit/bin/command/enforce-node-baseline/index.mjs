@@ -127,9 +127,25 @@ export function runEnforceNodeBaseline(options) {
     syncWorkspaceConfigArgs.push('--dry-run');
   }
 
+  const syncPrettierConfigArgs = ['sync-prettier-config', '--cwd', cwd];
+  if (check) {
+    syncPrettierConfigArgs.push('--check');
+  } else if (dryRun) {
+    syncPrettierConfigArgs.push('--dry-run');
+  }
+
+  const syncEslintConfigArgs = ['sync-eslint-config', '--cwd', cwd];
+  if (check) {
+    syncEslintConfigArgs.push('--check');
+  } else if (dryRun) {
+    syncEslintConfigArgs.push('--dry-run');
+  }
+
   const plan = [
     { name: 'sync-instructions', args: syncInstructionsArgs },
     { name: 'preflight', args: preflightArgs },
+    { name: 'sync-prettier-config', args: syncPrettierConfigArgs },
+    { name: 'sync-eslint-config', args: syncEslintConfigArgs },
     { name: 'sync-workspace-config', args: syncWorkspaceConfigArgs },
     { name: 'sync-coverage-script', args: syncCoverageArgs },
     { name: 'sync-husky-hooks', args: syncHuskyArgs },

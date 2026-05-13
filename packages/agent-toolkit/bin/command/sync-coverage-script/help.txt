@@ -3,10 +3,14 @@ Usage:
     [--workspace <path>] ... [--check] [--dry-run] [--json <file>]
 
 Behavior:
-  - Applies organization-required coverage script to workspace package.json files
+  - Adds or updates scripts.produck:coverage and devDependencies.c8 in each workspace package.json.
+  - Enforces scripts.test in each workspace package.json.
+  - If scripts.test is missing, generates:
+    node -e "console.log('No tests configured')"
+  - The produck:coverage script in subpackages is for local and AI development use only.
+  - Subpackage produck:coverage is NOT enforced by organization CI or .c8rc.json.
+  - Only the root workspace (monorepo root) is subject to org-level coverage enforcement and .c8rc.json.
   - Organization-reserved script key is scripts.produck:coverage
-  - Applies organization-required pinned local c8 devDependency to workspace
-    package.json files
   - Target script is rendered from organization tooling baseline file
     (lookup order):
     1) .github/distribution/produck/tooling-version-baseline.json
@@ -17,6 +21,9 @@ Behavior:
 Rules:
   - When --workspace is omitted, root package.json workspaces are used
   - Root workspaces must be explicit paths (no glob tokens)
+  - Workspace package.json files must include scripts.test
   - Workspace package.json files must pin devDependencies.c8 to baseline version
+  - Subpackage produck:coverage is not a CI or org gate; it is for local/dev use only
+  - Only the root workspace is enforced by org CI and .c8rc.json
   - --check validates without writing and exits non-zero on mismatch
   - --dry-run prints planned changes without writing

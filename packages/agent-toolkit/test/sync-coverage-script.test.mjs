@@ -22,6 +22,7 @@ const REQUIRED_COVERAGE_SCRIPT = String(TOOLING_BASELINE.coverage.scriptTemplate
   /\{c8\.version\}/g,
   String(TOOLING_BASELINE.tools.c8.version),
 );
+const REQUIRED_TEST_SCRIPT = 'node -e "console.log(\'No tests configured\')"';
 
 describe('sync-coverage-script command', () => {
   it('prints help text for sync-coverage-script command', () => {
@@ -89,6 +90,8 @@ describe('sync-coverage-script command', () => {
 
       assert.equal(a.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
       assert.equal(b.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
+      assert.equal(a.scripts.test, 'node --test test/index.mjs');
+      assert.equal(b.scripts.test, REQUIRED_TEST_SCRIPT);
       assert.equal(a.devDependencies.c8, String(TOOLING_BASELINE.tools.c8.version));
       assert.equal(b.devDependencies.c8, String(TOOLING_BASELINE.tools.c8.version));
 
@@ -101,6 +104,10 @@ describe('sync-coverage-script command', () => {
       );
       assert.equal(
         report.results.every((item) => item.matchesRequiredC8DevDependencyAfter),
+        true,
+      );
+      assert.equal(
+        report.results.every((item) => item.hasRequiredTestScriptAfter),
         true,
       );
     });
@@ -128,6 +135,7 @@ describe('sync-coverage-script command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, false);
       assert.equal(report.results[0].matchesRequiredCoverageAfter, false);
+      assert.equal(report.results[0].hasRequiredTestScriptAfter, false);
       assert.equal(report.results[0].matchesRequiredC8DevDependencyAfter, false);
 
       const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
@@ -187,10 +195,37 @@ describe('sync-coverage-script command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.mode, 'dry-run');
       assert.equal(report.results[0].updated, false);
+      assert.equal(report.results[0].hasRequiredTestScriptAfter, false);
 
       const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
       assert.equal(a.scripts['produck:coverage'], 'echo old');
+      assert.equal(a.scripts.test, undefined);
       assert.equal(a.devDependencies, undefined);
+    });
+  });
+
+  it('adds default test script when workspace package misses scripts.test', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-missing-test-', async (tempDir) => {
+      const rootPackage = {
+        name: 'tmp',
+        private: true,
+        workspaces: ['packages/a'],
+      };
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify(rootPackage, null, 2)}\n`,
+      );
+      await writeTextFile(
+        path.join(tempDir, 'packages/a/package.json'),
+        `${JSON.stringify({ name: 'a', scripts: {} }, null, 2)}\n`,
+      );
+
+      const result = runCli(['sync-coverage-script', '--cwd', tempDir]);
+
+      assert.equal(result.status, 0);
+      const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
+      assert.equal(a.scripts.test, REQUIRED_TEST_SCRIPT);
+      assert.equal(a.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
     });
   });
 });

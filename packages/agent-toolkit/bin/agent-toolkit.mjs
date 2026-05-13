@@ -17,6 +17,14 @@ import {
   runSyncInstructions,
 } from './command/sync-instructions/index.mjs';
 import {
+  printSyncPrettierConfigHelp,
+  runSyncPrettierConfig,
+} from './command/sync-prettier-config/index.mjs';
+import {
+  printSyncEslintConfigHelp,
+  runSyncEslintConfig,
+} from './command/sync-eslint-config/index.mjs';
+import {
   printSyncWorkspaceConfigHelp,
   runSyncWorkspaceConfig,
 } from './command/sync-workspace-config/index.mjs';
@@ -46,6 +54,14 @@ const COMMANDS = {
   'sync-coverage-script': {
     printHelp: printSyncCoverageScriptHelp,
     run: runSyncCoverageScript,
+  },
+  'sync-prettier-config': {
+    printHelp: printSyncPrettierConfigHelp,
+    run: runSyncPrettierConfig,
+  },
+  'sync-eslint-config': {
+    printHelp: printSyncEslintConfigHelp,
+    run: runSyncEslintConfig,
   },
   'sync-workspace-config': {
     printHelp: printSyncWorkspaceConfigHelp,

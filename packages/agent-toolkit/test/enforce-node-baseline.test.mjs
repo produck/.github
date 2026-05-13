@@ -45,7 +45,7 @@ describe('enforce-node-baseline command', () => {
     assert.match(result.stdout, /1\) sync-instructions/);
   });
 
-  it('runs sync-instructions, preflight, sync-workspace-config, sync-coverage-script, and sync-husky-hooks in order', async () => {
+  it('runs sync-instructions, preflight, sync-prettier-config, sync-eslint-config, sync-workspace-config, sync-coverage-script, and sync-husky-hooks in order', async () => {
     await withTempDir('agent-toolkit-enforce-node-baseline-sync-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       const instructionFile = path.join(sourceDir, '00-sample.instructions.md');
@@ -73,12 +73,14 @@ describe('enforce-node-baseline command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.steps.length, 5);
+      assert.equal(report.steps.length, 7);
       assert.deepEqual(
         report.steps.map((step) => step.name),
         [
           'sync-instructions',
           'preflight',
+          'sync-prettier-config',
+          'sync-eslint-config',
           'sync-workspace-config',
           'sync-coverage-script',
           'sync-husky-hooks',
@@ -131,7 +133,7 @@ describe('enforce-node-baseline command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, false);
       assert.equal(report.steps.length, 3);
-      assert.equal(report.steps[2].name, 'sync-workspace-config');
+      assert.equal(report.steps[2].name, 'sync-prettier-config');
       assert.equal(report.steps[2].ok, false);
 
       const copiedInstruction = path.join(

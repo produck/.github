@@ -30,23 +30,15 @@ Notes:
 - Script key names are fixed and must match exactly.
 - `publish` may be a no-op when repository-specific release workflow does not
   use npm publishing.
-- Coverage governance policy:
-  - Keep the script key name `produck:coverage` (organization-reserved key).
-  - In monorepo mode, workspace subpackage `scripts.produck:coverage` and
-    workspace `devDependencies.c8` are fully governed by organization
-    baseline.
-  - Source of truth for tooling versions/template:
-    `.github/distribution/produck/tooling-version-baseline.json`.
-  - Use central remediation command to deploy coverage scripts:
-    `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
-  - Use central remediation command to deploy local anti-drift hook baseline:
-    `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
-  - `c8` execution baseline for deployed coverage scripts is fixed to the
-    version specified in `tooling-version-baseline.json`.
-  - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
-    in shared scripts/CI.
-  - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned
-    to organization baseline fixed versions via `agent-toolkit sync-husky-hooks`.
+  - Coverage governance policy:
+    - Keep the script key name `produck:coverage` (organization-reserved key).
+    - In monorepo mode, workspace subpackage `produck:coverage` scripts are for local and AI development use only. They are NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
+    - Source of truth for tooling versions/template: `.github/distribution/produck/tooling-version-baseline.json`.
+    - Use central remediation command to deploy coverage scripts: `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
+    - Use central remediation command to deploy local anti-drift hook baseline: `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
+    - `c8` execution baseline for deployed coverage scripts is fixed to the version specified in `tooling-version-baseline.json`.
+    - Downstream repositories must not use unversioned `npx c8` or `c8@latest` in shared scripts/CI.
+    - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned to organization baseline fixed versions via `agent-toolkit sync-husky-hooks`.
 
 - Testing strategy and framework are repository-defined.
 - `test` script implementation is repository-defined and is not overwritten by

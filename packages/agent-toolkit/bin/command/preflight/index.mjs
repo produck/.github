@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 import { getSingle, hasFlag } from '../shared/args.mjs';
 import { printTextResource } from '../shared/text-resource.mjs';
+import { validateWorkspaceShape } from '../shared/workspace-validation.mjs';
 
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
-const GLOB_TOKEN_PATTERN = /[*?{}[\]]/;
 const REQUIRED_WORKSPACE_FIELDS = ['private', 'workspaces', 'scripts'];
 const REQUIRED_WORKSPACE_SCRIPTS = ['deps:install', 'test', 'produck:coverage', 'lint'];
 
@@ -43,40 +43,12 @@ function validateWorkspacePackageJson(cwd, checkPath) {
     return check;
   }
 
-  check.missingFields = REQUIRED_WORKSPACE_FIELDS.filter((field) => {
-    return !(field in json);
-  });
-
-  if (typeof json.scripts !== 'object' || json.scripts === null || Array.isArray(json.scripts)) {
-    check.scriptTypeValid = false;
-    check.ok = false;
-  } else {
-    check.missingScripts = REQUIRED_WORKSPACE_SCRIPTS.filter((scriptName) => {
-      return !(scriptName in json.scripts);
-    });
-  }
-
-  const workspaceList = Array.isArray(json.workspaces)
-    ? json.workspaces.map((entry) => String(entry))
-    : [];
-  if (!Array.isArray(json.workspaces)) {
-    check.wildcardWorkspaces = ['<non-array-workspaces>'];
-    check.ok = false;
-  } else {
-    check.wildcardWorkspaces = workspaceList.filter((entry) => GLOB_TOKEN_PATTERN.test(entry));
-  }
-
-  if (json.private !== true) {
-    check.ok = false;
-  }
-
-  if (check.missingFields.length > 0 || check.missingScripts.length > 0) {
-    check.ok = false;
-  }
-
-  if (check.wildcardWorkspaces.length > 0) {
-    check.ok = false;
-  }
+  const shape = validateWorkspaceShape(json, REQUIRED_WORKSPACE_FIELDS, REQUIRED_WORKSPACE_SCRIPTS);
+  check.missingFields = shape.missingFields;
+  check.scriptTypeValid = shape.scriptTypeValid;
+  check.missingScripts = shape.missingScripts;
+  check.wildcardWorkspaces = shape.wildcardWorkspaces;
+  check.ok = shape.ok;
 
   return check;
 }

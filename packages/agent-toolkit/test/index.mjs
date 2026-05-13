@@ -2,6 +2,8 @@ import './enforce-node-baseline.test.mjs';
 import './entry-and-shared.test.mjs';
 import './preflight-summarize-run-capture.test.mjs';
 import './sync-coverage-script.test.mjs';
+import './sync-prettier-config.test.mjs';
+import './sync-eslint-config.test.mjs';
 import './sync-workspace-config.test.mjs';
 import './sync-husky-hooks.test.mjs';
 import './sync-instructions.test.mjs';

@@ -172,6 +172,8 @@ Commit precheck gate (AI-agent required, human recommended):
 - For AI-agent-authored operations, complete repository style gates before both
   `git commit` and `git commit --amend` (for example `format:check` and
   `lint`).
+- For AI-agent-authored operations, `git commit --no-verify` and
+  `git commit --amend --no-verify` are forbidden.
 - For human engineer-authored operations, style gates are recommended baseline
   practice unless repository-specific hooks/CI enforce them.
 - Temporary non-executable state or failing tests are allowed for

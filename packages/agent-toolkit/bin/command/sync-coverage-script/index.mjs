@@ -15,6 +15,8 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
 ];
 const GLOB_TOKEN_PATTERN = /[*?{}[\]]/;
 const REQUIRED_COVERAGE_SCRIPT_KEY = 'produck:coverage';
+const REQUIRED_TEST_SCRIPT_KEY = 'test';
+const DEFAULT_TEST_SCRIPT_VALUE = 'node -e "console.log(\'No tests configured\')"';
 
 export function printSyncCoverageScriptHelp() {
   printTextResource(HELP_FILE);
@@ -132,10 +134,14 @@ function reconcileCoverageScript(
     validJson: false,
     previousCoverage: null,
     coverageScript: null,
+    previousTestScript: null,
+    testScript: null,
     previousC8DevDependency: null,
     c8DevDependency: null,
     matchesRequiredCoverageBefore: false,
     matchesRequiredCoverageAfter: false,
+    hasRequiredTestScriptBefore: false,
+    hasRequiredTestScriptAfter: false,
     matchesRequiredC8DevDependencyBefore: false,
     matchesRequiredC8DevDependencyAfter: false,
     updated: false,
@@ -172,18 +178,30 @@ function reconcileCoverageScript(
     typeof scripts[REQUIRED_COVERAGE_SCRIPT_KEY] === 'string'
       ? scripts[REQUIRED_COVERAGE_SCRIPT_KEY]
       : null;
+  const previousTestScript =
+    typeof scripts[REQUIRED_TEST_SCRIPT_KEY] === 'string' &&
+    scripts[REQUIRED_TEST_SCRIPT_KEY].trim() !== ''
+      ? scripts[REQUIRED_TEST_SCRIPT_KEY]
+      : null;
   const previousC8DevDependency =
     typeof devDependencies.c8 === 'string' ? devDependencies.c8 : null;
   result.previousCoverage = previousCoverage;
+  result.previousTestScript = previousTestScript;
   result.previousC8DevDependency = previousC8DevDependency;
   result.matchesRequiredCoverageBefore = previousCoverage === requiredCoverageScript;
+  result.hasRequiredTestScriptBefore = previousTestScript !== null;
   result.matchesRequiredC8DevDependencyBefore = previousC8DevDependency === requiredC8Version;
 
   if (
-    (!result.matchesRequiredCoverageBefore || !result.matchesRequiredC8DevDependencyBefore) &&
+    (!result.matchesRequiredCoverageBefore ||
+      !result.hasRequiredTestScriptBefore ||
+      !result.matchesRequiredC8DevDependencyBefore) &&
     mode === 'sync'
   ) {
     scripts[REQUIRED_COVERAGE_SCRIPT_KEY] = requiredCoverageScript;
+    if (!result.hasRequiredTestScriptBefore) {
+      scripts[REQUIRED_TEST_SCRIPT_KEY] = DEFAULT_TEST_SCRIPT_VALUE;
+    }
     devDependencies.c8 = requiredC8Version;
     pkg.scripts = scripts;
     pkg.devDependencies = devDependencies;
@@ -195,12 +213,18 @@ function reconcileCoverageScript(
     mode === 'sync' && !result.matchesRequiredCoverageBefore
       ? requiredCoverageScript
       : previousCoverage;
+  result.testScript =
+    mode === 'sync' && !result.hasRequiredTestScriptBefore
+      ? DEFAULT_TEST_SCRIPT_VALUE
+      : previousTestScript;
   result.c8DevDependency =
     mode === 'sync' && !result.matchesRequiredC8DevDependencyBefore
       ? requiredC8Version
       : previousC8DevDependency;
 
   result.matchesRequiredCoverageAfter = result.updated || result.matchesRequiredCoverageBefore;
+  result.hasRequiredTestScriptAfter =
+    (mode === 'sync' && !result.hasRequiredTestScriptBefore) || result.hasRequiredTestScriptBefore;
   result.matchesRequiredC8DevDependencyAfter =
     result.updated || result.matchesRequiredC8DevDependencyBefore;
   return result;
@@ -232,6 +256,7 @@ export function runSyncCoverageScript(options) {
       c8Version: toolingBaseline.tools.c8.version,
     },
     requiredCoverageScript,
+    requiredTestScript: DEFAULT_TEST_SCRIPT_VALUE,
     requiredC8DevDependency: requiredC8Version,
     workspaces: workspacePaths,
     results: [],
@@ -256,7 +281,9 @@ export function runSyncCoverageScript(options) {
 
     if (
       mode === 'check' &&
-      (!item.matchesRequiredCoverageAfter || !item.matchesRequiredC8DevDependencyAfter)
+      (!item.matchesRequiredCoverageAfter ||
+        !item.hasRequiredTestScriptAfter ||
+        !item.matchesRequiredC8DevDependencyAfter)
     ) {
       report.ok = false;
     }

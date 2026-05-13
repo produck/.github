@@ -1,0 +1,14 @@
+Usage:
+  agent-toolkit sync-prettier-config [--cwd <dir>] [--check] [--dry-run]
+    [--json <file>]
+
+Behavior:
+  - Applies organization-required root format script:
+    - scripts.produck:format = npm exec -- prettier --check . && npm run format --if-present
+  - Applies organization-required root Prettier config file:
+    - .prettierrc
+
+Rules:
+  - --check validates without writing and exits non-zero on mismatch
+  - --dry-run prints planned changes without writing
+  - --check takes precedence over --dry-run

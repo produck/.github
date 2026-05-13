@@ -41,18 +41,25 @@ Notes:
     `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
   - Use central remediation command to deploy local anti-drift hook baseline:
     `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
-  - Use central remediation command to deploy root scripts/config and lint
-    integration baseline:
+  - Use central remediation command to deploy root format script/config
+    baseline:
+    `npm exec -- agent-toolkit sync-prettier-config --cwd .`.
+  - Use central remediation command to deploy root lint script/config and
+    eslint integration baseline:
+    `npm exec -- agent-toolkit sync-eslint-config --cwd .`.
+  - Use central remediation command to deploy root shared scripts/dependencies
+    baseline:
     `npm exec -- agent-toolkit sync-workspace-config --cwd .`.
   - `c8` execution baseline for deployed coverage scripts is fixed to the
     version specified in `tooling-version-baseline.json`.
   - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
     in shared scripts/CI.
   - Root local governance must pin `devDependencies.c8`,
-    `devDependencies.husky`, `devDependencies.lerna`,
-    `devDependencies.@produck/eslint-rules`, and
+    `devDependencies.husky`, `devDependencies.lerna`, and
     `devDependencies.@produck/agent-toolkit` via
     `agent-toolkit sync-workspace-config`.
+  - Root local governance must pin `devDependencies.@produck/eslint-rules`
+    via `agent-toolkit sync-eslint-config`.
 
 - Testing strategy and framework are repository-defined.
 - `test` script implementation is repository-defined and is not overwritten by
@@ -76,10 +83,15 @@ Central toolkit command role model:
   governance and is mandatory in monorepo mode.
 - `agent-toolkit sync-husky-hooks` is the hard guard for local anti-drift hook
   governance and is mandatory in monorepo mode.
-- `agent-toolkit sync-workspace-config` is the hard guard for root
-  scripts/config and lint integration governance and is mandatory in monorepo
+- `agent-toolkit sync-prettier-config` is the hard guard for root format
+  script/config governance and is mandatory in monorepo mode.
+- `agent-toolkit sync-eslint-config` is the hard guard for root lint
+  script/config and eslint integration governance and is mandatory in monorepo
   mode.
-- For simplified downstream execution of mandatory flow (1 -> 2 -> 3 -> 4),
+- `agent-toolkit sync-workspace-config` is the hard guard for root shared
+  scripts/dependencies governance and is mandatory in monorepo mode.
+- For simplified downstream execution of mandatory flow (1 -> 2 -> 3 -> 4 ->
+  5 -> 6 -> 7),
   use:
   `npm exec -- agent-toolkit`.
 - Equivalent explicit form:
@@ -176,16 +188,28 @@ Script placement:
   `agent-toolkit sync-coverage-script`.
 - Root local hook governance must be synchronized by
   `agent-toolkit sync-husky-hooks`.
-- Root local config governance must be synchronized by
+- Root local format governance must be synchronized by
+  `agent-toolkit sync-prettier-config`.
+- Root local lint governance must be synchronized by
+  `agent-toolkit sync-eslint-config`.
+- Root local shared script/dependency governance must be synchronized by
   `agent-toolkit sync-workspace-config`.
-- Root local config governance must pin root `devDependencies.c8`,
+- Root local shared script/dependency governance must pin root
+  `devDependencies.c8`,
   `devDependencies.husky`, `devDependencies.lerna`,
-  `devDependencies.@produck/eslint-rules`, and
   `devDependencies.@produck/agent-toolkit` via
   `agent-toolkit sync-workspace-config`.
-- Root local config governance must initialize `.prettierrc` and
-  `eslint.config.mjs` (with `@produck/eslint-rules` integration) via
-  `agent-toolkit sync-workspace-config`.
+- Root local shared script/dependency governance must initialize
+  `scripts.produck:coverage` with workspace-level execution behavior:
+  attempt `test` on all workspace packages using `--workspaces --if-present`.
+- Root local shared script/dependency governance must initialize `.c8rc.json`
+  via `agent-toolkit sync-workspace-config`.
+- Root local format governance must initialize `.prettierrc` and
+  `scripts.produck:format` via `agent-toolkit sync-prettier-config`.
+- Root local lint governance must initialize `eslint.config.mjs`,
+  `scripts.produck:lint`, and `devDependencies.@produck/eslint-rules`
+  (including append-mode integration for existing eslint config) via
+  `agent-toolkit sync-eslint-config`.
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:
   ```json

@@ -19,9 +19,16 @@ What it does (in order):
 
 1. Syncs organization AI instruction files into `.github/instructions/produck/`
 2. Runs preflight to verify required files and directories
-3. Deploys the pinned `produck:coverage` script and `c8` devDependency
-4. Deploys `.husky/pre-commit` and `.husky/commit-msg`, and pins `c8`, `husky`,
-   `lerna`, `@produck/agent-toolkit` in root `devDependencies`
+3. Syncs root `produck:format` script and initializes `.prettierrc`
+4. Syncs root `produck:lint` script, initializes/patches `eslint.config.mjs`,
+   and ensures `@produck/eslint-rules`
+5. Syncs root shared governance (`produck:baseline`,
+   `produck:coverage`, `produck:precommit-check`), initializes `.c8rc.json`,
+   and syncs shared pinned devDependencies
+   (`c8`, `husky`, `lerna`, `@produck/agent-toolkit`)
+6. Deploys the pinned `produck:coverage` script and `c8` devDependency to each workspace package, and enforces `scripts.test` (generates a default `test` script when missing).
+   **Note:** The `produck:coverage` script in subpackages is for local and AI development use only. It is NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
+7. Deploys `.husky/pre-commit` and `.husky/commit-msg`
 
 After running, add the persistent enforcement entry to the repository
 `package.json`:
@@ -43,6 +50,8 @@ npm run produck:baseline
 - agent-toolkit run-capture
 - agent-toolkit summarize-log
 - agent-toolkit sync-coverage-script
+- agent-toolkit sync-prettier-config
+- agent-toolkit sync-eslint-config
 - agent-toolkit sync-workspace-config
 - agent-toolkit sync-husky-hooks
 - agent-toolkit validate-commit-msg
@@ -62,19 +71,25 @@ Equivalent explicit form:
 npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
-`enforce-node-baseline` runs five steps in fixed order and stops at the first
+`enforce-node-baseline` runs seven steps in fixed order and stops at the first
 failure:
 
 1. `sync-instructions` — distribute organization AI instruction files into
    `.github/instructions/produck/`
 2. `preflight` — verify required files and directories exist
-3. `sync-workspace-config` — deploy organization scripts (`produck:baseline`,
-   `produck:format`, `produck:lint`, `produck:precommit-check`), initialize
-   `.prettierrc` and `eslint.config.mjs`, and ensure
+3. `sync-prettier-config` — deploy organization format gate script
+   (`produck:format`) and initialize `.prettierrc`
+4. `sync-eslint-config` — deploy organization lint gate script
+   (`produck:lint`), initialize/patch `eslint.config.mjs`, and ensure
    `@produck/eslint-rules` integration
-4. `sync-coverage-script` — deploy pinned `produck:coverage` script and `c8`
-   devDependency into each workspace package
-5. `sync-husky-hooks` — deploy `.husky/pre-commit` and `.husky/commit-msg`
+5. `sync-workspace-config` — deploy shared root governance scripts
+   (`produck:baseline`, `produck:coverage`, `produck:precommit-check`),
+   initialize root `.c8rc.json`, and sync shared pinned root devDependencies
+   (`c8`, `husky`, `lerna`, `@produck/agent-toolkit`)
+6. `sync-coverage-script` — deploy pinned `produck:coverage` script and `c8`
+   devDependency into each workspace package, and ensure each workspace
+   package has `scripts.test` (auto-generate a default value when missing)
+7. `sync-husky-hooks` — deploy `.husky/pre-commit` and `.husky/commit-msg`
 
 Add to downstream repository root `package.json` for one-command enforcement:
 
@@ -124,25 +139,51 @@ Summarize captured output:
 npm exec -- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
 ```
 
-Deploy organization coverage script and pinned local c8 devDependency to
-workspace packages:
+Deploy organization coverage script and pinned local c8 devDependency to workspace packages:
 
 ```
 npm exec -- agent-toolkit sync-coverage-script --cwd .
 ```
 
-Deploy organization workspace scripts/config files and eslint-rules integration
-to repository root:
+This command also enforces `scripts.test` in each workspace package.
+If missing, it generates:
+
+```
+node -e "console.log('No tests configured')"
+```
+
+**Note:** The `produck:coverage` script in subpackages is for local and AI development use only. It is NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
+
+Deploy organization format config and script baseline to repository root:
+
+```
+npm exec -- agent-toolkit sync-prettier-config --cwd .
+```
+
+This command manages `scripts.produck:format` and `.prettierrc` only.
+
+Deploy organization lint config and script baseline to repository root:
+
+```
+npm exec -- agent-toolkit sync-eslint-config --cwd .
+```
+
+This command manages `scripts.produck:lint`, `eslint.config.mjs`, and
+`devDependencies.@produck/eslint-rules`. If `eslint.config.mjs` exists without
+`@produck/eslint-rules`, it appends Produck integration to the exported config
+array.
+
+Deploy organization root shared scripts and shared pinned dependencies to
+repository root:
 
 ```
 npm exec -- agent-toolkit sync-workspace-config --cwd .
 ```
 
-This command manages `produck:*` root scripts, initializes `.prettierrc` and
-`eslint.config.mjs`, appends `@produck/eslint-rules` integration when an
-existing `eslint.config.mjs` does not include it, and pins `c8`, `husky`,
-`lerna`, `@produck/eslint-rules`, and `@produck/agent-toolkit` in root
-`devDependencies`.
+This command manages `scripts.produck:baseline`,
+`scripts.produck:coverage`, `scripts.produck:precommit-check`, initializes
+`.c8rc.json`, and pins `c8`, `husky`, `lerna`, and `@produck/agent-toolkit`
+in root `devDependencies`.
 
 Deploy organization local anti-drift husky hooks to repository root:
 

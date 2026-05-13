@@ -13,7 +13,8 @@
   },
   "scripts": {
     "pack:check": "npm pack --dry-run",
-    "produck:coverage": "c8@11.0.0 --reporter=lcov --reporter=html --reporter=text-summary npm test"
+    "test": "node -e \"console.log('No tests configured')\"",
+    "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "files": [
     "bin"

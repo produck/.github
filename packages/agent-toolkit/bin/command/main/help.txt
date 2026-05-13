@@ -4,6 +4,8 @@ agent-toolkit commands:
   run-capture
   summarize-log
   sync-coverage-script
+  sync-prettier-config
+  sync-eslint-config
   sync-workspace-config
   sync-husky-hooks
   validate-commit-msg
