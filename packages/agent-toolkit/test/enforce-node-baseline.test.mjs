@@ -59,6 +59,17 @@ describe('enforce-node-baseline command', () => {
         path.join(tempDir, 'packages/a/package.json'),
         `${JSON.stringify({ name: 'a', scripts: { test: 'npm test' } }, null, 2)}\n`,
       );
+      await writeTextFile(
+        path.join(tempDir, '.editorconfig'),
+        `root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+`,
+      );
 
       const result = runCli([
         'enforce-node-baseline',

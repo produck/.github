@@ -4,6 +4,7 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 
 import { runCli, withTempDir, writeTextFile } from './helpers.mjs';
+import { printSyncEditorconfigHelp } from '../bin/command/sync-editorconfig/index.mjs';
 
 const REQUIRED_EDITORCONFIG = `root = true
 
@@ -23,12 +24,31 @@ max_line_length = 80
 `;
 
 describe('sync-editorconfig command', () => {
-  it('prints help text', () => {
+  it('prints help text via CLI', () => {
     const result = runCli(['sync-editorconfig', '--help']);
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /Usage:/);
     assert.match(result.stdout, /\.editorconfig/);
+  });
+
+  it('prints help text via module function', () => {
+    const chunks = [];
+    const originalWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk) => {
+      chunks.push(String(chunk));
+      return true;
+    };
+
+    try {
+      printSyncEditorconfigHelp();
+    } finally {
+      process.stdout.write = originalWrite;
+    }
+
+    const output = chunks.join('');
+    assert.match(output, /Usage:/);
+    assert.match(output, /\.editorconfig/);
   });
 
   it('exits with ok=true when .editorconfig matches required content', async () => {
