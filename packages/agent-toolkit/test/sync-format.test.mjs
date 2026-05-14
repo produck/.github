@@ -5,7 +5,7 @@ import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
-const REQUIRED_FORMAT_SCRIPT = 'npm exec -- prettier --check . && npm run format --if-present';
+const REQUIRED_FORMAT_SCRIPT = 'prettier --check . && npm run format --if-present';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
     semi: true,

@@ -10,7 +10,7 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const LERNA_CONFIG_FILE = 'lerna.json';
 
 const REQUIRED_PUBLISH_SCRIPT_KEY = 'produck:publish';
-const REQUIRED_PUBLISH_SCRIPT_VALUE = 'npm exec -- lerna publish';
+const REQUIRED_PUBLISH_SCRIPT_VALUE = 'lerna publish';
 
 export function printSyncPublishHelp() {
   printTextResource(HELP_FILE);

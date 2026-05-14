@@ -10,8 +10,7 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const PRETTIER_CONFIG_FILE = '.prettierrc';
 
 const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
-const REQUIRED_FORMAT_SCRIPT_VALUE =
-  'npm exec -- prettier --check . && npm run format --if-present';
+const REQUIRED_FORMAT_SCRIPT_VALUE = 'prettier --check . && npm run format --if-present';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
     semi: true,

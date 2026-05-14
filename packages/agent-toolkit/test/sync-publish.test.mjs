@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
-const REQUIRED_PUBLISH_SCRIPT = 'npm exec -- lerna publish';
+const REQUIRED_PUBLISH_SCRIPT = 'lerna publish';
 
 describe('sync-publish command', () => {
   it('prints help text', () => {
