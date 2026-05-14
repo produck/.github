@@ -10,6 +10,10 @@ const SOURCE_DIR = path.resolve(REPO_ROOT, '.github/distribution/produck');
 const OUTPUT_DIR = path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck');
 const SOURCE_TOOLING_BASELINE_PATH = path.resolve(SOURCE_DIR, 'tooling-version-baseline.json');
 const OUTPUT_TOOLING_BASELINE_PATH = path.resolve(OUTPUT_DIR, 'tooling-version-baseline.json');
+const SOURCE_GITATTRIBUTES_PATH = path.resolve(REPO_ROOT, '.gitattributes');
+const SOURCE_GITIGNORE_PATH = path.resolve(REPO_ROOT, '.gitignore');
+const OUTPUT_GITATTRIBUTES_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitattributes');
+const OUTPUT_GITIGNORE_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitignore');
 const LEGACY_OUTPUT_PATH = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/instructions/org.instructions.md',
@@ -127,6 +131,7 @@ function cleanStaleManagedFiles(expectedNames) {
 
 function run() {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+  fs.mkdirSync(path.dirname(OUTPUT_GITATTRIBUTES_PATH), { recursive: true });
 
   const sourceEntries = readSourceEntries();
   const expectedNames = new Set(sourceEntries.map((entry) => entry.fileName));
@@ -142,6 +147,29 @@ function run() {
   process.stdout.write(
     `Generated ${OUTPUT_TOOLING_BASELINE_PATH} from ${SOURCE_TOOLING_BASELINE_PATH}\n`,
   );
+
+  if (!fs.existsSync(SOURCE_GITATTRIBUTES_PATH)) {
+    throw new Error(`Missing source .gitattributes: ${SOURCE_GITATTRIBUTES_PATH}`);
+  }
+  if (!fs.existsSync(SOURCE_GITIGNORE_PATH)) {
+    throw new Error(`Missing source .gitignore: ${SOURCE_GITIGNORE_PATH}`);
+  }
+
+  fs.writeFileSync(
+    OUTPUT_GITATTRIBUTES_PATH,
+    normalize(fs.readFileSync(SOURCE_GITATTRIBUTES_PATH, 'utf8')),
+    'utf8',
+  );
+  process.stdout.write(
+    `Generated ${OUTPUT_GITATTRIBUTES_PATH} from ${SOURCE_GITATTRIBUTES_PATH}\n`,
+  );
+
+  fs.writeFileSync(
+    OUTPUT_GITIGNORE_PATH,
+    normalize(fs.readFileSync(SOURCE_GITIGNORE_PATH, 'utf8')),
+    'utf8',
+  );
+  process.stdout.write(`Generated ${OUTPUT_GITIGNORE_PATH} from ${SOURCE_GITIGNORE_PATH}\n`);
 
   cleanStaleManagedFiles(expectedNames);
 

@@ -10,9 +10,11 @@ Behavior:
     - devDependencies.husky = <fixed-version-from-baseline>
     - devDependencies.lerna = <fixed-version-from-baseline>
     - devDependencies.@produck/agent-toolkit = <latest-version-resolved-at-runtime>
-  - Applies organization-required root .gitattributes file
+  - Applies organization-required root .gitattributes file (exact replacement)
   - Normalizes line endings for text files
   - Keeps Windows script entrypoints on CRLF
+  - Ensures root .gitignore contains all org-baseline required entries
+    (downstream can extend; missing entries are appended)
   - Applies organization-required hook files:
     - .husky/pre-commit
     - .husky/commit-msg
