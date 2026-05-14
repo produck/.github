@@ -103,7 +103,7 @@ export function runEnforceNodeBaseline(options) {
     preflightArgs.push('--check-workspace-package-json', 'package.json');
   }
 
-  const syncCoverageArgs = ['sync-coverage-script', '--cwd', cwd];
+  const syncCoverageArgs = ['sync-coverage', '--cwd', cwd];
   for (const workspacePath of workspaces) {
     syncCoverageArgs.push('--workspace', workspacePath);
   }
@@ -113,18 +113,11 @@ export function runEnforceNodeBaseline(options) {
     syncCoverageArgs.push('--dry-run');
   }
 
-  const syncHuskyArgs = ['sync-husky-hooks', '--cwd', cwd];
+  const syncGitArgs = ['sync-git', '--cwd', cwd];
   if (check) {
-    syncHuskyArgs.push('--check');
+    syncGitArgs.push('--check');
   } else if (dryRun) {
-    syncHuskyArgs.push('--dry-run');
-  }
-
-  const syncWorkspaceConfigArgs = ['sync-workspace-config', '--cwd', cwd];
-  if (check) {
-    syncWorkspaceConfigArgs.push('--check');
-  } else if (dryRun) {
-    syncWorkspaceConfigArgs.push('--dry-run');
+    syncGitArgs.push('--dry-run');
   }
 
   const syncEditorconfigArgs = ['sync-editorconfig', '--cwd', cwd];
@@ -134,14 +127,14 @@ export function runEnforceNodeBaseline(options) {
     syncEditorconfigArgs.push('--dry-run');
   }
 
-  const syncPrettierConfigArgs = ['sync-prettier-config', '--cwd', cwd];
+  const syncPrettierConfigArgs = ['sync-format', '--cwd', cwd];
   if (check) {
     syncPrettierConfigArgs.push('--check');
   } else if (dryRun) {
     syncPrettierConfigArgs.push('--dry-run');
   }
 
-  const syncEslintConfigArgs = ['sync-eslint-config', '--cwd', cwd];
+  const syncEslintConfigArgs = ['sync-lint', '--cwd', cwd];
   if (check) {
     syncEslintConfigArgs.push('--check');
   } else if (dryRun) {
@@ -152,11 +145,10 @@ export function runEnforceNodeBaseline(options) {
     { name: 'sync-instructions', args: syncInstructionsArgs },
     { name: 'preflight', args: preflightArgs },
     { name: 'sync-editorconfig', args: syncEditorconfigArgs },
-    { name: 'sync-prettier-config', args: syncPrettierConfigArgs },
-    { name: 'sync-eslint-config', args: syncEslintConfigArgs },
-    { name: 'sync-workspace-config', args: syncWorkspaceConfigArgs },
-    { name: 'sync-coverage-script', args: syncCoverageArgs },
-    { name: 'sync-husky-hooks', args: syncHuskyArgs },
+    { name: 'sync-format', args: syncPrettierConfigArgs },
+    { name: 'sync-lint', args: syncEslintConfigArgs },
+    { name: 'sync-git', args: syncGitArgs },
+    { name: 'sync-coverage', args: syncCoverageArgs },
   ];
 
   for (const step of plan) {

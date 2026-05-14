@@ -84,16 +84,14 @@ describe('sync-editorconfig command', () => {
     });
   });
 
-  it('adds missing entries to existing .editorconfig', async () => {
-    await withTempDir('agent-toolkit-sync-editorconfig-merge-', async (tempDir) => {
-      // Write incomplete .editorconfig
+  it('replaces an existing .editorconfig with the required content', async () => {
+    await withTempDir('agent-toolkit-sync-editorconfig-replace-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, '.editorconfig'),
-        `root = true
+        `root = false
 
-[*]
-charset = utf-8
-indent_style = space
+[*.js]
+indent_style = tab
 `,
       );
 
@@ -105,10 +103,8 @@ indent_style = space
       assert.equal(report.status.updated, true);
       assert.ok(report.status.mismatchesBefore.length > 0);
 
-      // Verify missing entries were added
       const content = fs.readFileSync(path.join(tempDir, '.editorconfig'), 'utf8');
-      assert.ok(content.includes('indent_size = 2'));
-      assert.ok(content.includes('trim_trailing_whitespace = true'));
+      assert.equal(content, REQUIRED_EDITORCONFIG);
     });
   });
 
@@ -181,8 +177,8 @@ charset = utf-8
     assert.match(result.stderr, /does not exist/);
   });
 
-  it('appends missing sections to an existing partial .editorconfig via merge flow', async () => {
-    await withTempDir('agent-toolkit-sync-editorconfig-merge-sections-', async (tempDir) => {
+  it('replaces a partial .editorconfig that is missing required sections', async () => {
+    await withTempDir('agent-toolkit-sync-editorconfig-replace-sections-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, '.editorconfig'),
         `root = true
@@ -202,13 +198,11 @@ trim_trailing_whitespace = true
       assert.equal(report.status.updated, true);
 
       const content = fs.readFileSync(path.join(tempDir, '.editorconfig'), 'utf8');
-      assert.ok(content.includes('[*.{yml,yaml}]'));
-      assert.ok(content.includes('[*.md]'));
-      assert.ok(content.includes('max_line_length = 80'));
+      assert.equal(content, REQUIRED_EDITORCONFIG);
     });
   });
 
-  it('appends missing root flag to existing file without root', async () => {
+  it('replaces a file without root marker using the required content', async () => {
     await withTempDir('agent-toolkit-sync-editorconfig-missing-root-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, '.editorconfig'),
@@ -235,7 +229,7 @@ max_line_length = 80
       assert.equal(report.status.updated, true);
 
       const content = fs.readFileSync(path.join(tempDir, '.editorconfig'), 'utf8');
-      assert.ok(content.includes('root = true'));
+      assert.equal(content, REQUIRED_EDITORCONFIG);
     });
   });
 
@@ -292,7 +286,7 @@ max_line_length = 80
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, false);
-      assert.ok(report.status.mismatchesBefore.some((m) => m.section === '_root'));
+      assert.ok(report.status.mismatchesBefore.some((m) => m.file === '.editorconfig'));
     });
   });
 

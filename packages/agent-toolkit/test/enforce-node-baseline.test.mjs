@@ -45,7 +45,7 @@ describe('enforce-node-baseline command', () => {
     assert.match(result.stdout, /1\) sync-instructions/);
   });
 
-  it('runs sync-instructions, preflight, sync-prettier-config, sync-eslint-config, sync-workspace-config, sync-coverage-script, and sync-husky-hooks in order', async () => {
+  it('runs sync-instructions, preflight, sync-editorconfig, sync-format, sync-lint, sync-git, and sync-coverage in order', async () => {
     await withTempDir('agent-toolkit-enforce-node-baseline-sync-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       const instructionFile = path.join(sourceDir, '00-sample.instructions.md');
@@ -84,18 +84,17 @@ trim_trailing_whitespace = true
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.steps.length, 8);
+      assert.equal(report.steps.length, 7);
       assert.deepEqual(
         report.steps.map((step) => step.name),
         [
           'sync-instructions',
           'preflight',
           'sync-editorconfig',
-          'sync-prettier-config',
-          'sync-eslint-config',
-          'sync-workspace-config',
-          'sync-coverage-script',
-          'sync-husky-hooks',
+          'sync-format',
+          'sync-lint',
+          'sync-git',
+          'sync-coverage',
         ],
       );
       assert.equal(
@@ -255,7 +254,7 @@ max_line_length = 80
       assert.equal(report.steps[0].args.includes('--force'), true);
       assert.equal(report.steps[0].args.includes('--dry-run'), true);
 
-      const coverageStep = report.steps.find((step) => step.name === 'sync-coverage-script');
+      const coverageStep = report.steps.find((step) => step.name === 'sync-coverage');
       assert.equal(Boolean(coverageStep), true);
       assert.equal(coverageStep.args.includes('--workspace'), true);
       assert.equal(coverageStep.args.includes('packages/a'), true);
@@ -292,7 +291,7 @@ max_line_length = 80
       const report = JSON.parse(result.stdout);
       assert.equal(report.mode, 'check');
 
-      const coverageStep = report.steps.find((step) => step.name === 'sync-coverage-script');
+      const coverageStep = report.steps.find((step) => step.name === 'sync-coverage');
       if (coverageStep) {
         assert.equal(coverageStep.args.includes('--check'), true);
         assert.equal(coverageStep.args.includes('--dry-run'), false);

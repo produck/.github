@@ -17,24 +17,27 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
   path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
 ];
 
+const GITATTRIBUTES_FILE = '.gitattributes';
+const HUSKY_DIR = '.husky';
+const PRE_COMMIT_HOOK_FILE = 'pre-commit';
+const COMMIT_MSG_HOOK_FILE = 'commit-msg';
 const REQUIRED_BASELINE_SCRIPT_KEY = 'produck:baseline';
 const REQUIRED_BASELINE_SCRIPT_VALUE =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
-const REQUIRED_WORKSPACE_COVERAGE_SCRIPT_KEY = 'produck:coverage';
-const REQUIRED_WORKSPACE_COVERAGE_SCRIPT_VALUE =
-  'c8 --config .c8rc.json npm run test --workspaces --if-present';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY = 'produck:precommit-check';
 const REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run produck:lint';
-const REQUIRED_C8_CONFIG_FILE = '.c8rc.json';
-const REQUIRED_C8_CONFIG_CONTENT = `${JSON.stringify(
-  {
-    reporter: ['lcov', 'html', 'text-summary'],
-  },
-  null,
-  2,
-)}\n`;
 
-export function printSyncWorkspaceConfigHelp() {
+const REQUIRED_GITATTRIBUTES_CONTENT = `* text=auto eol=lf
+
+# Windows script entrypoints
+*.bat text eol=crlf
+*.cmd text eol=crlf
+`;
+const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:precommit-check\n';
+const REQUIRED_COMMIT_MSG_HOOK =
+  '#!/usr/bin/env sh\nnode ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"\n';
+
+export function printSyncGitHelp() {
   printTextResource(HELP_FILE);
 }
 
@@ -88,23 +91,29 @@ function loadToolingBaseline() {
   }
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
-  const c8Version = String(baseline?.tools?.c8?.version || '').trim();
   const huskyVersion = String(baseline?.tools?.husky?.version || '').trim();
   const lernaVersion = String(baseline?.tools?.lerna?.version || '').trim();
 
-  if (!c8Version || !huskyVersion || !lernaVersion) {
+  if (!huskyVersion || !lernaVersion) {
     console.error(
-      `Tooling baseline must define fixed tools.c8/husky/lerna.version: ${toolingBaselinePath}`,
+      `Tooling baseline must define fixed tools.husky/lerna.version: ${toolingBaselinePath}`,
     );
     process.exit(2);
   }
 
   return {
     toolingBaselinePath,
-    c8Version,
     huskyVersion,
     lernaVersion,
   };
+}
+
+function readFileIfExists(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  return fs.readFileSync(filePath, 'utf8');
 }
 
 function buildScriptState(pkg) {
@@ -119,23 +128,11 @@ function buildScriptState(pkg) {
       typeof scripts[REQUIRED_BASELINE_SCRIPT_KEY] === 'string'
         ? scripts[REQUIRED_BASELINE_SCRIPT_KEY]
         : null,
-    previousCoverage:
-      typeof scripts[REQUIRED_WORKSPACE_COVERAGE_SCRIPT_KEY] === 'string'
-        ? scripts[REQUIRED_WORKSPACE_COVERAGE_SCRIPT_KEY]
-        : null,
     previousPrecommitCheck:
       typeof scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] === 'string'
         ? scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY]
         : null,
   };
-}
-
-function readFileIfExists(filePath) {
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-
-  return fs.readFileSync(filePath, 'utf8');
 }
 
 function buildDevDependencyState(pkg) {
@@ -149,7 +146,6 @@ function buildDevDependencyState(pkg) {
   return {
     devDependencies,
     previousManaged: {
-      c8: typeof devDependencies.c8 === 'string' ? devDependencies.c8 : null,
       husky: typeof devDependencies.husky === 'string' ? devDependencies.husky : null,
       lerna: typeof devDependencies.lerna === 'string' ? devDependencies.lerna : null,
       '@produck/agent-toolkit':
@@ -160,7 +156,7 @@ function buildDevDependencyState(pkg) {
   };
 }
 
-export function runSyncWorkspaceConfig(options) {
+export function runSyncGit(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
   const check = hasFlag(options, '--check');
   const dryRun = hasFlag(options, '--dry-run') && !check;
@@ -182,7 +178,6 @@ export function runSyncWorkspaceConfig(options) {
   const toolingBaseline = loadToolingBaseline();
   const requiredToolkitDependency = getRequiredToolkitDevDependency();
   const requiredDevDependencies = {
-    c8: toolingBaseline.c8Version,
     husky: toolingBaseline.huskyVersion,
     lerna: toolingBaseline.lernaVersion,
     '@produck/agent-toolkit': requiredToolkitDependency,
@@ -190,12 +185,8 @@ export function runSyncWorkspaceConfig(options) {
 
   const scriptState = buildScriptState(pkg);
   const dependencyState = buildDevDependencyState(pkg);
-  const c8ConfigPath = path.resolve(cwd, REQUIRED_C8_CONFIG_FILE);
-  const currentC8ConfigContent = readFileIfExists(c8ConfigPath);
-
   const scriptValidation = validateRequiredExactEntries(scriptState.scripts, {
     [REQUIRED_BASELINE_SCRIPT_KEY]: REQUIRED_BASELINE_SCRIPT_VALUE,
-    [REQUIRED_WORKSPACE_COVERAGE_SCRIPT_KEY]: REQUIRED_WORKSPACE_COVERAGE_SCRIPT_VALUE,
     [REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY]: REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE,
   });
   const dependencyValidation = validateRequiredExactEntries(
@@ -204,26 +195,61 @@ export function runSyncWorkspaceConfig(options) {
   );
 
   const matchesRequiredBaseline = !(REQUIRED_BASELINE_SCRIPT_KEY in scriptValidation.mismatches);
-  const matchesRequiredWorkspaceCoverage = !(
-    REQUIRED_WORKSPACE_COVERAGE_SCRIPT_KEY in scriptValidation.mismatches
-  );
   const matchesRequiredPrecommitCheck = !(
     REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY in scriptValidation.mismatches
   );
   const matchesRequiredManagedDevDependencies = dependencyValidation.ok;
-  const matchesRequiredC8Config = currentC8ConfigContent === REQUIRED_C8_CONFIG_CONTENT;
+
+  const gitAttributesPath = path.resolve(cwd, GITATTRIBUTES_FILE);
+  const huskyDir = path.resolve(cwd, HUSKY_DIR);
+  const preCommitHookPath = path.resolve(huskyDir, PRE_COMMIT_HOOK_FILE);
+  const commitMsgHookPath = path.resolve(huskyDir, COMMIT_MSG_HOOK_FILE);
+  const currentContent = readFileIfExists(gitAttributesPath);
+  const currentPreCommitHook = readFileIfExists(preCommitHookPath);
+  const currentCommitMsgHook = readFileIfExists(commitMsgHookPath);
+  const fileExists = currentContent !== null;
+  const preCommitHookExists = currentPreCommitHook !== null;
+  const commitMsgHookExists = currentCommitMsgHook !== null;
+  const matchesRequiredGitAttributes = currentContent === REQUIRED_GITATTRIBUTES_CONTENT;
+  const matchesRequiredPreCommitHook = currentPreCommitHook === REQUIRED_PRE_COMMIT_HOOK;
+  const matchesRequiredCommitMsgHook = currentCommitMsgHook === REQUIRED_COMMIT_MSG_HOOK;
+
+  const mismatches = [];
+  if (!matchesRequiredGitAttributes) {
+    mismatches.push({
+      file: GITATTRIBUTES_FILE,
+      expected: 'exact required content',
+      actual: fileExists ? 'different content' : 'missing',
+    });
+  }
+  if (!matchesRequiredPreCommitHook) {
+    mismatches.push({
+      file: `${HUSKY_DIR}/${PRE_COMMIT_HOOK_FILE}`,
+      expected: 'exact required content',
+      actual: preCommitHookExists ? 'different content' : 'missing',
+    });
+  }
+  if (!matchesRequiredCommitMsgHook) {
+    mismatches.push({
+      file: `${HUSKY_DIR}/${COMMIT_MSG_HOOK_FILE}`,
+      expected: 'exact required content',
+      actual: commitMsgHookExists ? 'different content' : 'missing',
+    });
+  }
 
   const requiresUpdate =
+    mismatches.length > 0 ||
     !matchesRequiredBaseline ||
-    !matchesRequiredWorkspaceCoverage ||
     !matchesRequiredPrecommitCheck ||
-    !matchesRequiredManagedDevDependencies ||
-    !matchesRequiredC8Config;
+    !matchesRequiredManagedDevDependencies;
 
   if (mode === 'sync' && requiresUpdate) {
+    fs.mkdirSync(huskyDir, { recursive: true });
+    fs.writeFileSync(gitAttributesPath, REQUIRED_GITATTRIBUTES_CONTENT, 'utf8');
+    fs.writeFileSync(preCommitHookPath, REQUIRED_PRE_COMMIT_HOOK, 'utf8');
+    fs.writeFileSync(commitMsgHookPath, REQUIRED_COMMIT_MSG_HOOK, 'utf8');
+
     scriptState.scripts[REQUIRED_BASELINE_SCRIPT_KEY] = REQUIRED_BASELINE_SCRIPT_VALUE;
-    scriptState.scripts[REQUIRED_WORKSPACE_COVERAGE_SCRIPT_KEY] =
-      REQUIRED_WORKSPACE_COVERAGE_SCRIPT_VALUE;
     scriptState.scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] =
       REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE;
     pkg.scripts = scriptState.scripts;
@@ -234,7 +260,6 @@ export function runSyncWorkspaceConfig(options) {
     pkg.devDependencies = dependencyState.devDependencies;
 
     fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(c8ConfigPath, REQUIRED_C8_CONFIG_CONTENT, 'utf8');
   }
 
   const report = {
@@ -244,31 +269,43 @@ export function runSyncWorkspaceConfig(options) {
     rootPackageJsonPath,
     toolingBaselinePath: toolingBaseline.toolingBaselinePath,
     required: {
+      file: GITATTRIBUTES_FILE,
+      content: REQUIRED_GITATTRIBUTES_CONTENT,
       baselineScriptKey: REQUIRED_BASELINE_SCRIPT_KEY,
       baselineScriptValue: REQUIRED_BASELINE_SCRIPT_VALUE,
-      workspaceCoverageScriptKey: REQUIRED_WORKSPACE_COVERAGE_SCRIPT_KEY,
-      workspaceCoverageScriptValue: REQUIRED_WORKSPACE_COVERAGE_SCRIPT_VALUE,
       precommitCheckScriptKey: REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY,
       precommitCheckScriptValue: REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE,
-      c8ConfigFile: REQUIRED_C8_CONFIG_FILE,
+      preCommitHookPath: path.relative(cwd, preCommitHookPath),
+      commitMsgHookPath: path.relative(cwd, commitMsgHookPath),
       managedDevDependencies: requiredDevDependencies,
     },
     status: {
+      fileExistsBefore: fileExists,
+      preCommitHookExistsBefore: preCommitHookExists,
+      commitMsgHookExistsBefore: commitMsgHookExists,
+      matchesRequiredGitAttributesBefore: matchesRequiredGitAttributes,
+      matchesRequiredPreCommitHookBefore: matchesRequiredPreCommitHook,
+      matchesRequiredCommitMsgHookBefore: matchesRequiredCommitMsgHook,
       matchesRequiredBaselineBefore: matchesRequiredBaseline,
-      matchesRequiredWorkspaceCoverageBefore: matchesRequiredWorkspaceCoverage,
       matchesRequiredPrecommitCheckBefore: matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesBefore: matchesRequiredManagedDevDependencies,
-      matchesRequiredC8ConfigBefore: matchesRequiredC8Config,
+      mismatchesBefore: mismatches,
+      fileExistsAfter: requiresUpdate && mode === 'sync' ? true : fileExists,
+      preCommitHookExistsAfter: requiresUpdate && mode === 'sync' ? true : preCommitHookExists,
+      commitMsgHookExistsAfter: requiresUpdate && mode === 'sync' ? true : commitMsgHookExists,
+      matchesRequiredGitAttributesAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredGitAttributes,
+      matchesRequiredPreCommitHookAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredPreCommitHook,
+      matchesRequiredCommitMsgHookAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredCommitMsgHook,
       matchesRequiredBaselineAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredBaseline,
-      matchesRequiredWorkspaceCoverageAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredWorkspaceCoverage,
       matchesRequiredPrecommitCheckAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrecommitCheck,
       matchesRequiredManagedDevDependenciesAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredManagedDevDependencies,
-      matchesRequiredC8ConfigAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredC8Config,
+      mismatchesAfter: requiresUpdate && mode === 'sync' ? [] : mismatches,
       updated: requiresUpdate && mode === 'sync',
     },
   };

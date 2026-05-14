@@ -1,19 +1,21 @@
 Usage:
-  agent-toolkit sync-workspace-config [--cwd <dir>] [--check] [--dry-run]
+  agent-toolkit sync-git [--cwd <dir>] [--check] [--dry-run]
     [--json <file>]
 
 Behavior:
   - Applies organization-required root shared scripts:
     - scripts.produck:baseline = npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .
-    - scripts.produck:coverage = c8 --config .c8rc.json npm run test --workspaces --if-present
     - scripts.produck:precommit-check = npm run produck:format && npm run produck:lint
-  - Applies organization-required root c8 config file:
-    - .c8rc.json
   - Applies organization-required root shared managed devDependencies:
-    - devDependencies.c8 = <fixed-version-from-baseline>
     - devDependencies.husky = <fixed-version-from-baseline>
     - devDependencies.lerna = <fixed-version-from-baseline>
     - devDependencies.@produck/agent-toolkit = <latest-version-resolved-at-runtime>
+  - Applies organization-required root .gitattributes file
+  - Normalizes line endings for text files
+  - Keeps Windows script entrypoints on CRLF
+  - Applies organization-required hook files:
+    - .husky/pre-commit
+    - .husky/commit-msg
 
 Rules:
   - --check validates without writing and exits non-zero on mismatch

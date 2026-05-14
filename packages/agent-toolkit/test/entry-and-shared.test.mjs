@@ -106,11 +106,10 @@ describe('main command router', () => {
 
     assert.match(output, /agent-toolkit commands:/);
     assert.match(output, /enforce-node-baseline/);
-    assert.match(output, /sync-coverage-script/);
-    assert.match(output, /sync-prettier-config/);
-    assert.match(output, /sync-eslint-config/);
-    assert.match(output, /sync-workspace-config/);
-    assert.match(output, /sync-husky-hooks/);
+    assert.match(output, /sync-coverage/);
+    assert.match(output, /sync-format/);
+    assert.match(output, /sync-lint/);
+    assert.match(output, /sync-git/);
     assert.match(output, /validate-commit-msg/);
   });
 
@@ -149,11 +148,10 @@ describe('main command router', () => {
           'sync-instructions',
           'preflight',
           'sync-editorconfig',
-          'sync-prettier-config',
-          'sync-eslint-config',
-          'sync-workspace-config',
-          'sync-coverage-script',
-          'sync-husky-hooks',
+          'sync-format',
+          'sync-lint',
+          'sync-git',
+          'sync-coverage',
         ],
       );
     });

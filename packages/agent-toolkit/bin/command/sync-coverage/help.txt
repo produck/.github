@@ -1,8 +1,9 @@
 Usage:
-  agent-toolkit sync-coverage-script [--cwd <dir>]
+  agent-toolkit sync-coverage [--cwd <dir>]
     [--workspace <path>] ... [--check] [--dry-run] [--json <file>]
 
 Behavior:
+  - Adds or updates root scripts.produck:coverage, root .c8rc.json, and root devDependencies.c8.
   - Adds or updates scripts.produck:coverage and devDependencies.c8 in each workspace package.json.
   - Enforces scripts.test in each workspace package.json.
   - If scripts.test is missing, generates:

@@ -27,7 +27,7 @@ const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   2,
 )}\n`;
 
-export function printSyncPrettierConfigHelp() {
+export function printSyncFormatHelp() {
   printTextResource(HELP_FILE);
 }
 
@@ -48,7 +48,7 @@ function readFileIfExists(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-export function runSyncPrettierConfig(options) {
+export function runSyncFormat(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
   const check = hasFlag(options, '--check');
   const dryRun = hasFlag(options, '--dry-run') && !check;

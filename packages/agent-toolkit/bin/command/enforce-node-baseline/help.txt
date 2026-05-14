@@ -7,11 +7,11 @@ Behavior:
   - Runs mandatory baseline flow in fixed order:
     1) sync-instructions
     2) preflight
-    3) sync-prettier-config
-    4) sync-eslint-config
-    5) sync-workspace-config
-    6) sync-coverage-script
-    7) sync-husky-hooks
+    3) sync-editorconfig
+    4) sync-format
+    5) sync-lint
+    6) sync-git
+    7) sync-coverage
   - Stops at first failed step and exits non-zero
   - Prints one combined JSON report for all executed steps
 
@@ -19,4 +19,4 @@ Rules:
   - --check runs non-mutating validation mode for step 1, step 3, step 4, step 5, step 6, and step 7
   - --dry-run runs non-mutating preview mode for step 1, step 3, step 4, step 5, step 6, and step 7
   - --check takes precedence over --dry-run
-  - --workspace filters coverage sync targets in step 6
+  - --workspace filters coverage sync targets in step 7

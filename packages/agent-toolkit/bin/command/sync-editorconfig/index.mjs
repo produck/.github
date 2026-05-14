@@ -12,152 +12,8 @@ const TEMPLATE_FILE = path.resolve(COMMAND_DIR, 'editorconfig.template');
 
 const REQUIRED_EDITORCONFIG_CONTENT = fs.readFileSync(TEMPLATE_FILE, 'utf8');
 
-// Required key-value pairs for validation
-const REQUIRED_SECTIONS = {
-  root: {
-    line: 'root = true',
-  },
-  '*': {
-    keys: {
-      charset: 'utf-8',
-      indent_style: 'space',
-      indent_size: '2',
-      trim_trailing_whitespace: 'true',
-    },
-  },
-  '*.{yml,yaml}': {
-    keys: {
-      indent_style: 'space',
-      indent_size: '2',
-    },
-  },
-  '*.md': {
-    keys: {
-      trim_trailing_whitespace: 'false',
-      max_line_length: '80',
-    },
-  },
-};
-
 export function printSyncEditorconfigHelp() {
   printTextResource(HELP_FILE);
-}
-
-function parseEditorconfig(content) {
-  const sections = {};
-  let currentSection = null;
-
-  for (const line of content.split('\n')) {
-    const trimmed = line.trim();
-
-    // Skip empty lines and comments
-    if (trimmed === '' || trimmed.startsWith('#') || trimmed.startsWith(';')) {
-      continue;
-    }
-
-    // Check for section header
-    const sectionMatch = trimmed.match(/^\[(.+)\]$/);
-    if (sectionMatch) {
-      currentSection = sectionMatch[1];
-      sections[currentSection] = {};
-      continue;
-    }
-
-    // Check for root = true
-    const rootMatch = trimmed.match(/^root\s*=\s*(.+)$/i);
-    if (rootMatch && !currentSection) {
-      sections._root = rootMatch[1].trim().toLowerCase();
-      continue;
-    }
-
-    // Parse key-value pair
-    if (currentSection) {
-      const kvMatch = trimmed.match(/^([^=]+)\s*=\s*(.+)$/);
-      if (kvMatch) {
-        sections[currentSection][kvMatch[1].trim().toLowerCase()] = kvMatch[2].trim().toLowerCase();
-      }
-    }
-  }
-
-  return sections;
-}
-
-function validateEditorconfig(sections) {
-  const mismatches = [];
-
-  // Check root
-  if (sections._root !== 'true') {
-    mismatches.push({ section: '_root', expected: 'true', actual: sections._root || 'missing' });
-  }
-
-  // Check each required section
-  for (const [sectionName, config] of Object.entries(REQUIRED_SECTIONS)) {
-    if (sectionName === 'root') continue;
-
-    if (!sections[sectionName]) {
-      mismatches.push({ section: `[${sectionName}]`, expected: 'present', actual: 'missing' });
-      continue;
-    }
-
-    if (config.keys) {
-      for (const [key, expectedValue] of Object.entries(config.keys)) {
-        const actualValue = sections[sectionName][key];
-        if (actualValue !== expectedValue) {
-          mismatches.push({
-            section: `[${sectionName}]`,
-            key,
-            expected: expectedValue,
-            actual: actualValue || 'missing',
-          });
-        }
-      }
-    }
-  }
-
-  return mismatches;
-}
-
-function buildUpdatedContent(existingContent) {
-  const existingSections = parseEditorconfig(existingContent);
-  const lines = [];
-
-  // Add root if missing
-  if (existingSections._root !== 'true') {
-    lines.push('root = true');
-  }
-
-  // Process each required section
-  for (const [sectionName, config] of Object.entries(REQUIRED_SECTIONS)) {
-    if (sectionName === 'root') continue;
-
-    const existingSection = existingSections[sectionName] || {};
-    const missingKeys = [];
-
-    if (config.keys) {
-      for (const [key, expectedValue] of Object.entries(config.keys)) {
-        if (existingSection[key] !== expectedValue) {
-          missingKeys.push({ key, value: expectedValue });
-        }
-      }
-    }
-
-    if (missingKeys.length > 0 || !existingSections[sectionName]) {
-      lines.push('');
-      lines.push(`[${sectionName}]`);
-      for (const { key, value } of missingKeys) {
-        lines.push(`${key} = ${value}`);
-      }
-    }
-  }
-
-  // If no updates needed, return original
-  // c8 ignore next 3
-  if (lines.length === 0) {
-    return existingContent;
-  }
-
-  // Append missing entries to existing content
-  return existingContent.trimEnd() + lines.join('\n') + '\n';
 }
 
 function readFileIfExists(filePath) {
@@ -184,16 +40,18 @@ export function runSyncEditorconfig(options) {
   const currentContent = readFileIfExists(editorconfigPath);
   const fileExists = currentContent !== null;
 
-  const sections = currentContent ? parseEditorconfig(currentContent) : {};
-  const mismatches = validateEditorconfig(sections);
-  const requiresUpdate = mismatches.length > 0 || !fileExists;
-
-  let plannedContent = null;
-  if (requiresUpdate) {
-    plannedContent = fileExists
-      ? buildUpdatedContent(currentContent)
-      : REQUIRED_EDITORCONFIG_CONTENT;
-  }
+  const mismatches =
+    fileExists && currentContent === REQUIRED_EDITORCONFIG_CONTENT
+      ? []
+      : [
+          {
+            file: EDITORCONFIG_FILE,
+            expected: 'exact required content',
+            actual: fileExists ? 'different content' : 'missing',
+          },
+        ];
+  const requiresUpdate = mismatches.length > 0;
+  const plannedContent = requiresUpdate ? REQUIRED_EDITORCONFIG_CONTENT : null;
 
   if (mode === 'sync' && requiresUpdate && plannedContent) {
     fs.writeFileSync(editorconfigPath, plannedContent, 'utf8');

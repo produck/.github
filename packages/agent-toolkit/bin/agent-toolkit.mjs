@@ -7,31 +7,18 @@ import {
 import { printPreflightHelp, runPreflight } from './command/preflight/index.mjs';
 import { printRunCaptureHelp, runCapture } from './command/run-capture/index.mjs';
 import { printSummarizeHelp, runSummarize } from './command/summarize-log/index.mjs';
-import {
-  printSyncCoverageScriptHelp,
-  runSyncCoverageScript,
-} from './command/sync-coverage-script/index.mjs';
-import { printSyncHuskyHooksHelp, runSyncHuskyHooks } from './command/sync-husky-hooks/index.mjs';
+import { printSyncCoverageHelp, runSyncCoverage } from './command/sync-coverage/index.mjs';
 import {
   printSyncInstructionsHelp,
   runSyncInstructions,
 } from './command/sync-instructions/index.mjs';
-import {
-  printSyncPrettierConfigHelp,
-  runSyncPrettierConfig,
-} from './command/sync-prettier-config/index.mjs';
+import { printSyncFormatHelp, runSyncFormat } from './command/sync-format/index.mjs';
 import {
   printSyncEditorconfigHelp,
   runSyncEditorconfig,
 } from './command/sync-editorconfig/index.mjs';
-import {
-  printSyncEslintConfigHelp,
-  runSyncEslintConfig,
-} from './command/sync-eslint-config/index.mjs';
-import {
-  printSyncWorkspaceConfigHelp,
-  runSyncWorkspaceConfig,
-} from './command/sync-workspace-config/index.mjs';
+import { printSyncLintHelp, runSyncLint } from './command/sync-lint/index.mjs';
+import { printSyncGitHelp, runSyncGit } from './command/sync-git/index.mjs';
 import { hasFlag, parseCommonArgs } from './command/shared/args.mjs';
 import {
   printValidateCommitMsgHelp,
@@ -55,25 +42,17 @@ const COMMANDS = {
     printHelp: printSummarizeHelp,
     run: runSummarize,
   },
-  'sync-coverage-script': {
-    printHelp: printSyncCoverageScriptHelp,
-    run: runSyncCoverageScript,
+  'sync-coverage': {
+    printHelp: printSyncCoverageHelp,
+    run: runSyncCoverage,
   },
-  'sync-prettier-config': {
-    printHelp: printSyncPrettierConfigHelp,
-    run: runSyncPrettierConfig,
+  'sync-format': {
+    printHelp: printSyncFormatHelp,
+    run: runSyncFormat,
   },
-  'sync-eslint-config': {
-    printHelp: printSyncEslintConfigHelp,
-    run: runSyncEslintConfig,
-  },
-  'sync-workspace-config': {
-    printHelp: printSyncWorkspaceConfigHelp,
-    run: runSyncWorkspaceConfig,
-  },
-  'sync-husky-hooks': {
-    printHelp: printSyncHuskyHooksHelp,
-    run: runSyncHuskyHooks,
+  'sync-lint': {
+    printHelp: printSyncLintHelp,
+    run: runSyncLint,
   },
   'validate-commit-msg': {
     printHelp: printValidateCommitMsgHelp,
@@ -86,6 +65,10 @@ const COMMANDS = {
   'sync-editorconfig': {
     printHelp: printSyncEditorconfigHelp,
     run: runSyncEditorconfig,
+  },
+  'sync-git': {
+    printHelp: printSyncGitHelp,
+    run: runSyncGit,
   },
 };
 

@@ -30,7 +30,7 @@ export default [
 ];
 `;
 
-export function printSyncEslintConfigHelp() {
+export function printSyncLintHelp() {
   printTextResource(HELP_FILE);
 }
 
@@ -112,7 +112,7 @@ function patchEslintConfig(existing) {
   return { ok: true, patched: true, output };
 }
 
-export function runSyncEslintConfig(options) {
+export function runSyncLint(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
   const check = hasFlag(options, '--check');
   const dryRun = hasFlag(options, '--dry-run') && !check;

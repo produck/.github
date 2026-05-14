@@ -8,9 +8,9 @@ import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 const REQUIRED_LINT_SCRIPT =
   'npm exec -- eslint --fix . --max-warnings=0 && npm run lint --if-present';
 
-describe('sync-eslint-config command', () => {
+describe('sync-lint command', () => {
   it('prints help text', () => {
-    const result = runCli(['sync-eslint-config', '--help']);
+    const result = runCli(['sync-lint', '--help']);
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /Usage:/);
@@ -19,10 +19,10 @@ describe('sync-eslint-config command', () => {
   });
 
   it('applies required lint script, eslint config, and eslint-rules dependency', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-sync-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-sync-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(result.status, 0);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
@@ -36,7 +36,7 @@ describe('sync-eslint-config command', () => {
   });
 
   it('appends Produck integration when eslint.config.mjs exists without it', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-append-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-append-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
       await writeTextFile(
         path.join(tempDir, 'eslint.config.mjs'),
@@ -52,7 +52,7 @@ describe('sync-eslint-config command', () => {
         ].join('\n'),
       );
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(result.status, 0);
 
       const eslintConfig = fs.readFileSync(path.join(tempDir, 'eslint.config.mjs'), 'utf8');
@@ -65,10 +65,10 @@ describe('sync-eslint-config command', () => {
   });
 
   it('supports --check mode without mutating files', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-check-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-check-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir, '--check']);
+      const result = runCli(['sync-lint', '--cwd', tempDir, '--check']);
       assert.equal(result.status, 2);
 
       const report = JSON.parse(result.stdout);
@@ -79,10 +79,10 @@ describe('sync-eslint-config command', () => {
   });
 
   it('supports --dry-run without writing package changes', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-dryrun-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-dryrun-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir, '--dry-run']);
+      const result = runCli(['sync-lint', '--cwd', tempDir, '--dry-run']);
       assert.equal(result.status, 0);
 
       const report = JSON.parse(result.stdout);
@@ -93,16 +93,10 @@ describe('sync-eslint-config command', () => {
   });
 
   it('outputs JSON report to file when --json is specified', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-json-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-json-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const result = runCli([
-        'sync-eslint-config',
-        '--cwd',
-        tempDir,
-        '--json',
-        'logs/eslint-report.json',
-      ]);
+      const result = runCli(['sync-lint', '--cwd', tempDir, '--json', 'logs/eslint-report.json']);
       assert.equal(result.status, 0);
 
       const jsonPath = path.join(tempDir, 'logs', 'eslint-report.json');
@@ -113,20 +107,20 @@ describe('sync-eslint-config command', () => {
   });
 
   it('fails with exit code 2 when cwd does not exist', () => {
-    const result = runCli(['sync-eslint-config', '--cwd', 'd:\\nonexistent\\path']);
+    const result = runCli(['sync-lint', '--cwd', 'd:\\nonexistent\\path']);
     assert.equal(result.status, 2);
     assert.match(result.stderr, /does not exist/);
   });
 
   it('reports no-op when eslint config already contains Produck integration', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-noop-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-noop-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
       await writeTextFile(
         path.join(tempDir, 'eslint.config.mjs'),
         'import ProduckRule from "@produck/eslint-rules";\n\nexport default [ProduckRule.config];\n',
       );
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(result.status, 0);
 
       const report = JSON.parse(result.stdout);
@@ -135,29 +129,29 @@ describe('sync-eslint-config command', () => {
   });
 
   it('fails when root package.json does not exist', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-missing-pkg-', async (tempDir) => {
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
+    await withTempDir('agent-toolkit-sync-lint-missing-pkg-', async (tempDir) => {
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(result.status, 2);
       assert.match(result.stderr, /Root package\.json does not exist/);
     });
   });
 
   it('fails when root package.json is invalid JSON', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-invalid-pkg-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-invalid-pkg-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{ invalid json\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(result.status, 2);
       assert.match(result.stderr, /Root package\.json is not valid JSON/);
     });
   });
 
   it('marks unpatchable eslint config and exits non-zero in sync mode', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-unpatchable-sync-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-unpatchable-sync-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
       await writeTextFile(path.join(tempDir, 'eslint.config.mjs'), 'const x = 1;\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(result.status, 2);
 
       const report = JSON.parse(result.stdout);
@@ -169,11 +163,11 @@ describe('sync-eslint-config command', () => {
   });
 
   it('marks unpatchable eslint config and exits non-zero in check mode', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-unpatchable-check-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-unpatchable-check-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
       await writeTextFile(path.join(tempDir, 'eslint.config.mjs'), 'const x = 1;\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir, '--check']);
+      const result = runCli(['sync-lint', '--cwd', tempDir, '--check']);
       assert.equal(result.status, 2);
 
       const report = JSON.parse(result.stdout);
@@ -185,11 +179,11 @@ describe('sync-eslint-config command', () => {
   });
 
   it('marks unpatchable eslint config and exits non-zero in dry-run mode', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-unpatchable-dry-run-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-unpatchable-dry-run-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
       await writeTextFile(path.join(tempDir, 'eslint.config.mjs'), 'const x = 1;\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir, '--dry-run']);
+      const result = runCli(['sync-lint', '--cwd', tempDir, '--dry-run']);
       assert.equal(result.status, 2);
 
       const report = JSON.parse(result.stdout);
@@ -201,10 +195,10 @@ describe('sync-eslint-config command', () => {
   });
 
   it('uses check mode when both --check and --dry-run are provided', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-check-dry-run-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-check-dry-run-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir, '--check', '--dry-run']);
+      const result = runCli(['sync-lint', '--cwd', tempDir, '--check', '--dry-run']);
       assert.equal(result.status, 2);
 
       const report = JSON.parse(result.stdout);
@@ -215,10 +209,10 @@ describe('sync-eslint-config command', () => {
   });
 
   it('falls back to toolkit package version when npm lookup is unavailable', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-fallback-version-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-fallback-version-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir], {
+      const result = runCli(['sync-lint', '--cwd', tempDir], {
         env: { PATH: '' },
       });
       assert.equal(result.status, 0);
@@ -229,16 +223,16 @@ describe('sync-eslint-config command', () => {
   });
 
   it('is a no-op on second run after state is synchronized', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-no-op-second-run-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-no-op-second-run-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const first = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const first = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(first.status, 0);
 
       const beforePkg = fs.readFileSync(path.join(tempDir, 'package.json'), 'utf8');
       const beforeConfig = fs.readFileSync(path.join(tempDir, 'eslint.config.mjs'), 'utf8');
 
-      const second = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const second = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(second.status, 0);
 
       const report = JSON.parse(second.stdout);
@@ -253,33 +247,30 @@ describe('sync-eslint-config command', () => {
   });
 
   it('marks config unpatchable when import exists but export default array is missing', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-eslint-config-unpatchable-import-only-',
-      async (tempDir) => {
-        await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
-        await writeTextFile(
-          path.join(tempDir, 'eslint.config.mjs'),
-          'import x from "y";\nconst z = 1;\n',
-        );
+    await withTempDir('agent-toolkit-sync-lint-unpatchable-import-only-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+      await writeTextFile(
+        path.join(tempDir, 'eslint.config.mjs'),
+        'import x from "y";\nconst z = 1;\n',
+      );
 
-        const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
-        assert.equal(result.status, 2);
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
+      assert.equal(result.status, 2);
 
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.required.eslintConfigAction, 'unpatchable');
-        assert.equal(report.status.hasUnpatchableEslintConfig, true);
-      },
-    );
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.required.eslintConfigAction, 'unpatchable');
+      assert.equal(report.status.hasUnpatchableEslintConfig, true);
+    });
   });
 
   it('passes in --check mode when project is already synchronized', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-check-clean-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-check-clean-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
-      const first = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const first = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(first.status, 0);
 
-      const checkResult = runCli(['sync-eslint-config', '--cwd', tempDir, '--check']);
+      const checkResult = runCli(['sync-lint', '--cwd', tempDir, '--check']);
       assert.equal(checkResult.status, 0);
 
       const report = JSON.parse(checkResult.stdout);
@@ -291,14 +282,14 @@ describe('sync-eslint-config command', () => {
   });
 
   it('patches config without trailing newline and writes final newline', async () => {
-    await withTempDir('agent-toolkit-sync-eslint-config-patch-newline-', async (tempDir) => {
+    await withTempDir('agent-toolkit-sync-lint-patch-newline-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
       await writeTextFile(
         path.join(tempDir, 'eslint.config.mjs'),
         'import globals from "globals";\nexport default [\n  { languageOptions: { globals: { ...globals.node } } },\n];',
       );
 
-      const result = runCli(['sync-eslint-config', '--cwd', tempDir]);
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
       assert.equal(result.status, 0);
 
       const eslintConfig = fs.readFileSync(path.join(tempDir, 'eslint.config.mjs'), 'utf8');

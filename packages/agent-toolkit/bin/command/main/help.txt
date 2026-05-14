@@ -3,12 +3,11 @@ agent-toolkit commands:
   preflight
   run-capture
   summarize-log
-  sync-coverage-script
+  sync-coverage
   sync-editorconfig
-  sync-prettier-config
-  sync-eslint-config
-  sync-workspace-config
-  sync-husky-hooks
+  sync-git
+  sync-format
+  sync-lint
   validate-commit-msg
   sync-instructions
 
