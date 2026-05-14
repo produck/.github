@@ -145,13 +145,14 @@ describe('main command router', () => {
       assert.deepEqual(
         report.steps.map((step) => step.name),
         [
-          'sync-instructions',
           'preflight',
+          'sync-instructions',
           'sync-editorconfig',
           'sync-format',
           'sync-lint',
           'sync-git',
           'sync-coverage',
+          'sync-publish',
         ],
       );
     });

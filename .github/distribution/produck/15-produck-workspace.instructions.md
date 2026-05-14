@@ -168,10 +168,10 @@ npm run coverage
   policy.
 - Workspace subpackage coverage scripts are fully organization-governed.
 - Deploy/repair coverage scripts via central remediation command:
-  `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
+  `npm exec -- agent-toolkit sync-coverage --cwd .`.
 - Root anti-drift local hook baseline is organization-governed.
 - Deploy/repair root local hooks via central remediation command:
-  `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
+  `npm exec -- agent-toolkit sync-git --cwd .`.
 - Deployed coverage scripts use the `c8` version specified in
   `tooling-version-baseline.json` for each governed workspace package.
 - Deployed local hook baseline uses the `husky` version specified in
@@ -181,9 +181,9 @@ npm run coverage
 - Shared scripts/CI must not use unversioned `npx c8` or `c8@latest`.
 - `test` script implementation remains repository-defined and is not overwritten
   by coverage remediation.
-- Root `devDependencies.c8` is pinned at root by `agent-toolkit sync-husky-hooks`;
+- Root `devDependencies.c8` is pinned at root by `agent-toolkit sync-git`;
   workspace package `devDependencies.c8` is pinned per package by
-  `agent-toolkit sync-coverage-script`.
+  `agent-toolkit sync-coverage`.
 - Root local hooks may be bypassed intentionally by developers (for example via
   `--no-verify`) and are treated as local strong guardrails rather than
   immutable release gates.

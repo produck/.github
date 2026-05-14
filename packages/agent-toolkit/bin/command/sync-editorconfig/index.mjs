@@ -39,17 +39,16 @@ export function runSyncEditorconfig(options) {
   const editorconfigPath = path.resolve(cwd, EDITORCONFIG_FILE);
   const currentContent = readFileIfExists(editorconfigPath);
   const fileExists = currentContent !== null;
+  const upToDate = fileExists && currentContent === REQUIRED_EDITORCONFIG_CONTENT;
 
-  const mismatches =
-    fileExists && currentContent === REQUIRED_EDITORCONFIG_CONTENT
-      ? []
-      : [
-          {
-            file: EDITORCONFIG_FILE,
-            expected: 'exact required content',
-            actual: fileExists ? 'different content' : 'missing',
-          },
-        ];
+  const mismatches = [];
+  if (!upToDate) {
+    mismatches.push({
+      file: EDITORCONFIG_FILE,
+      expected: 'exact required content',
+      actual: fileExists ? 'different content' : 'missing',
+    });
+  }
   const requiresUpdate = mismatches.length > 0;
   const plannedContent = requiresUpdate ? REQUIRED_EDITORCONFIG_CONTENT : null;
 

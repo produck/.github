@@ -34,11 +34,11 @@ Notes:
     - Keep the script key name `produck:coverage` (organization-reserved key).
     - In monorepo mode, workspace subpackage `produck:coverage` scripts are for local and AI development use only. They are NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
     - Source of truth for tooling versions/template: `.github/distribution/produck/tooling-version-baseline.json`.
-    - Use central remediation command to deploy coverage scripts: `npm exec -- agent-toolkit sync-coverage-script --cwd .`.
-    - Use central remediation command to deploy local anti-drift hook baseline: `npm exec -- agent-toolkit sync-husky-hooks --cwd .`.
+    - Use central remediation command to deploy coverage scripts: `npm exec -- agent-toolkit sync-coverage --cwd .`.
+    - Use central remediation command to deploy local anti-drift hook baseline: `npm exec -- agent-toolkit sync-git --cwd .`.
     - `c8` execution baseline for deployed coverage scripts is fixed to the version specified in `tooling-version-baseline.json`.
     - Downstream repositories must not use unversioned `npx c8` or `c8@latest` in shared scripts/CI.
-    - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned to organization baseline fixed versions via `agent-toolkit sync-husky-hooks`.
+    - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned to organization baseline fixed versions via `agent-toolkit sync-git`.
 
 - Testing strategy and framework are repository-defined.
 - `verify` scripts are optional repository-local health checks and are not
@@ -62,11 +62,13 @@ Central toolkit command role model:
   but do not assume it can fully prevent AI hallucination or iterative drift.
 - `agent-toolkit preflight` is the hard guard for organization engineering
   baseline and is mandatory for required baseline checks.
-- `agent-toolkit sync-coverage-script` is the hard guard for monorepo coverage
+- `agent-toolkit sync-coverage` is the hard guard for monorepo coverage
   governance and is mandatory in monorepo mode.
-- `agent-toolkit sync-husky-hooks` is the hard guard for local anti-drift hook
+- `agent-toolkit sync-git` is the hard guard for local anti-drift hook
   governance and is mandatory in monorepo mode.
-- For simplified downstream execution of mandatory flow (1 -> 2 -> 3 -> 4),
+- `agent-toolkit sync-publish` is the hard guard for root publish script
+  governance when `lerna.json` is present.
+- For simplified downstream execution of mandatory flow (1 -> 2 -> ... -> 8),
   use:
   `npm exec -- agent-toolkit`.
 - Equivalent explicit form:
@@ -157,14 +159,17 @@ Script placement:
 - Root `package.json` must reserve `prepare` for husky setup with required
   value: `husky`.
 - `publish` may be defined at root or package level based on release workflow.
+- Root `package.json` must reserve `produck:publish` for organization-controlled
+  publish gate when `lerna.json` is present (governed by
+  `agent-toolkit sync-publish`).
 - Workspace subpackage `produck:coverage` scripts must be synchronized by
-  `agent-toolkit sync-coverage-script`.
+  `agent-toolkit sync-coverage`.
 - Root local hook governance must be synchronized by
-  `agent-toolkit sync-husky-hooks`.
+  `agent-toolkit sync-git`.
 - Root local hook governance must pin root `devDependencies.c8`,
   `devDependencies.husky`, `devDependencies.lerna`, and
   `devDependencies.@produck/agent-toolkit` via
-  `agent-toolkit sync-husky-hooks`.
+  `agent-toolkit sync-git`.
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:
   ```json

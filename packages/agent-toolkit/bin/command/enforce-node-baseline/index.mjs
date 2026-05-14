@@ -113,6 +113,13 @@ export function runEnforceNodeBaseline(options) {
     syncCoverageArgs.push('--dry-run');
   }
 
+  const syncPublishArgs = ['sync-publish', '--cwd', cwd];
+  if (check) {
+    syncPublishArgs.push('--check');
+  } else if (dryRun) {
+    syncPublishArgs.push('--dry-run');
+  }
+
   const syncGitArgs = ['sync-git', '--cwd', cwd];
   if (check) {
     syncGitArgs.push('--check');
@@ -142,13 +149,14 @@ export function runEnforceNodeBaseline(options) {
   }
 
   const plan = [
-    { name: 'sync-instructions', args: syncInstructionsArgs },
     { name: 'preflight', args: preflightArgs },
+    { name: 'sync-instructions', args: syncInstructionsArgs },
     { name: 'sync-editorconfig', args: syncEditorconfigArgs },
     { name: 'sync-format', args: syncPrettierConfigArgs },
     { name: 'sync-lint', args: syncEslintConfigArgs },
     { name: 'sync-git', args: syncGitArgs },
     { name: 'sync-coverage', args: syncCoverageArgs },
+    { name: 'sync-publish', args: syncPublishArgs },
   ];
 
   for (const step of plan) {

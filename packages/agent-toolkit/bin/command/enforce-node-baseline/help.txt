@@ -5,18 +5,19 @@ Usage:
 
 Behavior:
   - Runs mandatory baseline flow in fixed order:
-    1) sync-instructions
-    2) preflight
+    1) preflight
+    2) sync-instructions
     3) sync-editorconfig
     4) sync-format
     5) sync-lint
     6) sync-git
     7) sync-coverage
+    8) sync-publish
   - Stops at first failed step and exits non-zero
   - Prints one combined JSON report for all executed steps
 
 Rules:
-  - --check runs non-mutating validation mode for step 1, step 3, step 4, step 5, step 6, and step 7
-  - --dry-run runs non-mutating preview mode for step 1, step 3, step 4, step 5, step 6, and step 7
+  - --check runs non-mutating validation mode for step 2, step 3, step 4, step 5, step 6, step 7, and step 8
+  - --dry-run runs non-mutating preview mode for step 2, step 3, step 4, step 5, step 6, step 7, and step 8
   - --check takes precedence over --dry-run
   - --workspace filters coverage sync targets in step 7

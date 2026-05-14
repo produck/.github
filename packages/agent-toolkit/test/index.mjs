@@ -5,6 +5,7 @@ import './sync-coverage.test.mjs';
 import './sync-format.test.mjs';
 import './sync-lint.test.mjs';
 import './sync-git.test.mjs';
+import './sync-publish.test.mjs';
 import './sync-instructions.test.mjs';
 import './validate-commit-msg.test.mjs';
 import './sync-editorconfig.test.mjs';

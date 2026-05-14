@@ -52,6 +52,7 @@ npm run produck:baseline
 - agent-toolkit sync-git
 - agent-toolkit sync-format
 - agent-toolkit sync-lint
+- agent-toolkit sync-publish
 - agent-toolkit validate-commit-msg
 - agent-toolkit sync-instructions
 
@@ -69,12 +70,12 @@ Equivalent explicit form:
 npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
-`enforce-node-baseline` runs seven steps in fixed order and stops at the first
+`enforce-node-baseline` runs eight steps in fixed order and stops at the first
 failure:
 
-1. `sync-instructions` — distribute organization AI instruction files into
+1. `preflight` — verify required files and directories exist
+2. `sync-instructions` — distribute organization AI instruction files into
    `.github/instructions/produck/`
-2. `preflight` — verify required files and directories exist
 3. `sync-editorconfig` — deploy organization `.editorconfig`
 4. `sync-format` — deploy organization format gate script
    (`produck:format`) and initialize `.prettierrc`
@@ -89,6 +90,8 @@ failure:
    root `c8` devDependency, then deploy pinned `produck:coverage` script and
    `c8` devDependency into each workspace package, and ensure each workspace
    package has `scripts.test` (auto-generate a default value when missing)
+8. `sync-publish` — deploy root `scripts.produck:publish` when `lerna.json`
+   is present
 
 Add to downstream repository root `package.json` for one-command enforcement:
 
@@ -195,6 +198,15 @@ This command manages root `.gitattributes`, `.husky/pre-commit`,
 `.husky/commit-msg`, `scripts.produck:baseline`,
 `scripts.produck:precommit-check`, and shared pinned root devDependencies
 `husky`, `lerna`, and `@produck/agent-toolkit`.
+
+Deploy root publish script baseline:
+
+```
+npm exec -- agent-toolkit sync-publish --cwd .
+```
+
+When `lerna.json` exists, this command manages `scripts.produck:publish`.
+If `lerna.json` is absent, the command exits ok with no changes.
 
 Validate commit message format:
 

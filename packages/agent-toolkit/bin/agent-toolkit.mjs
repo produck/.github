@@ -19,6 +19,7 @@ import {
 } from './command/sync-editorconfig/index.mjs';
 import { printSyncLintHelp, runSyncLint } from './command/sync-lint/index.mjs';
 import { printSyncGitHelp, runSyncGit } from './command/sync-git/index.mjs';
+import { printSyncPublishHelp, runSyncPublish } from './command/sync-publish/index.mjs';
 import { hasFlag, parseCommonArgs } from './command/shared/args.mjs';
 import {
   printValidateCommitMsgHelp,
@@ -69,6 +70,10 @@ const COMMANDS = {
   'sync-git': {
     printHelp: printSyncGitHelp,
     run: runSyncGit,
+  },
+  'sync-publish': {
+    printHelp: printSyncPublishHelp,
+    run: runSyncPublish,
   },
 };
 

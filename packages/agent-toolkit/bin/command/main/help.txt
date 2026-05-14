@@ -8,6 +8,7 @@ agent-toolkit commands:
   sync-git
   sync-format
   sync-lint
+  sync-publish
   validate-commit-msg
   sync-instructions
 

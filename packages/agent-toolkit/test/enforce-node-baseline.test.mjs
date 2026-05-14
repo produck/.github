@@ -42,10 +42,10 @@ describe('enforce-node-baseline command', () => {
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /Usage:/);
-    assert.match(result.stdout, /1\) sync-instructions/);
+    assert.match(result.stdout, /1\) preflight/);
   });
 
-  it('runs sync-instructions, preflight, sync-editorconfig, sync-format, sync-lint, sync-git, and sync-coverage in order', async () => {
+  it('runs preflight, sync-instructions, sync-editorconfig, sync-format, sync-lint, sync-git, sync-coverage, and sync-publish in order', async () => {
     await withTempDir('agent-toolkit-enforce-node-baseline-sync-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       const instructionFile = path.join(sourceDir, '00-sample.instructions.md');
@@ -84,17 +84,18 @@ trim_trailing_whitespace = true
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.steps.length, 7);
+      assert.equal(report.steps.length, 8);
       assert.deepEqual(
         report.steps.map((step) => step.name),
         [
-          'sync-instructions',
           'preflight',
+          'sync-instructions',
           'sync-editorconfig',
           'sync-format',
           'sync-lint',
           'sync-git',
           'sync-coverage',
+          'sync-publish',
         ],
       );
       assert.equal(
@@ -250,9 +251,9 @@ max_line_length = 80
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.mode, 'dry-run');
-      assert.equal(report.steps[0].name, 'sync-instructions');
-      assert.equal(report.steps[0].args.includes('--force'), true);
-      assert.equal(report.steps[0].args.includes('--dry-run'), true);
+      assert.equal(report.steps[1].name, 'sync-instructions');
+      assert.equal(report.steps[1].args.includes('--force'), true);
+      assert.equal(report.steps[1].args.includes('--dry-run'), true);
 
       const coverageStep = report.steps.find((step) => step.name === 'sync-coverage');
       assert.equal(Boolean(coverageStep), true);
