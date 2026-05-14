@@ -4,7 +4,7 @@ Usage:
 
 Behavior:
   - Applies organization-required root lint script:
-    - scripts.produck:lint = npm exec -- eslint --fix . --max-warnings=0 && npm run lint --if-present
+    - scripts.produck:lint = eslint --fix . --max-warnings=0
   - Applies organization-required root ESLint config file:
     - eslint.config.mjs
   - If eslint.config.mjs exists and does not use @produck/eslint-rules,

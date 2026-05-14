@@ -9,8 +9,12 @@ const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const LERNA_CONFIG_FILE = 'lerna.json';
 
+const REQUIRED_PUBLISH_CHECK_SCRIPT_KEY = 'produck:publish:check';
+const REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE =
+  'npm run produck:format && npm run produck:lint && npm run produck:coverage';
+const USER_PUBLISH_SCRIPT_KEY = 'publish';
 const REQUIRED_PUBLISH_SCRIPT_KEY = 'produck:publish';
-const REQUIRED_PUBLISH_SCRIPT_VALUE = 'lerna publish';
+const REQUIRED_PUBLISH_SCRIPT_FALLBACK_VALUE = 'npm run produck:publish:check && lerna publish';
 
 const REQUIRED_LERNA_DEFAULT_CONFIG = `${JSON.stringify(
   {
@@ -32,6 +36,14 @@ function parseJsonFile(filePath, label) {
     console.error(`${label} is not valid JSON: ${filePath}`);
     process.exit(2);
   }
+}
+
+function buildRequiredPublishScriptValue(hasUserPublishScript) {
+  if (hasUserPublishScript) {
+    return 'npm run produck:publish:check && npm run publish --';
+  }
+
+  return REQUIRED_PUBLISH_SCRIPT_FALLBACK_VALUE;
 }
 
 export function runSyncPublish(options) {
@@ -75,18 +87,29 @@ export function runSyncPublish(options) {
     pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
+  const hasUserPublishScript =
+    typeof scripts[USER_PUBLISH_SCRIPT_KEY] === 'string' &&
+    scripts[USER_PUBLISH_SCRIPT_KEY].trim() !== '';
+  const requiredPublishScriptValue = buildRequiredPublishScriptValue(hasUserPublishScript);
 
+  const previousPublishCheck =
+    typeof scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY] === 'string'
+      ? scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY]
+      : null;
   const previousPublish =
     typeof scripts[REQUIRED_PUBLISH_SCRIPT_KEY] === 'string'
       ? scripts[REQUIRED_PUBLISH_SCRIPT_KEY]
       : null;
 
-  const matchesRequiredPublish = previousPublish === REQUIRED_PUBLISH_SCRIPT_VALUE;
+  const matchesRequiredPublishCheck = previousPublishCheck === REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
+  const matchesRequiredPublish = previousPublish === requiredPublishScriptValue;
   const lernaRequiresCreation = !lernaExistedBefore && !lernaDefaultCreated;
-  const requiresUpdate = !matchesRequiredPublish || lernaRequiresCreation;
+  const requiresUpdate =
+    !matchesRequiredPublishCheck || !matchesRequiredPublish || lernaRequiresCreation;
 
-  if (mode === 'sync' && !matchesRequiredPublish) {
-    scripts[REQUIRED_PUBLISH_SCRIPT_KEY] = REQUIRED_PUBLISH_SCRIPT_VALUE;
+  if (mode === 'sync' && (!matchesRequiredPublishCheck || !matchesRequiredPublish)) {
+    scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY] = REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
+    scripts[REQUIRED_PUBLISH_SCRIPT_KEY] = requiredPublishScriptValue;
     pkg.scripts = scripts;
     fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
   }
@@ -98,12 +121,18 @@ export function runSyncPublish(options) {
     lernaConfigPath,
     rootPackageJsonPath,
     required: {
+      publishCheckScriptKey: REQUIRED_PUBLISH_CHECK_SCRIPT_KEY,
+      publishCheckScriptValue: REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE,
       publishScriptKey: REQUIRED_PUBLISH_SCRIPT_KEY,
-      publishScriptValue: REQUIRED_PUBLISH_SCRIPT_VALUE,
+      publishScriptValue: requiredPublishScriptValue,
     },
     status: {
+      hasUserPublishScript,
       lernaExistedBefore,
       lernaDefaultCreated,
+      matchesRequiredPublishCheckBefore: matchesRequiredPublishCheck,
+      matchesRequiredPublishCheckAfter:
+        !matchesRequiredPublishCheck && mode === 'sync' ? true : matchesRequiredPublishCheck,
       matchesRequiredPublishBefore: matchesRequiredPublish,
       matchesRequiredPublishAfter:
         !matchesRequiredPublish && mode === 'sync' ? true : matchesRequiredPublish,

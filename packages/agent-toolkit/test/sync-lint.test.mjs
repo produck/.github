@@ -5,7 +5,7 @@ import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
-const REQUIRED_LINT_SCRIPT = 'eslint --fix . --max-warnings=0 && npm run lint --if-present';
+const REQUIRED_LINT_SCRIPT = 'eslint --fix . --max-warnings=0';
 
 describe('sync-lint command', () => {
   it('prints help text', () => {

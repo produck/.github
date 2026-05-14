@@ -21,7 +21,7 @@ const TOOLING_BASELINE_PATH = fs.existsSync(TOOLING_BASELINE_REPO_PATH)
   : TOOLING_BASELINE_ASSET_PATH;
 const TOOLING_BASELINE = JSON.parse(fs.readFileSync(TOOLING_BASELINE_PATH, 'utf8'));
 const REQUIRED_PRETTIER_VERSION = TOOLING_BASELINE.tools.prettier.version;
-const REQUIRED_FORMAT_SCRIPT = 'prettier --check . && npm run format --if-present';
+const REQUIRED_FORMAT_SCRIPT = 'prettier --write .';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
     semi: true,

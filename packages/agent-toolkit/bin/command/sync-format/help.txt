@@ -4,7 +4,7 @@ Usage:
 
 Behavior:
   - Applies organization-required root format script:
-    - scripts.produck:format = npm exec -- prettier --check . && npm run format --if-present
+    - scripts.produck:format = prettier --write .
   - Applies organization-required root Prettier config file:
     - .prettierrc
 

@@ -5,7 +5,11 @@ import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
-const REQUIRED_PUBLISH_SCRIPT = 'lerna publish';
+const REQUIRED_PUBLISH_CHECK_SCRIPT =
+  'npm run produck:format && npm run produck:lint && npm run produck:coverage';
+const REQUIRED_PUBLISH_SCRIPT = 'npm run produck:publish:check && lerna publish';
+const REQUIRED_PUBLISH_SCRIPT_WITH_USER_PUBLISH =
+  'npm run produck:publish:check && npm run publish --';
 
 describe('sync-publish command', () => {
   it('prints help text', () => {
@@ -31,6 +35,7 @@ describe('sync-publish command', () => {
       assert.equal(report.status.updated, true);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.scripts['produck:publish:check'], REQUIRED_PUBLISH_CHECK_SCRIPT);
       assert.equal(pkg.scripts['produck:publish'], REQUIRED_PUBLISH_SCRIPT);
     });
   });
@@ -50,7 +55,30 @@ describe('sync-publish command', () => {
 
       assert.equal(fs.existsSync(path.join(tempDir, 'lerna.json')), true);
       const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.scripts['produck:publish:check'], REQUIRED_PUBLISH_CHECK_SCRIPT);
       assert.equal(pkg.scripts['produck:publish'], REQUIRED_PUBLISH_SCRIPT);
+    });
+  });
+
+  it('prefers user publish script when present', async () => {
+    await withTempDir('agent-toolkit-sync-publish-user-publish-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', scripts: { publish: 'node ./scripts/publish.mjs' } }, null, 2)}\n`,
+      );
+      await writeTextFile(path.join(tempDir, 'lerna.json'), '{"version":"independent"}\n');
+
+      const result = runCli(['sync-publish', '--cwd', tempDir]);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, true);
+      assert.equal(report.status.hasUserPublishScript, true);
+
+      const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.scripts.publish, 'node ./scripts/publish.mjs');
+      assert.equal(pkg.scripts['produck:publish:check'], REQUIRED_PUBLISH_CHECK_SCRIPT);
+      assert.equal(pkg.scripts['produck:publish'], REQUIRED_PUBLISH_SCRIPT_WITH_USER_PUBLISH);
     });
   });
 
@@ -89,10 +117,13 @@ describe('sync-publish command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, false);
+      assert.equal(report.status.hasUserPublishScript, false);
       assert.equal(report.status.updated, false);
+      assert.equal(report.status.matchesRequiredPublishCheckBefore, false);
       assert.equal(report.status.matchesRequiredPublishBefore, false);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.scripts?.['produck:publish:check'], undefined);
       assert.equal(pkg.scripts?.['produck:publish'], undefined);
     });
   });
@@ -110,6 +141,7 @@ describe('sync-publish command', () => {
       assert.equal(report.status.updated, false);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
+      assert.equal(pkg.scripts?.['produck:publish:check'], undefined);
       assert.equal(pkg.scripts?.['produck:publish'], undefined);
     });
   });
@@ -118,7 +150,7 @@ describe('sync-publish command', () => {
     await withTempDir('agent-toolkit-sync-publish-noop-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, 'package.json'),
-        `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish': REQUIRED_PUBLISH_SCRIPT } }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT } }, null, 2)}\n`,
       );
       await writeTextFile(path.join(tempDir, 'lerna.json'), '{"version":"independent"}\n');
 
@@ -128,6 +160,7 @@ describe('sync-publish command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
       assert.equal(report.status.updated, false);
+      assert.equal(report.status.matchesRequiredPublishCheckBefore, true);
       assert.equal(report.status.matchesRequiredPublishBefore, true);
     });
   });
@@ -136,7 +169,7 @@ describe('sync-publish command', () => {
     await withTempDir('agent-toolkit-sync-publish-check-noop-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, 'package.json'),
-        `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish': REQUIRED_PUBLISH_SCRIPT } }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT } }, null, 2)}\n`,
       );
       await writeTextFile(path.join(tempDir, 'lerna.json'), '{"version":"independent"}\n');
 
@@ -145,6 +178,7 @@ describe('sync-publish command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
+      assert.equal(report.status.matchesRequiredPublishCheckBefore, true);
       assert.equal(report.status.matchesRequiredPublishBefore, true);
     });
   });

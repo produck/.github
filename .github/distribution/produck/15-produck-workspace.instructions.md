@@ -137,20 +137,17 @@ export default [
 # Type check all packages (optional: only when root tsconfig.json is present)
 npm run type-check
 
-# Format check without writing
-npm run format:check
+# Format and write using the organization format gate
+npm run produck:format
 
-# Format and write
-npm run format
-
-# Lint (requires root eslint.config.mjs)
-npm run lint
+# Lint using the organization lint gate
+npm run produck:lint
 
 # Run all package tests
 npm run test
 
 # Check coverage across packages
-npm run coverage
+npm run produck:coverage
 ```
 
 ### Release & Coverage Tooling
@@ -264,14 +261,14 @@ Root scripts are designed for CI pipelines:
 
 ```bash
 # Pre-commit checks
-npm run format:check
+npm run produck:format
+npm run produck:lint
 # Optional when root tsconfig.json is used
 npm run type-check
-npm run lint
 
 # Testing
 npm run test
-npm run coverage
+npm run produck:coverage
 ```
 
 ## Best Practices
@@ -297,7 +294,7 @@ npm install
 Root `.prettierrc` and `eslint.config.mjs` are synchronized. If conflict occurs:
 
 1. Check both configs have matching rules
-2. Run `npm run format` first, then `npm run lint`
+2. Run `npm run produck:format` first, then `npm run produck:lint`
 
 ### TypeScript includes too many files (when root tsconfig.json is used)
 

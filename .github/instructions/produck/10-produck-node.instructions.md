@@ -44,7 +44,7 @@ Notes:
 - `verify` scripts are optional repository-local health checks and are not
   organization-required script keys.
 - `verify` is not part of organization commit gates; style gates remain
-  repository `format:check` and `lint` policy.
+  repository `produck:format` and `produck:lint` policy.
 - `test` script implementation is repository-defined and is not overwritten by
   organization coverage remediation.
 - Repositories should keep `npm run test` and `npm run produck:coverage`
@@ -52,7 +52,7 @@ Notes:
 - For intermediate commits, temporary non-executable state or failing tests are
   allowed.
 - Commit prechecks still require passing repository style gates (for example
-  `format:check` and `lint`).
+  `produck:format` and `produck:lint`).
 
 Central toolkit command role model:
 
@@ -152,10 +152,10 @@ Repository layout:
 Script placement:
 
 - Root `package.json` must provide `deps:install`, `test`, `produck:coverage`,
-  and `lint` orchestration scripts.
+  and `produck:lint` orchestration scripts.
 - Root `package.json` must reserve `produck:precommit-check` for organization
   anti-drift gate with required value:
-  `npm run format:check && npm run lint`.
+  `npm run produck:format && npm run produck:lint`.
 - Root `package.json` must reserve `prepare` for husky setup with required
   value: `husky`.
 - `publish` may be defined at root or package level based on release workflow.

@@ -50,7 +50,7 @@ describe('preflight command', () => {
           'deps:install': 'npm install',
           test: 'npm run test --workspaces --if-present',
           'produck:coverage': 'npm run coverage --workspaces --if-present',
-          lint: 'eslint --fix . --max-warnings=0',
+          'produck:lint': 'eslint --fix . --max-warnings=0',
         },
       };
       await writeTextFile(

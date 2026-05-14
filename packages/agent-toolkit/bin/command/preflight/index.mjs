@@ -9,7 +9,7 @@ import { validateWorkspaceShape } from '../shared/workspace-validation.mjs';
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const REQUIRED_WORKSPACE_FIELDS = ['private', 'workspaces', 'scripts'];
-const REQUIRED_WORKSPACE_SCRIPTS = ['deps:install', 'test', 'produck:coverage', 'lint'];
+const REQUIRED_WORKSPACE_SCRIPTS = ['deps:install', 'test', 'produck:coverage', 'produck:lint'];
 
 export function printPreflightHelp() {
   printTextResource(HELP_FILE);

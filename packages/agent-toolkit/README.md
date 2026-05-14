@@ -90,8 +90,8 @@ failure:
    root `c8` devDependency, then deploy pinned `produck:coverage` script and
    `c8` devDependency into each workspace package, and ensure each workspace
    package has `scripts.test` (auto-generate a default value when missing)
-8. `sync-publish` — deploy root `scripts.produck:publish` when `lerna.json`
-   is present
+8. `sync-publish` — create default `lerna.json` when missing and deploy root
+   `scripts.produck:publish:check` plus `scripts.produck:publish`
 
 Add to downstream repository root `package.json` for one-command enforcement:
 
@@ -163,6 +163,8 @@ npm exec -- agent-toolkit sync-format --cwd .
 ```
 
 This command manages `scripts.produck:format` and `.prettierrc` only.
+The managed `produck:format` script always writes formatting fixes via
+Prettier, so a separate root `format` script is not required.
 
 Deploy organization lint config and script baseline to repository root:
 
@@ -205,8 +207,11 @@ Deploy root publish script baseline:
 npm exec -- agent-toolkit sync-publish --cwd .
 ```
 
-When `lerna.json` exists, this command manages `scripts.produck:publish`.
-If `lerna.json` is absent, the command exits ok with no changes.
+This command manages `scripts.produck:publish:check` and
+`scripts.produck:publish`. If `lerna.json` is absent, sync mode creates a
+default file before writing the scripts. When `scripts.publish` already
+exists, `scripts.produck:publish` delegates to it after the shared checks;
+otherwise it falls back to `lerna publish`.
 
 Validate commit message format:
 
@@ -261,8 +266,8 @@ Use repository style gates first, then run package checks when needed.
 From repository root:
 
 ```bash
-npm run format:check
-npm run lint
+npm run produck:format
+npm run produck:lint
 npm --workspace @produck/agent-toolkit run test
 npm --workspace @produck/agent-toolkit run pack:check
 # optional health check
@@ -277,8 +282,7 @@ package-level release scripts.
 From monorepo root (`produck/.github`):
 
 ```bash
-npm run format:check
-npm run test
+npm run produck:publish:check
 npm run publish:dry-run
 npm run publish
 ```
@@ -305,8 +309,8 @@ Release policy:
 
 - Central package is installed locally in downstream repositories at a fixed
   version managed by `agent-toolkit sync-git`.
-- Run format:check and test first, then workspace `publish:dry-run` before
-  `publish`.
+- Run `produck:publish:check` first.
+- Then run workspace `publish:dry-run` before `publish`.
 - Keep rollback option by republishing previous stable version if needed.
 
 Rollback quick steps:

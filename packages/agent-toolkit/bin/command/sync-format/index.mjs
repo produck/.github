@@ -17,7 +17,7 @@ const PRETTIER_CONFIG_FILE = '.prettierrc';
 const REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY = 'prettier';
 
 const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
-const REQUIRED_FORMAT_SCRIPT_VALUE = 'prettier --check . && npm run format --if-present';
+const REQUIRED_FORMAT_SCRIPT_VALUE = 'prettier --write .';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
     semi: true,

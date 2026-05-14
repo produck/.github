@@ -13,7 +13,7 @@ const TOOLKIT_PACKAGE_JSON = path.resolve(PACKAGE_ROOT, 'package.json');
 const ESLINT_CONFIG_FILE = 'eslint.config.mjs';
 
 const REQUIRED_LINT_SCRIPT_KEY = 'produck:lint';
-const REQUIRED_LINT_SCRIPT_VALUE = 'eslint --fix . --max-warnings=0 && npm run lint --if-present';
+const REQUIRED_LINT_SCRIPT_VALUE = 'eslint --fix . --max-warnings=0';
 const REQUIRED_ESLINT_CONFIG = `import globals from 'globals';
 import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
