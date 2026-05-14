@@ -12,6 +12,15 @@ const LERNA_CONFIG_FILE = 'lerna.json';
 const REQUIRED_PUBLISH_SCRIPT_KEY = 'produck:publish';
 const REQUIRED_PUBLISH_SCRIPT_VALUE = 'lerna publish';
 
+const REQUIRED_LERNA_DEFAULT_CONFIG = `${JSON.stringify(
+  {
+    $schema: 'node_modules/lerna/schemas/lerna-schema.json',
+    version: 'independent',
+  },
+  null,
+  2,
+)}\n`;
+
 export function printSyncPublishHelp() {
   printTextResource(HELP_FILE);
 }
@@ -38,28 +47,21 @@ export function runSyncPublish(options) {
   }
 
   const lernaConfigPath = path.resolve(cwd, LERNA_CONFIG_FILE);
-  const lernaConfigured = fs.existsSync(lernaConfigPath);
+  const lernaExistedBefore = fs.existsSync(lernaConfigPath);
+  let lernaDefaultCreated = false;
 
-  const report = {
-    cwd,
-    mode,
-    ok: true,
-    lernaConfigured,
-    required: {
-      publishScriptKey: REQUIRED_PUBLISH_SCRIPT_KEY,
-      publishScriptValue: REQUIRED_PUBLISH_SCRIPT_VALUE,
-    },
-  };
-
-  if (!lernaConfigured) {
-    if (jsonFile) {
-      const outPath = path.resolve(cwd, jsonFile);
-      fs.mkdirSync(path.dirname(outPath), { recursive: true });
-      fs.writeFileSync(outPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+  if (!lernaExistedBefore) {
+    if (mode === 'sync') {
+      fs.writeFileSync(lernaConfigPath, REQUIRED_LERNA_DEFAULT_CONFIG, 'utf8');
+      lernaDefaultCreated = true;
     }
+  } else {
+    const lernaConfig = parseJsonFile(lernaConfigPath, 'lerna.json');
 
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-    return;
+    if (typeof lernaConfig.version !== 'string') {
+      console.error(`lerna.json must have a "version" field: ${lernaConfigPath}`);
+      process.exit(2);
+    }
   }
 
   const rootPackageJsonPath = path.resolve(cwd, 'package.json');
@@ -79,20 +81,34 @@ export function runSyncPublish(options) {
       ? scripts[REQUIRED_PUBLISH_SCRIPT_KEY]
       : null;
 
-  const matchesRequired = previousPublish === REQUIRED_PUBLISH_SCRIPT_VALUE;
-  const requiresUpdate = !matchesRequired;
+  const matchesRequiredPublish = previousPublish === REQUIRED_PUBLISH_SCRIPT_VALUE;
+  const lernaRequiresCreation = !lernaExistedBefore && !lernaDefaultCreated;
+  const requiresUpdate = !matchesRequiredPublish || lernaRequiresCreation;
 
-  if (mode === 'sync' && requiresUpdate) {
+  if (mode === 'sync' && !matchesRequiredPublish) {
     scripts[REQUIRED_PUBLISH_SCRIPT_KEY] = REQUIRED_PUBLISH_SCRIPT_VALUE;
     pkg.scripts = scripts;
     fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
   }
 
-  report.rootPackageJsonPath = rootPackageJsonPath;
-  report.status = {
-    matchesRequiredPublishBefore: matchesRequired,
-    matchesRequiredPublishAfter: requiresUpdate && mode === 'sync' ? true : matchesRequired,
-    updated: requiresUpdate && mode === 'sync',
+  const report = {
+    cwd,
+    mode,
+    ok: true,
+    lernaConfigPath,
+    rootPackageJsonPath,
+    required: {
+      publishScriptKey: REQUIRED_PUBLISH_SCRIPT_KEY,
+      publishScriptValue: REQUIRED_PUBLISH_SCRIPT_VALUE,
+    },
+    status: {
+      lernaExistedBefore,
+      lernaDefaultCreated,
+      matchesRequiredPublishBefore: matchesRequiredPublish,
+      matchesRequiredPublishAfter:
+        !matchesRequiredPublish && mode === 'sync' ? true : matchesRequiredPublish,
+      updated: requiresUpdate && mode === 'sync',
+    },
   };
 
   if (mode === 'check' && requiresUpdate) {

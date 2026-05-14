@@ -1,11 +1,11 @@
 {
-  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
-  "version": "independent",
+  "$schema": "./node_modules/lerna/schemas/lerna-schema.json",
   "command": {
     "publish": {
       "ignoreScripts": false,
       "message": "[PUBLISH]"
     }
   },
-  "packages": ["packages/*"]
+  "useNx": false,
+  "version": "independent"
 }

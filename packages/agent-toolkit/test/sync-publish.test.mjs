@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 
@@ -26,7 +27,7 @@ describe('sync-publish command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.lernaConfigured, true);
+      assert.equal(report.status.lernaExistedBefore, true);
       assert.equal(report.status.updated, true);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
@@ -34,7 +35,7 @@ describe('sync-publish command', () => {
     });
   });
 
-  it('exits ok without changes when lerna.json is absent', async () => {
+  it('creates default lerna.json and publish script when absent', async () => {
     await withTempDir('agent-toolkit-sync-publish-no-lerna-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
@@ -43,11 +44,38 @@ describe('sync-publish command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.lernaConfigured, false);
-      assert.equal(report.status, undefined);
+      assert.equal(report.status.lernaExistedBefore, false);
+      assert.equal(report.status.lernaDefaultCreated, true);
+      assert.equal(report.status.updated, true);
 
+      assert.equal(fs.existsSync(path.join(tempDir, 'lerna.json')), true);
       const pkg = await readJson(path.join(tempDir, 'package.json'));
-      assert.equal(pkg.scripts?.['produck:publish'], undefined);
+      assert.equal(pkg.scripts['produck:publish'], REQUIRED_PUBLISH_SCRIPT);
+    });
+  });
+
+  it('dry-run does not create lerna.json when absent', async () => {
+    await withTempDir('agent-toolkit-sync-publish-dry-run-no-lerna-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+
+      const result = runCli(['sync-publish', '--cwd', tempDir, '--dry-run']);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.status.lernaDefaultCreated, false);
+      assert.equal(report.status.updated, false);
+      assert.equal(fs.existsSync(path.join(tempDir, 'lerna.json')), false);
+    });
+  });
+
+  it('fails when lerna.json exists but has no version field', async () => {
+    await withTempDir('agent-toolkit-sync-publish-invalid-lerna-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+      await writeTextFile(path.join(tempDir, 'lerna.json'), '{"packages":["packages/*"]}\n');
+
+      const result = runCli(['sync-publish', '--cwd', tempDir]);
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /lerna\.json must have a "version" field/);
     });
   });
 
@@ -121,16 +149,17 @@ describe('sync-publish command', () => {
     });
   });
 
-  it('check mode is ok when lerna.json is absent', async () => {
+  it('check mode fails when lerna.json is absent', async () => {
     await withTempDir('agent-toolkit-sync-publish-check-no-lerna-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
       const result = runCli(['sync-publish', '--cwd', tempDir, '--check']);
-      assert.equal(result.status, 0);
+      assert.equal(result.status, 2);
 
       const report = JSON.parse(result.stdout);
-      assert.equal(report.ok, true);
-      assert.equal(report.lernaConfigured, false);
+      assert.equal(report.ok, false);
+      assert.equal(report.status.lernaExistedBefore, false);
+      assert.equal(report.status.lernaDefaultCreated, false);
     });
   });
 
