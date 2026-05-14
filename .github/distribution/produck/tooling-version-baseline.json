@@ -16,12 +16,24 @@
       "version": "9.0.7",
       "policy": "pinned",
       "allowLatest": false
+    },
+    "prettier": {
+      "version": "3.8.3",
+      "policy": "pinned",
+      "allowLatest": false
     }
   },
   "coverage": {
     "scriptTemplate": "c8@{c8.version} --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "enforce": {
-    "sharedScriptsDisallow": ["npx c8", "c8@latest", "npx lerna", "lerna@latest"]
+    "sharedScriptsDisallow": [
+      "npx c8",
+      "c8@latest",
+      "npx lerna",
+      "lerna@latest",
+      "npx prettier",
+      "prettier@latest"
+    ]
   }
 }

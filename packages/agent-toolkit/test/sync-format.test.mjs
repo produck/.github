@@ -1,10 +1,26 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
+const TOOLING_BASELINE_REPO_PATH = path.resolve(
+  REPO_ROOT,
+  '.github/distribution/produck/tooling-version-baseline.json',
+);
+const TOOLING_BASELINE_ASSET_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/instructions/produck/tooling-version-baseline.json',
+);
+const TOOLING_BASELINE_PATH = fs.existsSync(TOOLING_BASELINE_REPO_PATH)
+  ? TOOLING_BASELINE_REPO_PATH
+  : TOOLING_BASELINE_ASSET_PATH;
+const TOOLING_BASELINE = JSON.parse(fs.readFileSync(TOOLING_BASELINE_PATH, 'utf8'));
+const REQUIRED_PRETTIER_VERSION = TOOLING_BASELINE.tools.prettier.version;
 const REQUIRED_FORMAT_SCRIPT = 'prettier --check . && npm run format --if-present';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
@@ -39,6 +55,7 @@ describe('sync-format command', () => {
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
       assert.equal(pkg.scripts['produck:format'], REQUIRED_FORMAT_SCRIPT);
+      assert.equal(pkg.devDependencies['prettier'], REQUIRED_PRETTIER_VERSION);
 
       const prettierConfig = fs.readFileSync(path.join(tempDir, '.prettierrc'), 'utf8');
       assert.equal(prettierConfig, REQUIRED_PRETTIER_CONFIG);
