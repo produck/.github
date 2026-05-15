@@ -33,17 +33,35 @@ Notes:
   `npm -v && npm install`
 - `publish` may be a no-op when repository-specific release workflow does not
   use npm publishing.
-  - Coverage governance policy:
-    - Keep the script key name `produck:coverage` (organization-reserved key).
-    - In monorepo mode, workspace subpackage `produck:coverage` scripts are for local and AI development use only. They are NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
-    - Source of truth for tooling versions/template: `.github/distribution/produck/tooling-version-baseline.json`.
-    - Use central remediation command to deploy root install script baseline:
-      `npm exec -- agent-toolkit sync-install --cwd .`.
-    - Use central remediation command to deploy coverage scripts: `npm exec -- agent-toolkit sync-coverage --cwd .`.
-    - Use central remediation command to deploy local anti-drift hook baseline: `npm exec -- agent-toolkit sync-git --cwd .`.
-    - `c8` execution baseline for deployed coverage scripts is fixed to the version specified in `tooling-version-baseline.json`.
-    - Downstream repositories must not use unversioned `npx c8` or `c8@latest` in shared scripts/CI.
-    - Root `devDependencies.c8` and root `devDependencies.lerna` must be pinned to organization baseline fixed versions via `agent-toolkit sync-git`.
+- Coverage governance policy:
+  - Keep the script key name `produck:coverage` (organization-reserved key).
+  - In monorepo mode, workspace subpackage `scripts.produck:coverage` and
+    workspace `devDependencies.c8` are fully governed by organization
+    baseline.
+  - Source of truth for tooling versions/template:
+    `.github/distribution/produck/tooling-version-baseline.json`.
+  - Use central remediation command to deploy root install script baseline:
+    `npm exec -- agent-toolkit sync-install --cwd .`.
+  - Use central remediation command to deploy coverage scripts:
+    `npm exec -- agent-toolkit sync-coverage --cwd .`.
+  - Use central remediation command to deploy local anti-drift hook baseline:
+    `npm exec -- agent-toolkit sync-git --cwd .`.
+  - Use central remediation command to deploy root format script/config
+    baseline:
+    `npm exec -- agent-toolkit sync-format --cwd .`.
+  - Use central remediation command to deploy root lint script/config and
+    eslint integration baseline:
+    `npm exec -- agent-toolkit sync-lint --cwd .`.
+  - `c8` execution baseline for deployed coverage scripts is fixed to the
+    version specified in `tooling-version-baseline.json`.
+  - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
+    in shared scripts/CI.
+  - Root local governance must pin `devDependencies.c8`,
+    `devDependencies.husky`, `devDependencies.lerna`, and
+    `devDependencies.@produck/agent-toolkit` via
+    `agent-toolkit sync-git`.
+  - Root local governance must pin `devDependencies.@produck/eslint-rules`
+    via `agent-toolkit sync-lint`.
 
 - Testing strategy and framework are repository-defined.
 - `verify` scripts are optional repository-local health checks and are not
@@ -73,6 +91,11 @@ Central toolkit command role model:
   governance and is mandatory in monorepo mode.
 - `agent-toolkit sync-git` is the hard guard for local anti-drift hook
   governance and is mandatory in monorepo mode.
+- `agent-toolkit sync-format` is the hard guard for root format
+  script/config governance and is mandatory in monorepo mode.
+- `agent-toolkit sync-lint` is the hard guard for root lint
+  script/config and eslint integration governance and is mandatory in monorepo
+  mode.
 - `agent-toolkit sync-publish` is the hard guard for root publish script
   governance when `lerna.json` is present.
 - For simplified downstream execution of mandatory flow (1 -> 2 -> ... -> 9),
@@ -94,8 +117,13 @@ Central toolkit command role model:
 
 Test authoring baseline (required):
 
-- Prefer Node.js standard library test runner (`node:test`) with `describe` and
-  `it`.
+- MUST use Node.js standard library test runner (`node:test`) with `describe`
+  and `it`.
+- Execution MUST follow the **Single Entrypoint Rule**: always run tests via a
+  dedicated entrypoint (for example `test/index.mjs`) instead of targeting
+  individual files.
+- Command-line execution MUST NOT use the glob-based `--test` pattern. Use
+  `node --test <entrypoint>` or `node <entrypoint>` directly.
 - Each test case must be independently executable.
 - Test cases must not depend on execution order or state from other cases.
 - New test debugging should use local `only` mode for scoped regression.
@@ -165,10 +193,12 @@ Script placement:
   `npm run produck:format && npm run produck:lint`.
 - Root `package.json` must reserve `prepare` for husky setup with required
   value: `husky`.
-- `publish` may be defined at root or package level based on release workflow.
+- Root `package.json` must reserve `produck:format` and `produck:lint` for
+  organization-controlled format/lint gates.
 - Root `package.json` must reserve `produck:publish` for organization-controlled
   publish gate when `lerna.json` is present (governed by
   `agent-toolkit sync-publish`).
+- `publish` may be defined at root or package level based on release workflow.
 - Workspace subpackage `produck:coverage` scripts must be synchronized by
   `agent-toolkit sync-coverage`.
 - Root local hook governance must be synchronized by
@@ -176,10 +206,26 @@ Script placement:
 - Root local shared script governance must initialize
   `scripts.produck:install` with required value `npm -v && npm install`
   via `agent-toolkit sync-install`.
-- Root local hook governance must pin root `devDependencies.c8`,
-  `devDependencies.husky`, `devDependencies.lerna`, and
+- Root local format governance must be synchronized by
+  `agent-toolkit sync-format`.
+- Root local lint governance must be synchronized by
+  `agent-toolkit sync-lint`.
+- Root local shared script/dependency governance must pin root
+  `devDependencies.c8`,
+  `devDependencies.husky`, `devDependencies.lerna`,
   `devDependencies.@produck/agent-toolkit` via
   `agent-toolkit sync-git`.
+- Root local shared script/dependency governance must initialize
+  `scripts.produck:coverage` with workspace-level execution behavior:
+  attempt `test` on all workspace packages using `--workspaces --if-present`.
+- Root local shared script/dependency governance must initialize `.c8rc.json`
+  via `agent-toolkit sync-coverage`.
+- Root local format governance must initialize `.prettierrc` and
+  `scripts.produck:format` via `agent-toolkit sync-format`.
+- Root local lint governance must initialize `eslint.config.mjs`,
+  `scripts.produck:lint`, and `devDependencies.@produck/eslint-rules`
+  (including append-mode integration for existing eslint config) via
+  `agent-toolkit sync-lint`.
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:
   ```json

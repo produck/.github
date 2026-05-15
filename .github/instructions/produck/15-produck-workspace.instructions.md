@@ -163,7 +163,7 @@ npm run produck:coverage
 - Shared scripts/CI must not use unversioned `npx lerna` or `lerna@latest`.
 - Wrapper scripts are allowed, but should keep parity with organization version
   policy.
-- Workspace subpackage `produck:coverage` scripts are for local and AI development use only. They are NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
+- Workspace subpackage coverage scripts are fully organization-governed.
 - Deploy/repair coverage scripts via central remediation command:
   `npm exec -- agent-toolkit sync-coverage --cwd .`.
 - Root anti-drift local hook baseline is organization-governed.

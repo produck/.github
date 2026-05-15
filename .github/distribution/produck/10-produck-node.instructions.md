@@ -117,8 +117,13 @@ Central toolkit command role model:
 
 Test authoring baseline (required):
 
-- Prefer Node.js standard library test runner (`node:test`) with `describe` and
-  `it`.
+- MUST use Node.js standard library test runner (`node:test`) with `describe`
+  and `it`.
+- Execution MUST follow the **Single Entrypoint Rule**: always run tests via a
+  dedicated entrypoint (for example `test/index.mjs`) instead of targeting
+  individual files.
+- Command-line execution MUST NOT use the glob-based `--test` pattern. Use
+  `node --test <entrypoint>` or `node <entrypoint>` directly.
 - Each test case must be independently executable.
 - Test cases must not depend on execution order or state from other cases.
 - New test debugging should use local `only` mode for scoped regression.
