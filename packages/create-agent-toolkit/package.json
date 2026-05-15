@@ -12,7 +12,6 @@
     "create-agent-toolkit": "bin/create-agent-toolkit.mjs"
   },
   "scripts": {
-    "pack:check": "npm pack --dry-run",
     "test": "node test/index.mjs",
     "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },

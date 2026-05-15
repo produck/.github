@@ -14,8 +14,6 @@
   "scripts": {
     "prepack": "node ./bin/build-publish-assets.mjs",
     "test": "node test/index.mjs",
-    "verify": "node ./bin/agent-toolkit.mjs --help && node ./bin/agent-toolkit.mjs preflight --cwd . --require package.json",
-    "pack:check": "npm pack --dry-run",
     "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "files": [

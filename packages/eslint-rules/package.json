@@ -26,7 +26,6 @@
   "scripts": {
     "test": "node test/index.mjs",
     "lint": "eslint src test",
-    "verify": "node -e \"import('./src/index.mjs').then(() => console.log('[eslint-rules] package loaded successfully')).catch((e) => { console.error(e); process.exit(1); })\"",
     "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "keywords": [
