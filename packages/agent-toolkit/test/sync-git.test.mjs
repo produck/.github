@@ -16,12 +16,12 @@ const REQUIRED_GITIGNORE_ENTRIES = fs
   .split('\n')
   .map((line) => line.trimEnd())
   .filter((line) => line.length > 0 && !line.startsWith('#'));
-const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:precommit-check\n';
+const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:commit:check\n';
 const REQUIRED_COMMIT_MSG_HOOK =
   '#!/usr/bin/env sh\nnode ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"\n';
 const REQUIRED_BASELINE_SCRIPT =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
-const REQUIRED_PRECOMMIT_CHECK_SCRIPT = 'npm run produck:format && npm run produck:lint';
+const REQUIRED_COMMIT_CHECK_SCRIPT = 'npm run produck:format && npm run produck:lint';
 
 describe('sync-git command', () => {
   it('prints help text for sync-git command', () => {
@@ -33,7 +33,7 @@ describe('sync-git command', () => {
     assert.match(result.stdout, /\.husky\/pre-commit/);
     assert.match(result.stdout, /\.husky\/commit-msg/);
     assert.match(result.stdout, /produck:baseline/);
-    assert.match(result.stdout, /produck:precommit-check/);
+    assert.match(result.stdout, /produck:commit:check/);
   });
 
   it('fails when --cwd does not exist', () => {
@@ -62,7 +62,7 @@ describe('sync-git command', () => {
       const commitMsg = fs.readFileSync(path.join(tempDir, '.husky/commit-msg'), 'utf8');
 
       assert.equal(pkg.scripts['produck:baseline'], REQUIRED_BASELINE_SCRIPT);
-      assert.equal(pkg.scripts['produck:precommit-check'], REQUIRED_PRECOMMIT_CHECK_SCRIPT);
+      assert.equal(pkg.scripts['produck:commit:check'], REQUIRED_COMMIT_CHECK_SCRIPT);
       assert.match(pkg.devDependencies.husky, /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies.lerna, /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies['@produck/agent-toolkit'], /^\d+\.\d+\.\d+$/);
@@ -83,7 +83,7 @@ describe('sync-git command', () => {
       assert.equal(report.status.preCommitHookExistsAfter, true);
       assert.equal(report.status.commitMsgHookExistsAfter, true);
       assert.equal(report.status.matchesRequiredBaselineAfter, true);
-      assert.equal(report.status.matchesRequiredPrecommitCheckAfter, true);
+      assert.equal(report.status.matchesRequiredCommitCheckAfter, true);
       assert.equal(report.status.matchesRequiredManagedDevDependenciesAfter, true);
       assert.equal(report.status.matchesRequiredGitignoreAfter, true);
       assert.deepEqual(report.status.missingGitignoreEntriesAfter, []);
@@ -106,7 +106,7 @@ describe('sync-git command', () => {
       assert.equal(report.status.updated, false);
       assert.equal(report.status.mismatchesBefore.length > 0, true);
       assert.equal(report.status.matchesRequiredBaselineAfter, false);
-      assert.equal(report.status.matchesRequiredPrecommitCheckAfter, false);
+      assert.equal(report.status.matchesRequiredCommitCheckAfter, false);
       assert.equal(report.status.matchesRequiredGitignoreAfter, false);
 
       const content = fs.readFileSync(path.join(tempDir, '.gitattributes'), 'utf8');
@@ -116,7 +116,7 @@ describe('sync-git command', () => {
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
       assert.equal(pkg.scripts['produck:baseline'], undefined);
-      assert.equal(pkg.scripts['produck:precommit-check'], undefined);
+      assert.equal(pkg.scripts['produck:commit:check'], undefined);
     });
   });
 

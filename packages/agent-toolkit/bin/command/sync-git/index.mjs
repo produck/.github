@@ -25,8 +25,8 @@ const COMMIT_MSG_HOOK_FILE = 'commit-msg';
 const REQUIRED_BASELINE_SCRIPT_KEY = 'produck:baseline';
 const REQUIRED_BASELINE_SCRIPT_VALUE =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
-const REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY = 'produck:precommit-check';
-const REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run produck:lint';
+const REQUIRED_COMMIT_CHECK_SCRIPT_KEY = 'produck:commit:check';
+const REQUIRED_COMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run produck:lint';
 
 const GITATTRIBUTES_SOURCE_CANDIDATE_PATHS = [
   path.resolve(REPO_ROOT, '.gitattributes'),
@@ -37,7 +37,7 @@ const GITIGNORE_SOURCE_CANDIDATE_PATHS = [
   path.resolve(PACKAGE_ROOT, 'publish-assets/gitignore'),
 ];
 
-const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:precommit-check\n';
+const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:commit:check\n';
 const REQUIRED_COMMIT_MSG_HOOK =
   '#!/usr/bin/env sh\nnode ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"\n';
 
@@ -183,9 +183,9 @@ function buildScriptState(pkg) {
       typeof scripts[REQUIRED_BASELINE_SCRIPT_KEY] === 'string'
         ? scripts[REQUIRED_BASELINE_SCRIPT_KEY]
         : null,
-    previousPrecommitCheck:
-      typeof scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] === 'string'
-        ? scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY]
+    previousCommitCheck:
+      typeof scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY] === 'string'
+        ? scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY]
         : null,
   };
 }
@@ -246,7 +246,7 @@ export function runSyncGit(options) {
   const dependencyState = buildDevDependencyState(pkg);
   const scriptValidation = validateRequiredExactEntries(scriptState.scripts, {
     [REQUIRED_BASELINE_SCRIPT_KEY]: REQUIRED_BASELINE_SCRIPT_VALUE,
-    [REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY]: REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE,
+    [REQUIRED_COMMIT_CHECK_SCRIPT_KEY]: REQUIRED_COMMIT_CHECK_SCRIPT_VALUE,
   });
   const dependencyValidation = validateRequiredExactEntries(
     dependencyState.devDependencies,
@@ -254,8 +254,8 @@ export function runSyncGit(options) {
   );
 
   const matchesRequiredBaseline = !(REQUIRED_BASELINE_SCRIPT_KEY in scriptValidation.mismatches);
-  const matchesRequiredPrecommitCheck = !(
-    REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY in scriptValidation.mismatches
+  const matchesRequiredCommitCheck = !(
+    REQUIRED_COMMIT_CHECK_SCRIPT_KEY in scriptValidation.mismatches
   );
   const matchesRequiredManagedDevDependencies = dependencyValidation.ok;
 
@@ -316,7 +316,7 @@ export function runSyncGit(options) {
   const requiresUpdate =
     mismatches.length > 0 ||
     !matchesRequiredBaseline ||
-    !matchesRequiredPrecommitCheck ||
+    !matchesRequiredCommitCheck ||
     !matchesRequiredManagedDevDependencies;
 
   if (mode === 'sync' && requiresUpdate) {
@@ -336,8 +336,7 @@ export function runSyncGit(options) {
     fs.writeFileSync(commitMsgHookPath, REQUIRED_COMMIT_MSG_HOOK, 'utf8');
 
     scriptState.scripts[REQUIRED_BASELINE_SCRIPT_KEY] = REQUIRED_BASELINE_SCRIPT_VALUE;
-    scriptState.scripts[REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY] =
-      REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE;
+    scriptState.scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY] = REQUIRED_COMMIT_CHECK_SCRIPT_VALUE;
     pkg.scripts = scriptState.scripts;
 
     for (const [name, version] of Object.entries(requiredDevDependencies)) {
@@ -363,8 +362,8 @@ export function runSyncGit(options) {
       gitignoreRequiredEntries,
       baselineScriptKey: REQUIRED_BASELINE_SCRIPT_KEY,
       baselineScriptValue: REQUIRED_BASELINE_SCRIPT_VALUE,
-      precommitCheckScriptKey: REQUIRED_PRECOMMIT_CHECK_SCRIPT_KEY,
-      precommitCheckScriptValue: REQUIRED_PRECOMMIT_CHECK_SCRIPT_VALUE,
+      commitCheckScriptKey: REQUIRED_COMMIT_CHECK_SCRIPT_KEY,
+      commitCheckScriptValue: REQUIRED_COMMIT_CHECK_SCRIPT_VALUE,
       preCommitHookPath: path.relative(cwd, preCommitHookPath),
       commitMsgHookPath: path.relative(cwd, commitMsgHookPath),
       managedDevDependencies: requiredDevDependencies,
@@ -380,7 +379,7 @@ export function runSyncGit(options) {
       matchesRequiredPreCommitHookBefore: matchesRequiredPreCommitHook,
       matchesRequiredCommitMsgHookBefore: matchesRequiredCommitMsgHook,
       matchesRequiredBaselineBefore: matchesRequiredBaseline,
-      matchesRequiredPrecommitCheckBefore: matchesRequiredPrecommitCheck,
+      matchesRequiredCommitCheckBefore: matchesRequiredCommitCheck,
       matchesRequiredManagedDevDependenciesBefore: matchesRequiredManagedDevDependencies,
       mismatchesBefore: mismatches,
       fileExistsAfter: requiresUpdate && mode === 'sync' ? true : fileExists,
@@ -399,8 +398,8 @@ export function runSyncGit(options) {
         requiresUpdate && mode === 'sync' ? true : matchesRequiredCommitMsgHook,
       matchesRequiredBaselineAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredBaseline,
-      matchesRequiredPrecommitCheckAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredPrecommitCheck,
+      matchesRequiredCommitCheckAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredCommitCheck,
       matchesRequiredManagedDevDependenciesAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredManagedDevDependencies,
       mismatchesAfter: requiresUpdate && mode === 'sync' ? [] : mismatches,

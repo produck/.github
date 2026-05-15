@@ -47,7 +47,7 @@ describe('preflight command', () => {
         private: true,
         workspaces: ['packages/agent-toolkit', 'packages/eslint-rules'],
         scripts: {
-          'deps:install': 'npm install',
+          'produck:install': 'npm -v && npm install',
           test: 'npm run test --workspaces --if-present',
           'produck:coverage': 'npm run coverage --workspaces --if-present',
           'produck:lint': 'eslint --fix . --max-warnings=0',

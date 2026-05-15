@@ -8,6 +8,7 @@ import { printPreflightHelp, runPreflight } from './command/preflight/index.mjs'
 import { printRunCaptureHelp, runCapture } from './command/run-capture/index.mjs';
 import { printSummarizeHelp, runSummarize } from './command/summarize-log/index.mjs';
 import { printSyncCoverageHelp, runSyncCoverage } from './command/sync-coverage/index.mjs';
+import { printSyncInstallHelp, runSyncInstall } from './command/sync-install/index.mjs';
 import {
   printSyncInstructionsHelp,
   runSyncInstructions,
@@ -46,6 +47,10 @@ const COMMANDS = {
   'sync-coverage': {
     printHelp: printSyncCoverageHelp,
     run: runSyncCoverage,
+  },
+  'sync-install': {
+    printHelp: printSyncInstallHelp,
+    run: runSyncInstall,
   },
   'sync-format': {
     printHelp: printSyncFormatHelp,

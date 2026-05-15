@@ -19,21 +19,26 @@ applyTo: '**'
 
 Required script keys:
 
-- `deps:install`
+- `produck:install`
 - `test`
 - `produck:coverage`
-- `lint`
+- `produck:lint`
 - `publish`
 
 Notes:
 
 - Script key names are fixed and must match exactly.
+- Keep the script key name `produck:install` (organization-reserved key).
+- Required root script value for `produck:install` is:
+  `npm -v && npm install`
 - `publish` may be a no-op when repository-specific release workflow does not
   use npm publishing.
   - Coverage governance policy:
     - Keep the script key name `produck:coverage` (organization-reserved key).
     - In monorepo mode, workspace subpackage `produck:coverage` scripts are for local and AI development use only. They are NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
     - Source of truth for tooling versions/template: `.github/distribution/produck/tooling-version-baseline.json`.
+    - Use central remediation command to deploy root install script baseline:
+      `npm exec -- agent-toolkit sync-install --cwd .`.
     - Use central remediation command to deploy coverage scripts: `npm exec -- agent-toolkit sync-coverage --cwd .`.
     - Use central remediation command to deploy local anti-drift hook baseline: `npm exec -- agent-toolkit sync-git --cwd .`.
     - `c8` execution baseline for deployed coverage scripts is fixed to the version specified in `tooling-version-baseline.json`.
@@ -62,13 +67,15 @@ Central toolkit command role model:
   but do not assume it can fully prevent AI hallucination or iterative drift.
 - `agent-toolkit preflight` is the hard guard for organization engineering
   baseline and is mandatory for required baseline checks.
+- `agent-toolkit sync-install` is the hard guard for root install script
+  governance and is mandatory in monorepo mode.
 - `agent-toolkit sync-coverage` is the hard guard for monorepo coverage
   governance and is mandatory in monorepo mode.
 - `agent-toolkit sync-git` is the hard guard for local anti-drift hook
   governance and is mandatory in monorepo mode.
 - `agent-toolkit sync-publish` is the hard guard for root publish script
   governance when `lerna.json` is present.
-- For simplified downstream execution of mandatory flow (1 -> 2 -> ... -> 8),
+- For simplified downstream execution of mandatory flow (1 -> 2 -> ... -> 9),
   use:
   `npm exec -- agent-toolkit`.
 - Equivalent explicit form:
@@ -151,9 +158,9 @@ Repository layout:
 
 Script placement:
 
-- Root `package.json` must provide `deps:install`, `test`, `produck:coverage`,
+- Root `package.json` must provide `produck:install`, `test`, `produck:coverage`,
   and `produck:lint` orchestration scripts.
-- Root `package.json` must reserve `produck:precommit-check` for organization
+- Root `package.json` must reserve `produck:commit:check` for organization
   anti-drift gate with required value:
   `npm run produck:format && npm run produck:lint`.
 - Root `package.json` must reserve `prepare` for husky setup with required
@@ -166,6 +173,9 @@ Script placement:
   `agent-toolkit sync-coverage`.
 - Root local hook governance must be synchronized by
   `agent-toolkit sync-git`.
+- Root local shared script governance must initialize
+  `scripts.produck:install` with required value `npm -v && npm install`
+  via `agent-toolkit sync-install`.
 - Root local hook governance must pin root `devDependencies.c8`,
   `devDependencies.husky`, `devDependencies.lerna`, and
   `devDependencies.@produck/agent-toolkit` via
@@ -196,7 +206,8 @@ Root workspace `package.json` minimal baseline (required):
 
 - `private`: `true`
 - `workspaces` (explicit package path list only)
-- `scripts` with at least: `deps:install`, `test`, `produck:coverage`, `lint`
+- `scripts` with at least: `produck:install`, `test`, `produck:coverage`,
+  `produck:lint`
 - `publish` script is optional at root when release is managed per package or
   by external workflow.
 
@@ -232,8 +243,8 @@ Repository layout:
 
 Script placement:
 
-- The repository root `package.json` must define `deps:install`, `test`,
-  `produck:coverage`, `lint`, and `publish`.
+- The repository root `package.json` must define `produck:install`, `test`,
+  `produck:coverage`, `produck:lint`, and `publish`.
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:
   ```json

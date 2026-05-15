@@ -3,6 +3,7 @@ import './entry-and-shared.test.mjs';
 import './preflight-summarize-run-capture.test.mjs';
 import './sync-coverage.test.mjs';
 import './sync-format.test.mjs';
+import './sync-install.test.mjs';
 import './sync-lint.test.mjs';
 import './sync-git.test.mjs';
 import './sync-publish.test.mjs';

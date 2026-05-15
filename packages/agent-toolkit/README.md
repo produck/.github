@@ -22,7 +22,7 @@ What it does (in order):
 3. Syncs root `produck:format` script and initializes `.prettierrc`
 4. Syncs root `produck:lint` script, initializes/patches `eslint.config.mjs`,
    and ensures `@produck/eslint-rules`
-5. Syncs root shared governance (`produck:baseline`, `produck:coverage`, `produck:precommit-check`) and syncs shared pinned devDependencies (`husky`, `lerna`, `@produck/agent-toolkit`)
+5. Syncs root shared governance (`produck:baseline`, `produck:coverage`, `produck:commit:check`) and syncs shared pinned devDependencies (`husky`, `lerna`, `@produck/agent-toolkit`)
 6. Deploys root `.c8rc.json` and root `c8` devDependency
    **Note:** The `produck:coverage` script in subpackages is for local and AI development use only. It is NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
 7. Deploys root `.gitattributes`
@@ -51,6 +51,7 @@ npm run produck:baseline
 - agent-toolkit sync-coverage
 - agent-toolkit sync-git
 - agent-toolkit sync-format
+- agent-toolkit sync-install
 - agent-toolkit sync-lint
 - agent-toolkit sync-publish
 - agent-toolkit validate-commit-msg
@@ -70,7 +71,7 @@ Equivalent explicit form:
 npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
 
-`enforce-node-baseline` runs eight steps in fixed order and stops at the first
+`enforce-node-baseline` runs nine steps in fixed order and stops at the first
 failure:
 
 1. `preflight` — verify required files and directories exist
@@ -82,15 +83,17 @@ failure:
 5. `sync-lint` — deploy organization lint gate script
    (`produck:lint`), initialize/patch `eslint.config.mjs`, and ensure
    `@produck/eslint-rules` integration
-6. `sync-git` — deploy root `.gitattributes`, sync
+6. `sync-install` — deploy root `scripts.produck:install`
+   (`npm -v && npm install`) and remove legacy `scripts.deps:install`
+7. `sync-git` — deploy root `.gitattributes`, sync
    `.husky/pre-commit`/`.husky/commit-msg`, and enforce shared root scripts
-   (`produck:baseline`, `produck:precommit-check`) plus shared pinned root
+   (`produck:baseline`, `produck:commit:check`) plus shared pinned root
    devDependencies (`husky`, `lerna`, `@produck/agent-toolkit`)
-7. `sync-coverage` — deploy root `scripts.produck:coverage`, `.c8rc.json`, and
+8. `sync-coverage` — deploy root `scripts.produck:coverage`, `.c8rc.json`, and
    root `c8` devDependency, then deploy pinned `produck:coverage` script and
    `c8` devDependency into each workspace package, and ensure each workspace
    package has `scripts.test` (auto-generate a default value when missing)
-8. `sync-publish` — create default `lerna.json` when missing and deploy root
+9. `sync-publish` — create default `lerna.json` when missing and deploy root
    `scripts.produck:publish:check` plus `scripts.produck:publish`
 
 Add to downstream repository root `package.json` for one-command enforcement:
@@ -198,8 +201,17 @@ npm exec -- agent-toolkit sync-git --cwd .
 
 This command manages root `.gitattributes`, `.husky/pre-commit`,
 `.husky/commit-msg`, `scripts.produck:baseline`,
-`scripts.produck:precommit-check`, and shared pinned root devDependencies
+`scripts.produck:commit:check`, and shared pinned root devDependencies
 `husky`, `lerna`, and `@produck/agent-toolkit`.
+
+Deploy root install script baseline:
+
+```
+npm exec -- agent-toolkit sync-install --cwd .
+```
+
+This command manages `scripts.produck:install` with value
+`npm -v && npm install` and removes legacy `scripts.deps:install`.
 
 Deploy root publish script baseline:
 

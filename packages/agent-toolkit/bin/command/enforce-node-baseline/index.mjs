@@ -120,6 +120,13 @@ export function runEnforceNodeBaseline(options) {
     syncPublishArgs.push('--dry-run');
   }
 
+  const syncInstallArgs = ['sync-install', '--cwd', cwd];
+  if (check) {
+    syncInstallArgs.push('--check');
+  } else if (dryRun) {
+    syncInstallArgs.push('--dry-run');
+  }
+
   const syncGitArgs = ['sync-git', '--cwd', cwd];
   if (check) {
     syncGitArgs.push('--check');
@@ -154,6 +161,7 @@ export function runEnforceNodeBaseline(options) {
     { name: 'sync-editorconfig', args: syncEditorconfigArgs },
     { name: 'sync-format', args: syncPrettierConfigArgs },
     { name: 'sync-lint', args: syncEslintConfigArgs },
+    { name: 'sync-install', args: syncInstallArgs },
     { name: 'sync-git', args: syncGitArgs },
     { name: 'sync-coverage', args: syncCoverageArgs },
     { name: 'sync-publish', args: syncPublishArgs },

@@ -1,0 +1,14 @@
+Usage:
+  agent-toolkit sync-install [--cwd <dir>] [--check] [--dry-run]
+    [--json <file>]
+
+Behavior:
+  - Applies organization-required root install script:
+    - scripts.produck:install = npm -v && npm install
+  - Removes legacy root install script when present:
+    - scripts.deps:install
+
+Rules:
+  - --check validates without writing and exits non-zero on mismatch
+  - --dry-run prints planned changes without writing
+  - --check takes precedence over --dry-run

@@ -108,6 +108,7 @@ describe('main command router', () => {
     assert.match(output, /enforce-node-baseline/);
     assert.match(output, /sync-coverage/);
     assert.match(output, /sync-format/);
+    assert.match(output, /sync-install/);
     assert.match(output, /sync-lint/);
     assert.match(output, /sync-git/);
     assert.match(output, /validate-commit-msg/);
@@ -123,7 +124,7 @@ describe('main command router', () => {
         private: true,
         workspaces: ['packages/a'],
         scripts: {
-          'deps:install': 'npm install',
+          'produck:install': 'npm -v && npm install',
           test: 'npm run test --workspaces --if-present',
           'produck:coverage': 'npm run coverage --workspaces --if-present',
           'produck:lint': 'eslint --fix . --max-warnings=0',
@@ -150,6 +151,7 @@ describe('main command router', () => {
           'sync-editorconfig',
           'sync-format',
           'sync-lint',
+          'sync-install',
           'sync-git',
           'sync-coverage',
           'sync-publish',

@@ -51,7 +51,8 @@ repositories in the produck organization.
 ## Contribution notes
 
 - Use the commit tag grammar documented in commit-convention.
-- `npm install` installs Husky hooks for local `pre-commit` and `commit-msg`
-  enforcement.
+- `npm run produck:install` prints the npm version once, installs
+  dependencies, and installs Husky hooks for local `pre-commit` and
+  `commit-msg` enforcement.
 - Keep markdown line length at 80 characters or fewer.
 - Keep policy changes small, explicit, and reviewable.

@@ -28,7 +28,7 @@ function createRootWorkspacePackageJson() {
     private: true,
     workspaces: ['packages/a'],
     scripts: {
-      'deps:install': 'npm install',
+      'produck:install': 'npm -v && npm install',
       test: 'npm run test --workspaces --if-present',
       'produck:coverage': 'npm run coverage --workspaces --if-present',
       'produck:lint': 'eslint --fix . --max-warnings=0',
@@ -45,7 +45,7 @@ describe('enforce-node-baseline command', () => {
     assert.match(result.stdout, /1\) preflight/);
   });
 
-  it('runs preflight, sync-instructions, sync-editorconfig, sync-format, sync-lint, sync-git, sync-coverage, and sync-publish in order', async () => {
+  it('runs preflight, sync-instructions, sync-editorconfig, sync-format, sync-lint, sync-install, sync-git, sync-coverage, and sync-publish in order', async () => {
     await withTempDir('agent-toolkit-enforce-node-baseline-sync-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       const instructionFile = path.join(sourceDir, '00-sample.instructions.md');
@@ -84,7 +84,7 @@ trim_trailing_whitespace = true
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
-      assert.equal(report.steps.length, 8);
+      assert.equal(report.steps.length, 9);
       assert.deepEqual(
         report.steps.map((step) => step.name),
         [
@@ -93,6 +93,7 @@ trim_trailing_whitespace = true
           'sync-editorconfig',
           'sync-format',
           'sync-lint',
+          'sync-install',
           'sync-git',
           'sync-coverage',
           'sync-publish',
