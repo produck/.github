@@ -25,7 +25,6 @@
   },
   "scripts": {
     "test": "node test/index.mjs",
-    "lint": "eslint src test",
     "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "keywords": [
