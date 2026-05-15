@@ -13,6 +13,7 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const ROOT_PACKAGE_FILE = path.resolve(COMMAND_DIR, '../../../../../package.json');
 const WORKSPACE_SCOPE = 'workspace';
 const WILDCARD_SCOPE = '*';
+const DEFAULT_COMMENT_CHAR = '#';
 
 export function printValidateCommitMsgHelp() {
   printTextResource(HELP_FILE);
@@ -170,6 +171,33 @@ function validateSectionFormat(lines, allowedSectionScopes = null) {
   return errors;
 }
 
+function getCommentCharFromConfig() {
+  const configured = String(process.env.GIT_COMMENT_CHAR || '').trim();
+  return configured || DEFAULT_COMMENT_CHAR;
+}
+
+function normalizeCommitMessageLines(raw, commentChar = DEFAULT_COMMENT_CHAR) {
+  const normalizedRaw = raw.replace(/\r\n/g, '\n');
+  const rawLines = normalizedRaw.split('\n');
+  const lines = [];
+
+  for (const line of rawLines) {
+    if (commentChar && line.startsWith(commentChar)) {
+      continue;
+    }
+    lines.push(line);
+  }
+
+  while (lines.length > 0 && lines[0].trim() === '') {
+    lines.shift();
+  }
+  while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
+    lines.pop();
+  }
+
+  return lines;
+}
+
 export function runValidateCommitMsg(options) {
   const file = getSingle(options, '--file', '');
   if (!file) {
@@ -183,8 +211,8 @@ export function runValidateCommitMsg(options) {
     process.exit(2);
   }
 
-  const raw = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
-  const lines = raw.endsWith('\n') ? raw.slice(0, -1).split('\n') : raw.split('\n');
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const lines = normalizeCommitMessageLines(raw, getCommentCharFromConfig());
 
   if (lines.length === 0 || (lines.length === 1 && lines[0].trim() === '')) {
     console.error('Commit message is empty');

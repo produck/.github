@@ -10,10 +10,11 @@ const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(TEST_DIR, '..');
 const TOOLKIT_BIN = path.resolve(PACKAGE_ROOT, 'bin/agent-toolkit.mjs');
 
-function runValidateArgs(args) {
+function runValidateArgs(args, spawnOptions = {}) {
   return spawnSync(process.execPath, [TOOLKIT_BIN, 'validate-commit-msg', ...args], {
     cwd: PACKAGE_ROOT,
     encoding: 'utf8',
+    env: { ...process.env, ...(spawnOptions.env || {}) },
   });
 }
 
@@ -56,6 +57,57 @@ describe('validate-commit-msg', () => {
 
       assert.equal(result.status, 2);
       assert.match(result.stderr, /Commit message is empty/);
+    });
+  });
+
+  it('accepts messages with trailing blank lines', async () => {
+    const message = ['workspace:', '[FIX] <docs>: keep final message strict', '', '', ''].join(
+      '\n',
+    );
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 0);
+      assert.match(result.stdout, /validation passed/i);
+    });
+  });
+
+  it('accepts VS Code amend-style comment summary and trailing blank lines', async () => {
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: keep final message strict',
+      '',
+      '# Please enter the commit message for your changes. Lines starting',
+      '# with # will be ignored, and an empty message aborts the commit.',
+      '# modified: package.json',
+      '',
+      '',
+    ].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 0);
+      assert.match(result.stdout, /validation passed/i);
+    });
+  });
+
+  it('accepts alternate git comment char when configured', async () => {
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: support alternate comment marker',
+      '; comment line injected by editor',
+      '',
+    ].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidateArgs(['--file', messageFile], {
+        env: { GIT_COMMENT_CHAR: ';' },
+      });
+
+      assert.equal(result.status, 0);
+      assert.match(result.stdout, /validation passed/i);
     });
   });
 
@@ -238,6 +290,23 @@ describe('validate-commit-msg', () => {
 
       assert.equal(result.status, 1);
       assert.match(result.stderr, /empty line is not allowed/i);
+    });
+  });
+
+  it('still rejects real body lines after stripping comments and edge blanks', async () => {
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: keep validator strict',
+      'body line without tag',
+      '# ignored summary line',
+      '',
+    ].join('\n');
+
+    await withMessage(message, async (messageFile) => {
+      const result = runValidate(messageFile);
+
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /must start with \[TAG\] followed by a space/i);
     });
   });
 
