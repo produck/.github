@@ -13,7 +13,7 @@
   },
   "scripts": {
     "pack:check": "npm pack --dry-run",
-    "test": "node --test test/index.mjs",
+    "test": "node test/index.mjs",
     "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "files": [
