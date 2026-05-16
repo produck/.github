@@ -16,7 +16,11 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
 const PRETTIER_CONFIG_FILE = '.prettierrc';
 const PRETTIER_IGNORE_FILE = '.prettierignore';
 const REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY = 'prettier';
-const REQUIRED_PRETTIER_IGNORE_CONTENT = 'CHANGELOG.md\npackage-lock.json\n';
+
+const PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS = [
+  path.resolve(REPO_ROOT, '.prettierignore'),
+  path.resolve(PACKAGE_ROOT, 'publish-assets/prettierignore'),
+];
 
 const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
 const REQUIRED_FORMAT_SCRIPT_VALUE =
@@ -35,6 +39,23 @@ const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   null,
   2,
 )}\n`;
+
+function loadPrettierIgnoreContent() {
+  const sourcePath = PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS.find((p) => fs.existsSync(p));
+
+  if (!sourcePath) {
+    console.error('Org .prettierignore source not found in expected locations:');
+    for (const p of PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS) {
+      console.error(`- ${p}`);
+    }
+    process.exit(2);
+  }
+
+  return {
+    sourcePath,
+    content: fs.readFileSync(sourcePath, 'utf8'),
+  };
+}
 
 export function printSyncFormatHelp() {
   printTextResource(HELP_FILE);
@@ -104,6 +125,8 @@ export function runSyncFormat(options) {
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const toolingBaseline = loadToolingBaseline();
   const requiredPrettierVersion = toolingBaseline.prettierVersion;
+  const { sourcePath: prettierIgnoreSourcePath, content: REQUIRED_PRETTIER_IGNORE_CONTENT } =
+    loadPrettierIgnoreContent();
   const scripts =
     pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
@@ -163,6 +186,7 @@ export function runSyncFormat(options) {
       formatScriptValue: REQUIRED_FORMAT_SCRIPT_VALUE,
       prettierConfigPath: path.relative(cwd, prettierConfigPath),
       prettierIgnorePath: path.relative(cwd, prettierIgnorePath),
+      prettierIgnoreSourcePath,
       managedDevDependencies: { [REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY]: requiredPrettierVersion },
     },
     status: {
