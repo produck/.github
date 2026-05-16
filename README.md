@@ -31,6 +31,8 @@ repositories in the produck organization.
 - Commit convention: [.github/distribution/produck/20-produck-commit.instructions.md](.github/distribution/produck/20-produck-commit.instructions.md)
 - Node.js init baseline:
   [.github/distribution/produck/10-produck-node.instructions.md](.github/distribution/produck/10-produck-node.instructions.md)
+- Test authoring baseline:
+  [.github/distribution/produck/12-produck-test.instructions.md](.github/distribution/produck/12-produck-test.instructions.md)
 - PR template: [pull_request_template.md](pull_request_template.md)
 
 ## Instruction source split

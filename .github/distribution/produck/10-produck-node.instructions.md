@@ -122,43 +122,23 @@ Test authoring baseline:
 
 Script and output directory policy:
 
-- Reusable project scripts should be committed under root `scripts/`.
-- Organization-level shared tooling may use a central npm package bridge instead
-  of repository-local `scripts/` duplication.
-- Runtime command outputs should be written under root `logs/` (or a documented
-  equivalent) and ignored by git.
-- Temporary debug scripts should not be committed.
-- `.github/` should not be used as a temporary script workspace.
+- Follow script/output placement and lifecycle policy from
+  `00-produck-base.instructions.md`.
+- For monorepo shared configuration and root workspace practices, follow
+  `15-produck-workspace.instructions.md`.
 
 Required ignore baseline:
 
 - Each Node.js repository must include a root `.gitignore`.
-- The root `.gitignore` must start from the GitHub default template for Node.js
-  projects (`Node.gitignore` from github/gitignore).
-- Team-specific ignore conventions should be appended on top of that baseline
-  template, not used as a replacement.
-- The root `.gitignore` should at minimum ignore:
-  - `node_modules/`
-  - `coverage/`
-  - `.env`
-  - `.env.*`
-  - npm logs (for example `npm-debug.log*`)
-  - OS/editor noise (for example `.DS_Store`, `Thumbs.db`, `.vscode/` when
-    workspace settings are not intended to be shared)
+- Baseline template and required minimum entries follow
+  `00-produck-base.instructions.md`.
+- Monorepo centralization policy and workspace-specific ignore guidance follow
+  `15-produck-workspace.instructions.md`.
 
 Team conventions for `.gitignore`:
 
-- Keep organization-wide additions grouped under a dedicated comment block for
-  easy updates.
-- Do not remove baseline entries from the GitHub template unless repository
-  owners document a justified exception.
-- Organization-approved team extension entries are:
-  - `*.ign*` (manually created local directories/files that should not be
-    committed)
-  - `*.gen*` (generated artifacts created by program execution, for example
-    during tests)
-- Append these team entries under a dedicated team block at the end of the root
-  `.gitignore`.
+- Team extension entries and placement rules follow
+  `00-produck-base.instructions.md`.
 
 ## Monorepo mode
 

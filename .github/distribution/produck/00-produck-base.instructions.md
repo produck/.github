@@ -134,27 +134,15 @@ max_line_length = 80
 
 ## Commit and PR conventions
 
-- Commit messages use bracketed tags: `[TAG] summary`.
-- Every non-empty commit message line must start with `[TAG]`.
-- Empty lines are not allowed between commit message lines.
-- Do not use untagged bullet lines in commit message body.
-- If details are needed, use additional tagged lines.
-- Do not keep summary as an untagged standalone line.
-- Recommended local validation:
+- Commit and commit-precheck rules are defined in
+  `.github/distribution/produck/20-produck-commit.instructions.md`.
+- Use commit message validator before commit and amend:
   `npm exec -- agent-toolkit validate-commit-msg --file <message-file>`.
-- Commit precheck policy follows
-  `.github/distribution/produck/20-produck-commit.instructions.md`.
-- Canonical source for commit tag/target whitelists, legacy mapping, and
-  target syntax is
-  `.github/distribution/produck/20-produck-commit.instructions.md`.
-- Do not redefine commit tag or target whitelists in other instruction files.
-- For non-monorepo repositories, use `[TAG] summary` directly (no
-  package/workspace section headers).
-- Bracketed commit summaries should be in English
-- PR title format is repository-defined; no organization-level title format
-  restriction
-- In PR descriptions, summarize what changed, why it changed, how it was
-  validated, and any known risks or follow-up work
+- Do not redefine commit tag, target, or monorepo section rules outside
+  `20-produck-commit.instructions.md`.
+- PR title format is repository-defined (no organization-level restriction).
+- PR descriptions should summarize what changed, why, validation, and known
+  risks or follow-up work.
 
 ## Terminal long-output protocol
 
@@ -326,4 +314,5 @@ If a repository provides more specific instructions, follow the repository
 instructions over this organization baseline.
 
 For Node.js repositories, also follow [Node.js Initialization
-Baseline](10-produck-node.instructions.md).
+Baseline](10-produck-node.instructions.md) and [Test Authoring
+Baseline](12-produck-test.instructions.md).

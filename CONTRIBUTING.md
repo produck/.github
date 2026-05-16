@@ -10,6 +10,7 @@ lightweight and should not be treated as the canonical policy source.
 - [Organization instructions](.instructions.md)
 - [AI Collaboration](.github/distribution/produck/00-produck-base.instructions.md)
 - [Node.js baseline](.github/distribution/produck/10-produck-node.instructions.md)
+- [Test authoring baseline](.github/distribution/produck/12-produck-test.instructions.md)
 - [Commit convention](.github/distribution/produck/20-produck-commit.instructions.md)
 
 ## What this page is for
@@ -21,6 +22,7 @@ lightweight and should not be treated as the canonical policy source.
 ## What this page is not for
 
 - It is not the canonical definition of AI collaboration rules.
-- It is not the canonical definition of Node.js or commit-message policy.
+- It is not the canonical definition of Node.js, test, or commit-message
+  policy.
 - It should not be expanded with duplicated policy text when the authoritative
   document already exists.
