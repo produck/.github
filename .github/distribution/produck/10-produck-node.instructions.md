@@ -115,27 +115,10 @@ Central toolkit command role model:
   interpreter workflows for parsing/filtering over brittle OS-shell pipelines.
 - For human engineers, `run-capture` and `summarize-log` are optional helpers.
 
-Test authoring baseline (required):
+Test authoring baseline:
 
-- MUST use Node.js standard library test runner (`node:test`) with `describe`
-  and `it`.
-- Execution MUST follow the **Single Entrypoint Rule**: always run tests via a
-  dedicated entrypoint (for example `test/index.mjs`) instead of targeting
-  individual files.
-- Command-line execution MUST NOT use the `--test` flag. Use
-  `node <entrypoint>` directly.
-- Each test case must be independently executable.
-- Test cases must not depend on execution order or state from other cases.
-- New test debugging should use local `only` mode for scoped regression.
-- After debugging, remove all `only` markers before final validation.
-
-Recommended local debug flow:
-
-1. Add `{ only: true }` to the target `describe/it` and all ancestor
-   `describe` blocks.
-2. Run `node --test-only test/index.mjs`.
-3. Remove all `only` markers.
-4. Run full regression via repository standard test command.
+- See [Test Authoring Baseline](12-produck-test.instructions.md) for the full
+  test writing, structure, debug, and coverage workflow rules.
 
 Script and output directory policy:
 
