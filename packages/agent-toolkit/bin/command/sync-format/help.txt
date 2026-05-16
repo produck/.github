@@ -4,11 +4,11 @@ Usage:
 
 Behavior:
   - Applies organization-required root format script:
-    - scripts.produck:format = prettier --write .
+    - scripts.produck:format = prettier --write . --ignore-path .prettierignore --ignore-path .gitignore
   - Applies organization-required root Prettier config file:
     - .prettierrc
   - Applies organization-required root Prettier ignore file:
-    - .prettierignore
+    - .prettierignore (prettier-specific patterns; .gitignore is also used via --ignore-path)
 
 Rules:
   - --check validates without writing and exits non-zero on mismatch

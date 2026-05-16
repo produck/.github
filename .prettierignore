@@ -1,10 +1,2 @@
-node_modules
-dist
-coverage
-*.log
-.DS_Store
-build
-out
-*.tsbuildinfo
-.env.local
-.env.*.local
+CHANGELOG.md
+package-lock.json

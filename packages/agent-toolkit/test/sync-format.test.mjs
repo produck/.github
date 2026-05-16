@@ -21,9 +21,9 @@ const TOOLING_BASELINE_PATH = fs.existsSync(TOOLING_BASELINE_REPO_PATH)
   : TOOLING_BASELINE_ASSET_PATH;
 const TOOLING_BASELINE = JSON.parse(fs.readFileSync(TOOLING_BASELINE_PATH, 'utf8'));
 const REQUIRED_PRETTIER_VERSION = TOOLING_BASELINE.tools.prettier.version;
-const REQUIRED_FORMAT_SCRIPT = 'prettier --write .';
-const REQUIRED_PRETTIER_IGNORE =
-  'node_modules\ndist\ncoverage\n*.log\n.DS_Store\nbuild\nout\n*.tsbuildinfo\n.env.local\n.env.*.local\n';
+const REQUIRED_FORMAT_SCRIPT =
+  'prettier --write . --ignore-path .prettierignore --ignore-path .gitignore';
+const REQUIRED_PRETTIER_IGNORE = 'CHANGELOG.md\npackage-lock.json\n';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
     semi: true,

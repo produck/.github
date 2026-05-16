@@ -15,7 +15,7 @@
     "publish": "node ./scripts/lerna-publish.mjs",
     "publish:dry-run": "npm run produck:publish:check && lerna exec --no-private -- npm pack --dry-run",
     "produck:install": "npm -v && npm install",
-    "produck:format": "prettier --write .",
+    "produck:format": "prettier --write . --ignore-path .prettierignore --ignore-path .gitignore",
     "produck:lint": "eslint --fix . --max-warnings=0",
     "produck:coverage": "c8 --config .c8rc.json npm run test --workspaces --if-present",
     "produck:publish": "npm run produck:publish:check && npm run publish --",

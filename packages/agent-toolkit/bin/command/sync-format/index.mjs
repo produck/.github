@@ -16,11 +16,11 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
 const PRETTIER_CONFIG_FILE = '.prettierrc';
 const PRETTIER_IGNORE_FILE = '.prettierignore';
 const REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY = 'prettier';
-const REQUIRED_PRETTIER_IGNORE_CONTENT =
-  'node_modules\ndist\ncoverage\n*.log\n.DS_Store\nbuild\nout\n*.tsbuildinfo\n.env.local\n.env.*.local\n';
+const REQUIRED_PRETTIER_IGNORE_CONTENT = 'CHANGELOG.md\npackage-lock.json\n';
 
 const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
-const REQUIRED_FORMAT_SCRIPT_VALUE = 'prettier --write .';
+const REQUIRED_FORMAT_SCRIPT_VALUE =
+  'prettier --write . --ignore-path .prettierignore --ignore-path .gitignore';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
     semi: true,
