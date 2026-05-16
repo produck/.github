@@ -14,7 +14,10 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
   path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
 ];
 const PRETTIER_CONFIG_FILE = '.prettierrc';
+const PRETTIER_IGNORE_FILE = '.prettierignore';
 const REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY = 'prettier';
+const REQUIRED_PRETTIER_IGNORE_CONTENT =
+  'node_modules\ndist\ncoverage\n*.log\n.DS_Store\nbuild\nout\n*.tsbuildinfo\n.env.local\n.env.*.local\n';
 
 const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
 const REQUIRED_FORMAT_SCRIPT_VALUE = 'prettier --write .';
@@ -122,14 +125,20 @@ export function runSyncFormat(options) {
       : null;
 
   const prettierConfigPath = path.resolve(cwd, PRETTIER_CONFIG_FILE);
+  const prettierIgnorePath = path.resolve(cwd, PRETTIER_IGNORE_FILE);
   const previousPrettierConfig = readFileIfExists(prettierConfigPath);
+  const previousPrettierIgnore = readFileIfExists(prettierIgnorePath);
 
   const matchesRequiredFormat = previousFormat === REQUIRED_FORMAT_SCRIPT_VALUE;
   const matchesRequiredPrettierConfig = previousPrettierConfig === REQUIRED_PRETTIER_CONFIG;
   const matchesRequiredPrettierDep = previousPrettierDep === requiredPrettierVersion;
+  const matchesRequiredPrettierIgnore = previousPrettierIgnore === REQUIRED_PRETTIER_IGNORE_CONTENT;
 
   const requiresUpdate =
-    !matchesRequiredFormat || !matchesRequiredPrettierConfig || !matchesRequiredPrettierDep;
+    !matchesRequiredFormat ||
+    !matchesRequiredPrettierConfig ||
+    !matchesRequiredPrettierDep ||
+    !matchesRequiredPrettierIgnore;
 
   if (mode === 'sync' && requiresUpdate) {
     scripts[REQUIRED_FORMAT_SCRIPT_KEY] = REQUIRED_FORMAT_SCRIPT_VALUE;
@@ -140,6 +149,7 @@ export function runSyncFormat(options) {
 
     fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
     fs.writeFileSync(prettierConfigPath, REQUIRED_PRETTIER_CONFIG, 'utf8');
+    fs.writeFileSync(prettierIgnorePath, REQUIRED_PRETTIER_IGNORE_CONTENT, 'utf8');
   }
 
   const report = {
@@ -152,17 +162,21 @@ export function runSyncFormat(options) {
       formatScriptKey: REQUIRED_FORMAT_SCRIPT_KEY,
       formatScriptValue: REQUIRED_FORMAT_SCRIPT_VALUE,
       prettierConfigPath: path.relative(cwd, prettierConfigPath),
+      prettierIgnorePath: path.relative(cwd, prettierIgnorePath),
       managedDevDependencies: { [REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY]: requiredPrettierVersion },
     },
     status: {
       matchesRequiredFormatBefore: matchesRequiredFormat,
       matchesRequiredPrettierConfigBefore: matchesRequiredPrettierConfig,
       matchesRequiredPrettierDepBefore: matchesRequiredPrettierDep,
+      matchesRequiredPrettierIgnoreBefore: matchesRequiredPrettierIgnore,
       matchesRequiredFormatAfter: requiresUpdate && mode === 'sync' ? true : matchesRequiredFormat,
       matchesRequiredPrettierConfigAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrettierConfig,
       matchesRequiredPrettierDepAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrettierDep,
+      matchesRequiredPrettierIgnoreAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredPrettierIgnore,
       updated: requiresUpdate && mode === 'sync',
     },
   };

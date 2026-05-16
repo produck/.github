@@ -22,6 +22,8 @@ const TOOLING_BASELINE_PATH = fs.existsSync(TOOLING_BASELINE_REPO_PATH)
 const TOOLING_BASELINE = JSON.parse(fs.readFileSync(TOOLING_BASELINE_PATH, 'utf8'));
 const REQUIRED_PRETTIER_VERSION = TOOLING_BASELINE.tools.prettier.version;
 const REQUIRED_FORMAT_SCRIPT = 'prettier --write .';
+const REQUIRED_PRETTIER_IGNORE =
+  'node_modules\ndist\ncoverage\n*.log\n.DS_Store\nbuild\nout\n*.tsbuildinfo\n.env.local\n.env.*.local\n';
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
   {
     semi: true,
@@ -59,6 +61,8 @@ describe('sync-format command', () => {
 
       const prettierConfig = fs.readFileSync(path.join(tempDir, '.prettierrc'), 'utf8');
       assert.equal(prettierConfig, REQUIRED_PRETTIER_CONFIG);
+      const prettierIgnore = fs.readFileSync(path.join(tempDir, '.prettierignore'), 'utf8');
+      assert.equal(prettierIgnore, REQUIRED_PRETTIER_IGNORE);
     });
   });
 
@@ -73,6 +77,7 @@ describe('sync-format command', () => {
       assert.equal(report.ok, false);
       assert.equal(report.status.updated, false);
       assert.equal(fs.existsSync(path.join(tempDir, '.prettierrc')), false);
+      assert.equal(fs.existsSync(path.join(tempDir, '.prettierignore')), false);
     });
   });
 
@@ -107,6 +112,7 @@ describe('sync-format command', () => {
       assert.equal(report.mode, 'dry-run');
       assert.equal(report.status.updated, false);
       assert.equal(fs.existsSync(path.join(tempDir, '.prettierrc')), false);
+      assert.equal(fs.existsSync(path.join(tempDir, '.prettierignore')), false);
     });
   });
 

@@ -7,6 +7,8 @@ Behavior:
     - scripts.produck:format = prettier --write .
   - Applies organization-required root Prettier config file:
     - .prettierrc
+  - Applies organization-required root Prettier ignore file:
+    - .prettierignore
 
 Rules:
   - --check validates without writing and exits non-zero on mismatch
