@@ -24,7 +24,7 @@
     }
   },
   "coverage": {
-    "scriptTemplate": "c8@{c8.version} --reporter=lcov --reporter=html --reporter=text-summary npm test"
+    "scriptTemplate": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
   "enforce": {
     "sharedScriptsDisallow": [

@@ -77,12 +77,6 @@ function readAndValidateToolingBaseline() {
     throw new Error(`Invalid coverage.scriptTemplate in: ${SOURCE_TOOLING_BASELINE_PATH}`);
   }
 
-  if (!coverageScriptTemplate.includes('{c8.version}')) {
-    throw new Error(
-      `coverage.scriptTemplate must include {c8.version} in: ${SOURCE_TOOLING_BASELINE_PATH}`,
-    );
-  }
-
   const eslintRulesPkgPath = path.resolve(PACKAGE_ROOT, '../eslint-rules/package.json');
   if (fs.existsSync(eslintRulesPkgPath)) {
     const eslintRulesPkg = JSON.parse(fs.readFileSync(eslintRulesPkgPath, 'utf8'));
