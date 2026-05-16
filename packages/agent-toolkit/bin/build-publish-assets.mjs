@@ -83,6 +83,19 @@ function readAndValidateToolingBaseline() {
     );
   }
 
+  const eslintRulesPkgPath = path.resolve(PACKAGE_ROOT, '../eslint-rules/package.json');
+  if (fs.existsSync(eslintRulesPkgPath)) {
+    const eslintRulesPkg = JSON.parse(fs.readFileSync(eslintRulesPkgPath, 'utf8'));
+    const version = eslintRulesPkg.version;
+    if (typeof version === 'string' && version.trim()) {
+      if (!baseline.tools) baseline.tools = {};
+      baseline.tools['@produck/eslint-rules'] = {
+        version,
+        policy: 'pinned',
+        allowLatest: false,
+      };
+    }
+  }
   return `${JSON.stringify(baseline, null, 2)}\n`;
 }
 

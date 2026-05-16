@@ -11,7 +11,7 @@ const LERNA_CONFIG_FILE = 'lerna.json';
 
 const REQUIRED_PUBLISH_CHECK_SCRIPT_KEY = 'produck:publish:check';
 const REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE =
-  'npm run produck:format && npm run produck:lint && npm run produck:coverage';
+  'npm run produck:install && npm run produck:format && npm run produck:lint && npm run produck:coverage';
 const USER_PUBLISH_SCRIPT_KEY = 'publish';
 const REQUIRED_PUBLISH_SCRIPT_KEY = 'produck:publish';
 const REQUIRED_PUBLISH_SCRIPT_FALLBACK_VALUE = 'npm run produck:publish:check && lerna publish';
