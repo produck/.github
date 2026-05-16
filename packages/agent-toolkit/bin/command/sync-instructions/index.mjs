@@ -88,7 +88,7 @@ export function runSyncInstructions(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
   const outArg = getSingle(options, '--out', DEFAULT_NAMESPACE_OUT_DIR);
   const sourceArg = getSingle(options, '--source', '');
-  const force = hasFlag(options, '--force');
+  const force = true;
   const dryRun = hasFlag(options, '--dry-run');
   const prune = hasFlag(options, '--prune');
 
@@ -146,15 +146,6 @@ export function runSyncInstructions(options) {
   if (outLooksLikeFile) {
     const entry = entries[0];
     const exists = fs.existsSync(outPath);
-    if (exists && !force) {
-      const current = fs.readFileSync(outPath, 'utf8');
-      if (current !== entry.content) {
-        console.error(`Target already exists: ${outPath}`);
-        console.error('Use --force to overwrite.');
-        process.exit(2);
-      }
-    }
-
     const report = {
       mode: 'single-file',
       cwd,
@@ -162,18 +153,16 @@ export function runSyncInstructions(options) {
       source: sourceResolved,
       outPath,
       exists,
-      overwritten: exists && force,
+      overwritten: exists,
       dryRun,
       prune: false,
       initializedUserSpaceEntry: false,
       userSpaceEntryPath: null,
     };
-
     if (dryRun) {
       process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
       process.exit(0);
     }
-
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, entry.content, 'utf8');
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -202,15 +191,6 @@ export function runSyncInstructions(options) {
   }
 
   const toWrite = planned.filter((item) => !unchanged.includes(item.targetPath));
-  const conflicts = toWrite.filter((item) => fs.existsSync(item.targetPath));
-  if (conflicts.length > 0 && !force) {
-    console.error('Some target files already exist and would change:');
-    for (const item of conflicts) {
-      console.error(`- ${item.targetPath}`);
-    }
-    console.error('Use --force to overwrite.');
-    process.exit(2);
-  }
 
   const pruneDeletes = [];
   if (prune && fs.existsSync(outDir)) {

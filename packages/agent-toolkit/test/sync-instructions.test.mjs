@@ -92,7 +92,7 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
     });
   });
 
-  it('supports single-file dry-run, write, conflict, and --force overwrite', async () => {
+  it('supports single-file dry-run, write, and default overwrite', async () => {
     await withTempDir('agent-toolkit-sync-single-file-', async (tempDir) => {
       const sourceFile = path.join(tempDir, 'source.instructions.md');
       const targetFile = path.join(tempDir, 'out', 'target.instructions.md');
@@ -128,7 +128,7 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
 
       await writeTextFile(sourceFile, 'second-version');
 
-      const conflictResult = runCli([
+      const overwriteResult = runCli([
         'sync-instructions',
         '--cwd',
         tempDir,
@@ -138,21 +138,7 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
         targetFile,
       ]);
 
-      assert.equal(conflictResult.status, 2);
-      assert.match(conflictResult.stderr, /Use --force to overwrite/);
-
-      const forceResult = runCli([
-        'sync-instructions',
-        '--cwd',
-        tempDir,
-        '--source',
-        sourceFile,
-        '--out',
-        targetFile,
-        '--force',
-      ]);
-
-      assert.equal(forceResult.status, 0);
+      assert.equal(overwriteResult.status, 0);
       assert.equal(await fs.readFile(targetFile, 'utf8'), 'second-version\n');
     });
   });
@@ -219,7 +205,7 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
     });
   });
 
-  it('fails on directory-mode conflicts without --force', async () => {
+  it('overwrites in directory mode without --force', async () => {
     await withTempDir('agent-toolkit-sync-dir-conflict-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       const outDir = path.join(tempDir, '.github', 'instructions', 'produck');
@@ -241,7 +227,7 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
 
       await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'v2\n');
 
-      const conflictRun = runCli([
+      const overwriteRun = runCli([
         'sync-instructions',
         '--cwd',
         tempDir,
@@ -251,9 +237,11 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
         outDir,
       ]);
 
-      assert.equal(conflictRun.status, 2);
-      assert.match(conflictRun.stderr, /Some target files already exist and would change/);
-      assert.match(conflictRun.stderr, /Use --force to overwrite/);
+      assert.equal(overwriteRun.status, 0);
+      assert.equal(
+        await fs.readFile(path.join(outDir, '00-sample.instructions.md'), 'utf8'),
+        'v2\n',
+      );
     });
   });
 

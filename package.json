@@ -17,7 +17,7 @@
     "produck:install": "npm -v && npm install",
     "produck:format": "prettier --write .",
     "produck:lint": "eslint --fix . --max-warnings=0",
-    "produck:coverage": "npm run produck:coverage --workspaces --if-present",
+    "produck:coverage": "c8 --config .c8rc.json npm run test --workspaces --if-present",
     "produck:publish": "npm run produck:publish:check && npm run publish --",
     "produck:publish:check": "npm run produck:format && npm run produck:lint && npm run produck:coverage",
     "produck:commit:check": "npm run produck:format && npm run produck:lint"
