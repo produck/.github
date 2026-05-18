@@ -22,6 +22,7 @@ const REQUIRED_COMMIT_MSG_HOOK =
 const REQUIRED_BASELINE_SCRIPT =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
 const REQUIRED_COMMIT_CHECK_SCRIPT = 'npm run produck:format && npm run produck:lint';
+const REQUIRED_PREPARE_SCRIPT = 'husky';
 
 describe('sync-git command', () => {
   it('prints help text for sync-git command', () => {
@@ -63,6 +64,7 @@ describe('sync-git command', () => {
 
       assert.equal(pkg.scripts['produck:baseline'], REQUIRED_BASELINE_SCRIPT);
       assert.equal(pkg.scripts['produck:commit:check'], REQUIRED_COMMIT_CHECK_SCRIPT);
+      assert.equal(pkg.scripts.prepare, REQUIRED_PREPARE_SCRIPT);
       assert.match(pkg.devDependencies.husky, /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies.lerna, /^\d+\.\d+\.\d+$/);
       assert.match(pkg.devDependencies['@produck/agent-toolkit'], /^\d+\.\d+\.\d+$/);
@@ -84,6 +86,7 @@ describe('sync-git command', () => {
       assert.equal(report.status.commitMsgHookExistsAfter, true);
       assert.equal(report.status.matchesRequiredBaselineAfter, true);
       assert.equal(report.status.matchesRequiredCommitCheckAfter, true);
+      assert.equal(report.status.matchesRequiredPrepareAfter, true);
       assert.equal(report.status.matchesRequiredManagedDevDependenciesAfter, true);
       assert.equal(report.status.matchesRequiredGitignoreAfter, true);
       assert.deepEqual(report.status.missingGitignoreEntriesAfter, []);
@@ -107,6 +110,7 @@ describe('sync-git command', () => {
       assert.equal(report.status.mismatchesBefore.length > 0, true);
       assert.equal(report.status.matchesRequiredBaselineAfter, false);
       assert.equal(report.status.matchesRequiredCommitCheckAfter, false);
+      assert.equal(report.status.matchesRequiredPrepareAfter, false);
       assert.equal(report.status.matchesRequiredGitignoreAfter, false);
 
       const content = fs.readFileSync(path.join(tempDir, '.gitattributes'), 'utf8');
@@ -117,6 +121,7 @@ describe('sync-git command', () => {
       const pkg = await readJson(path.join(tempDir, 'package.json'));
       assert.equal(pkg.scripts['produck:baseline'], undefined);
       assert.equal(pkg.scripts['produck:commit:check'], undefined);
+      assert.equal(pkg.scripts.prepare, undefined);
     });
   });
 

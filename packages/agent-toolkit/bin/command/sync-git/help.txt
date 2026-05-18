@@ -6,6 +6,7 @@ Behavior:
   - Applies organization-required root shared scripts:
     - scripts.produck:baseline = npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .
     - scripts.produck:commit:check = npm run produck:format && npm run produck:lint
+    - scripts.prepare = husky
   - Applies organization-required root shared managed devDependencies:
     - devDependencies.husky = <fixed-version-from-baseline>
     - devDependencies.lerna = <fixed-version-from-baseline>

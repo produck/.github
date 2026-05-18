@@ -27,6 +27,8 @@ const REQUIRED_BASELINE_SCRIPT_VALUE =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
 const REQUIRED_COMMIT_CHECK_SCRIPT_KEY = 'produck:commit:check';
 const REQUIRED_COMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run produck:lint';
+const REQUIRED_PREPARE_SCRIPT_KEY = 'prepare';
+const REQUIRED_PREPARE_SCRIPT_VALUE = 'husky';
 
 const GITATTRIBUTES_SOURCE_CANDIDATE_PATHS = [
   path.resolve(REPO_ROOT, '.gitattributes'),
@@ -187,6 +189,10 @@ function buildScriptState(pkg) {
       typeof scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY] === 'string'
         ? scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY]
         : null,
+    previousPrepare:
+      typeof scripts[REQUIRED_PREPARE_SCRIPT_KEY] === 'string'
+        ? scripts[REQUIRED_PREPARE_SCRIPT_KEY]
+        : null,
   };
 }
 
@@ -247,6 +253,7 @@ export function runSyncGit(options) {
   const scriptValidation = validateRequiredExactEntries(scriptState.scripts, {
     [REQUIRED_BASELINE_SCRIPT_KEY]: REQUIRED_BASELINE_SCRIPT_VALUE,
     [REQUIRED_COMMIT_CHECK_SCRIPT_KEY]: REQUIRED_COMMIT_CHECK_SCRIPT_VALUE,
+    [REQUIRED_PREPARE_SCRIPT_KEY]: REQUIRED_PREPARE_SCRIPT_VALUE,
   });
   const dependencyValidation = validateRequiredExactEntries(
     dependencyState.devDependencies,
@@ -257,6 +264,7 @@ export function runSyncGit(options) {
   const matchesRequiredCommitCheck = !(
     REQUIRED_COMMIT_CHECK_SCRIPT_KEY in scriptValidation.mismatches
   );
+  const matchesRequiredPrepare = !(REQUIRED_PREPARE_SCRIPT_KEY in scriptValidation.mismatches);
   const matchesRequiredManagedDevDependencies = dependencyValidation.ok;
 
   const gitAttributesPath = path.resolve(cwd, GITATTRIBUTES_FILE);
@@ -317,6 +325,7 @@ export function runSyncGit(options) {
     mismatches.length > 0 ||
     !matchesRequiredBaseline ||
     !matchesRequiredCommitCheck ||
+    !matchesRequiredPrepare ||
     !matchesRequiredManagedDevDependencies;
 
   if (mode === 'sync' && requiresUpdate) {
@@ -337,6 +346,7 @@ export function runSyncGit(options) {
 
     scriptState.scripts[REQUIRED_BASELINE_SCRIPT_KEY] = REQUIRED_BASELINE_SCRIPT_VALUE;
     scriptState.scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY] = REQUIRED_COMMIT_CHECK_SCRIPT_VALUE;
+    scriptState.scripts[REQUIRED_PREPARE_SCRIPT_KEY] = REQUIRED_PREPARE_SCRIPT_VALUE;
     pkg.scripts = scriptState.scripts;
 
     for (const [name, version] of Object.entries(requiredDevDependencies)) {
@@ -364,6 +374,8 @@ export function runSyncGit(options) {
       baselineScriptValue: REQUIRED_BASELINE_SCRIPT_VALUE,
       commitCheckScriptKey: REQUIRED_COMMIT_CHECK_SCRIPT_KEY,
       commitCheckScriptValue: REQUIRED_COMMIT_CHECK_SCRIPT_VALUE,
+      prepareScriptKey: REQUIRED_PREPARE_SCRIPT_KEY,
+      prepareScriptValue: REQUIRED_PREPARE_SCRIPT_VALUE,
       preCommitHookPath: path.relative(cwd, preCommitHookPath),
       commitMsgHookPath: path.relative(cwd, commitMsgHookPath),
       managedDevDependencies: requiredDevDependencies,
@@ -380,6 +392,7 @@ export function runSyncGit(options) {
       matchesRequiredCommitMsgHookBefore: matchesRequiredCommitMsgHook,
       matchesRequiredBaselineBefore: matchesRequiredBaseline,
       matchesRequiredCommitCheckBefore: matchesRequiredCommitCheck,
+      matchesRequiredPrepareBefore: matchesRequiredPrepare,
       matchesRequiredManagedDevDependenciesBefore: matchesRequiredManagedDevDependencies,
       mismatchesBefore: mismatches,
       fileExistsAfter: requiresUpdate && mode === 'sync' ? true : fileExists,
@@ -400,6 +413,8 @@ export function runSyncGit(options) {
         requiresUpdate && mode === 'sync' ? true : matchesRequiredBaseline,
       matchesRequiredCommitCheckAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredCommitCheck,
+      matchesRequiredPrepareAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredPrepare,
       matchesRequiredManagedDevDependenciesAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredManagedDevDependencies,
       mismatchesAfter: requiresUpdate && mode === 'sync' ? [] : mismatches,
