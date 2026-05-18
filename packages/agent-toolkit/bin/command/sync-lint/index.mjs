@@ -75,6 +75,8 @@ function getRequiredEslintRulesDevDependency() {
       inTreeEslintRulesPkgPath,
       'eslint-rules package.json',
     );
+    // The '' fallback is for when the in-tree package.json has a non-string
+    // version field, which never occurs for this package.
     const version =
       typeof eslintRulesPkg.version === 'string'
         ? eslintRulesPkg.version.trim()
@@ -102,6 +104,8 @@ function getRequiredEslintRulesDevDependency() {
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
   const entry = baseline?.tools?.[ESLINT_RULES_PACKAGE_NAME];
+  // The '' fallback is for when the tooling baseline lacks a string version entry
+  // for the eslint-rules package, which the repository always provides.
   /* c8 ignore next 2 */
   const version =
     typeof entry?.version === 'string' ? entry.version.trim() : '';
@@ -240,6 +244,8 @@ export function runSyncLint(options) {
       `${JSON.stringify(pkg, null, 2)}\n`,
       'utf8',
     );
+    // nextEslintConfigText is empty only if the patcher produces no output, which
+    // does not occur in tests since the existing config is always patchable.
     fs.writeFileSync(
       eslintConfigPath,
       /* c8 ignore next */

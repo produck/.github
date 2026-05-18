@@ -64,6 +64,8 @@ export function runCapture(options) {
     outStream.write(chunk);
   });
 
+  // With shell: true the shell binary is always available, so the 'error' event
+  // (OS-level spawn failure) cannot be triggered in tests.
   /* c8 ignore start */
   child.on('error', (error) => {
     outStream.write(`\n[agent-toolkit] spawn error: ${error.message}\n`);

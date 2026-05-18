@@ -57,6 +57,8 @@ function loadRequiredLernaTemplate() {
     process.exit(2);
   }
 
+  // The {} fallbacks below guard against templates that omit 'command' or
+  // 'command.version'; the canonical lerna template always provides both.
   const normalizedTemplate = {
     ...template,
     command: {

@@ -71,6 +71,8 @@ function getRequiredToolkitDevDependency() {
   if (overrideVersion) {
     return overrideVersion;
   }
+  // The 'npm' (non-.cmd) branch is only reached on non-Windows platforms.
+  // Tests run on Windows only.
   /* c8 ignore next */
   const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   const latestResult = spawnSync(
@@ -82,6 +84,8 @@ function getRequiredToolkitDevDependency() {
   );
 
   const latestVersion = String(latestResult.stdout || '').trim();
+  // The npm registry call succeeds with a version in production but is not made
+  // during tests (no network access).
   /* c8 ignore start */
   if (latestResult.status === 0 && latestVersion) {
     return latestVersion;

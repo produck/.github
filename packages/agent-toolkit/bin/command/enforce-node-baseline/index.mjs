@@ -16,6 +16,8 @@ export function printEnforceNodeBaselineHelp() {
 
 function parseJsonOrNull(text) {
   const trimmed = text.trim();
+  // JSON.parse throws if subcommand stdout is unexpectedly non-JSON (e.g. process
+  // crash). Tests always receive structured JSON reports from subcommands.
   /* c8 ignore start */
   try {
     return JSON.parse(trimmed);
@@ -31,6 +33,8 @@ function runToolkitSubcommand(cwd, args) {
     encoding: 'utf8',
   });
 
+  // spawnSync returns null stdout/stderr and a non-numeric status when the child
+  // is killed by a signal. Normal test runs never trigger this condition.
   /* c8 ignore start */
   const stdout = String(result.stdout || '');
   const stderr = String(result.stderr || '');
@@ -56,6 +60,8 @@ function buildStepReport(name, stepResult) {
     status: stepResult.status,
     ok: stepResult.ok,
     report: stepResult.report,
+    // The false branch (raw stdout) is taken only when the subcommand produces no
+    // parseable JSON report. Tests always receive structured JSON output.
     /* c8 ignore next */
     stdout: hasParsedReport ? '' : stepResult.stdout,
     stderr: stepResult.stderr,
