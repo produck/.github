@@ -16,11 +16,6 @@ export function printEnforceNodeBaselineHelp() {
 
 function parseJsonOrNull(text) {
   const trimmed = text.trim();
-  /* c8 ignore next */
-  if (!trimmed) {
-    return null;
-  }
-
   /* c8 ignore start */
   try {
     return JSON.parse(trimmed);

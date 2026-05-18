@@ -189,25 +189,22 @@ describe('summarize-log command', () => {
   });
 
   it('applies --last filter without --match', async () => {
-    await withTempDir(
-      'agent-toolkit-summarize-last-only-',
-      async (tempDir) => {
-        const logFile = path.join(tempDir, 'run.log');
-        await writeTextFile(logFile, ['first', 'second', 'third'].join('\n'));
+    await withTempDir('agent-toolkit-summarize-last-only-', async (tempDir) => {
+      const logFile = path.join(tempDir, 'run.log');
+      await writeTextFile(logFile, ['first', 'second', 'third'].join('\n'));
 
-        const result = runCli([
-          'summarize-log',
-          '--file',
-          logFile,
-          '--last',
-          '1',
-        ]);
+      const result = runCli([
+        'summarize-log',
+        '--file',
+        logFile,
+        '--last',
+        '1',
+      ]);
 
-        assert.equal(result.status, 0);
-        assert.match(result.stdout, /# selectedLines: 1/);
-        assert.match(result.stdout, /third/);
-      },
-    );
+      assert.equal(result.status, 0);
+      assert.match(result.stdout, /# selectedLines: 1/);
+      assert.match(result.stdout, /third/);
+    });
   });
 
   it('truncates output when lines exceed --max', async () => {
@@ -215,13 +212,7 @@ describe('summarize-log command', () => {
       const logFile = path.join(tempDir, 'run.log');
       await writeTextFile(logFile, ['a', 'b', 'c'].join('\n'));
 
-      const result = runCli([
-        'summarize-log',
-        '--file',
-        logFile,
-        '--max',
-        '2',
-      ]);
+      const result = runCli(['summarize-log', '--file', logFile, '--max', '2']);
 
       assert.equal(result.status, 0);
       assert.match(result.stdout, /# selectedLines: 2/);
@@ -301,6 +292,31 @@ describe('run-capture command', () => {
 
       const meta = await readJson(metaFile);
       assert.equal(meta.exitCode, 3);
+    });
+  });
+
+  it('captures stderr output and tracks stderrBytes in meta', async () => {
+    await withTempDir('agent-toolkit-capture-stderr-', async (tempDir) => {
+      const outFile = path.join(tempDir, 'capture.log');
+      const metaFile = path.join(tempDir, 'capture.meta.json');
+      const result = runCli([
+        'run-capture',
+        '--cwd',
+        tempDir,
+        '--cmd',
+        'node -e "process.stderr.write(\'err\')"',
+        '--out',
+        outFile,
+        '--meta',
+        metaFile,
+      ]);
+
+      assert.equal(result.status, 0);
+      const meta = await readJson(metaFile);
+      assert.ok(meta.stderrBytes > 0);
+
+      const output = fs.readFileSync(outFile, 'utf8');
+      assert.match(output, /err/);
     });
   });
 });

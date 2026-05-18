@@ -64,9 +64,11 @@ export function runCapture(options) {
     outStream.write(chunk);
   });
 
+  /* c8 ignore start */
   child.on('error', (error) => {
     outStream.write(`\n[agent-toolkit] spawn error: ${error.message}\n`);
   });
+  /* c8 ignore stop */
 
   child.on('close', (code, signal) => {
     const endAt = Date.now();

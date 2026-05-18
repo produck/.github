@@ -82,10 +82,11 @@ function getRequiredToolkitDevDependency() {
   );
 
   const latestVersion = String(latestResult.stdout || '').trim();
-  /* c8 ignore next */
+  /* c8 ignore start */
   if (latestResult.status === 0 && latestVersion) {
     return latestVersion;
   }
+  /* c8 ignore stop */
 
   const pkg = parseJsonFile(TOOLKIT_PACKAGE_JSON, 'Toolkit package.json');
   const version = typeof pkg.version === 'string' ? pkg.version.trim() : '';

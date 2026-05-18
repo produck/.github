@@ -27,10 +27,9 @@ const ALLOWED_TARGETS = [
 const SECTION_HEADER_RE = /^(?:\*|(?:@[\w.-]+\/)?[\w.-]+):$/;
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
-const ROOT_PACKAGE_FILE = path.resolve(
-  COMMAND_DIR,
-  '../../../../../package.json',
-);
+const ROOT_PACKAGE_FILE =
+  process.env._AGENT_TOOLKIT_TEST_ROOT_PKG ||
+  path.resolve(COMMAND_DIR, '../../../../../package.json');
 const WORKSPACE_SCOPE = 'workspace';
 const WILDCARD_SCOPE = '*';
 const DEFAULT_COMMENT_CHAR = '#';
@@ -87,36 +86,14 @@ function isMonorepoRoot() {
     const rootPackage = JSON.parse(fs.readFileSync(ROOT_PACKAGE_FILE, 'utf8'));
     return (
       Array.isArray(rootPackage.workspaces) && rootPackage.workspaces.length > 0
-    ); /* c8 ignore next */
+    );
   } catch {
     return false;
   }
 }
 
 function getMonorepoAllowedSectionScopes() {
-  /* c8 ignore next */
-  if (!fs.existsSync(ROOT_PACKAGE_FILE)) {
-    return null;
-  }
-
-  let rootPackage;
-  /* c8 ignore start */
-  try {
-    rootPackage = JSON.parse(fs.readFileSync(ROOT_PACKAGE_FILE, 'utf8'));
-  } catch {
-    return null;
-  }
-  /* c8 ignore stop */
-
-  /* c8 ignore start */
-  if (
-    !Array.isArray(rootPackage.workspaces) ||
-    rootPackage.workspaces.length === 0
-  ) {
-    return null;
-  }
-  /* c8 ignore stop */
-
+  const rootPackage = JSON.parse(fs.readFileSync(ROOT_PACKAGE_FILE, 'utf8'));
   const rootDir = path.dirname(ROOT_PACKAGE_FILE);
   const allowedScopes = new Set([WORKSPACE_SCOPE, WILDCARD_SCOPE]);
 
@@ -127,7 +104,6 @@ function getMonorepoAllowedSectionScopes() {
       'package.json',
     );
 
-    /* c8 ignore next */
     if (!fs.existsSync(workspacePackageJsonPath)) {
       continue;
     }
@@ -141,7 +117,7 @@ function getMonorepoAllowedSectionScopes() {
         workspacePackage.name.trim() !== ''
       ) {
         allowedScopes.add(workspacePackage.name.trim());
-      } /* c8 ignore next */
+      }
     } catch {
       continue;
     }

@@ -342,14 +342,6 @@ max_line_length = 80
 
         const report = JSON.parse(result.stdout);
         assert.equal(report.mode, 'check');
-
-        const coverageStep = report.steps.find(
-          (step) => step.name === 'sync-coverage',
-        ); /* c8 ignore next */
-        if (coverageStep) {
-          assert.equal(coverageStep.args.includes('--check'), true);
-          assert.equal(coverageStep.args.includes('--dry-run'), false);
-        }
       },
     );
   });

@@ -364,4 +364,25 @@ describe('build-publish-assets script', () => {
     assert.equal(result.status, 0, result.stderr);
     assert.equal(fs.existsSync(stalePath), true);
   });
+
+  it('deletes stale managed output file during build', () => {
+    const stalePath = path.resolve(
+      PACKAGE_ROOT,
+      'publish-assets/instructions/produck/zz-test-stale.instructions.md',
+    );
+    fs.mkdirSync(path.dirname(stalePath), { recursive: true });
+    fs.writeFileSync(
+      stalePath,
+      '<!-- managed-by: @produck/agent-toolkit -->\nstale content\n',
+      'utf8',
+    );
+
+    const result = spawnSync(process.execPath, [BUILD_SCRIPT], {
+      cwd: PACKAGE_ROOT,
+      encoding: 'utf8',
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(fs.existsSync(stalePath), false);
+  });
 });

@@ -180,7 +180,6 @@ function cleanStaleManagedFiles(expectedNames) {
     }
     const filePath = path.resolve(OUTPUT_DIR, name);
     const content = fs.readFileSync(filePath, 'utf8');
-    /* c8 ignore next */
     if (content.includes(MANAGED_MARKER)) {
       fs.unlinkSync(filePath);
     }

@@ -421,4 +421,82 @@ describe('validate-commit-msg', () => {
       assert.match(result.stdout, /validation passed/i);
     });
   });
+
+  it('falls back to standalone mode when root package.json has invalid JSON', async () => {
+    const tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'agent-toolkit-root-pkg-'),
+    );
+    try {
+      const rootPkgFile = path.join(tempDir, 'package.json');
+      await fs.writeFile(rootPkgFile, '{invalid-json', 'utf8');
+
+      await withMessage('[FIX] fix something\n', async (messageFile) => {
+        const result = runValidateArgs(['--file', messageFile], {
+          env: { _AGENT_TOOLKIT_TEST_ROOT_PKG: rootPkgFile },
+        });
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      });
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('skips workspace without package.json when building allowed scopes', async () => {
+    const tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'agent-toolkit-root-pkg-'),
+    );
+    try {
+      const rootPkgFile = path.join(tempDir, 'package.json');
+      await fs.writeFile(
+        rootPkgFile,
+        JSON.stringify({ name: 'r', workspaces: ['packages/a'] }),
+        'utf8',
+      );
+      await fs.mkdir(path.join(tempDir, 'packages', 'a'), { recursive: true });
+
+      await withMessage('workspace:\n[FIX] fix\n', async (messageFile) => {
+        const result = runValidateArgs(['--file', messageFile], {
+          env: { _AGENT_TOOLKIT_TEST_ROOT_PKG: rootPkgFile },
+        });
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      });
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('skips workspace with invalid package.json when building allowed scopes', async () => {
+    const tempDir = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'agent-toolkit-root-pkg-'),
+    );
+    try {
+      const rootPkgFile = path.join(tempDir, 'package.json');
+      await fs.writeFile(
+        rootPkgFile,
+        JSON.stringify({ name: 'r', workspaces: ['packages/a'] }),
+        'utf8',
+      );
+      await fs.mkdir(path.join(tempDir, 'packages', 'a'), { recursive: true });
+      await fs.writeFile(
+        path.join(tempDir, 'packages', 'a', 'package.json'),
+        '{invalid-json',
+        'utf8',
+      );
+
+      await withMessage('workspace:\n[FIX] fix\n', async (messageFile) => {
+        const result = runValidateArgs(['--file', messageFile], {
+          env: { _AGENT_TOOLKIT_TEST_ROOT_PKG: rootPkgFile },
+        });
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      });
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
 });
