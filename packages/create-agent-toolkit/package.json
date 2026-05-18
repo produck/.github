@@ -1,6 +1,6 @@
 {
   "name": "@produck/create-agent-toolkit",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Bootstrap downstream repositories with the produck organization baseline",
   "type": "module",
   "repository": {
@@ -19,7 +19,7 @@
     "bin"
   ],
   "dependencies": {
-    "@produck/agent-toolkit": "^0.7.0"
+    "@produck/agent-toolkit": "^0.8.0"
   },
   "publishConfig": {
     "access": "public"
