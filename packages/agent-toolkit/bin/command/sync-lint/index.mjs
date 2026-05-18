@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { getSingle, hasFlag } from '../shared/args.mjs';
@@ -9,7 +8,12 @@ import { printTextResource } from '../shared/text-resource.mjs';
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
-const TOOLKIT_PACKAGE_JSON = path.resolve(PACKAGE_ROOT, 'package.json');
+const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
+const TOOLING_BASELINE_CANDIDATE_PATHS = [
+  path.resolve(REPO_ROOT, '.github/distribution/produck/tooling-version-baseline.json'),
+  path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
+];
+const ESLINT_RULES_PACKAGE_NAME = '@produck/eslint-rules';
 const ESLINT_CONFIG_FILE = 'eslint.config.mjs';
 
 const REQUIRED_LINT_SCRIPT_KEY = 'produck:lint';
@@ -51,21 +55,41 @@ function readFileIfExists(filePath) {
 }
 
 function getRequiredEslintRulesDevDependency() {
-  const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const latestResult = spawnSync(npmCommand, ['view', '@produck/eslint-rules', 'version'], {
-    encoding: 'utf8',
-  });
-
-  const latestVersion = String(latestResult.stdout || '').trim();
-  if (latestResult.status === 0 && latestVersion) {
-    return latestVersion;
+  // Prefer the in-tree source of truth: when sync-lint runs from inside the
+  // monorepo, the eslint-rules package.json is the authoritative version. When
+  // sync-lint runs as an installed dependency, fall back to the publish-assets
+  // tooling baseline (which build-publish-assets injects at prepack time from
+  // the same package.json).
+  const inTreeEslintRulesPkgPath = path.resolve(REPO_ROOT, 'packages/eslint-rules/package.json');
+  if (fs.existsSync(inTreeEslintRulesPkgPath)) {
+    const eslintRulesPkg = parseJsonFile(inTreeEslintRulesPkgPath, 'eslint-rules package.json');
+    const version = typeof eslintRulesPkg.version === 'string' ? eslintRulesPkg.version.trim() : '';
+    if (version) {
+      return version;
+    }
   }
 
-  const pkg = parseJsonFile(TOOLKIT_PACKAGE_JSON, 'Toolkit package.json');
-  const version = typeof pkg.version === 'string' ? pkg.version.trim() : '';
+  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find((candidatePath) => {
+    return fs.existsSync(candidatePath);
+  });
+
+  if (!toolingBaselinePath) {
+    console.error('Cannot resolve @produck/eslint-rules version. Looked at:');
+    console.error(`- ${inTreeEslintRulesPkgPath}`);
+    for (const candidatePath of TOOLING_BASELINE_CANDIDATE_PATHS) {
+      console.error(`- ${candidatePath}`);
+    }
+    process.exit(2);
+  }
+
+  const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
+  const entry = baseline?.tools?.[ESLINT_RULES_PACKAGE_NAME];
+  const version = typeof entry?.version === 'string' ? entry.version.trim() : '';
 
   if (!version) {
-    console.error(`Toolkit package version is missing: ${TOOLKIT_PACKAGE_JSON}`);
+    console.error(
+      `Tooling baseline tools["${ESLINT_RULES_PACKAGE_NAME}"].version must be a non-empty string: ${toolingBaselinePath}`,
+    );
     process.exit(2);
   }
 

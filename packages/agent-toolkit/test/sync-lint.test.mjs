@@ -207,8 +207,8 @@ describe('sync-lint command', () => {
     });
   });
 
-  it('falls back to toolkit package version when npm lookup is unavailable', async () => {
-    await withTempDir('agent-toolkit-sync-lint-fallback-version-', async (tempDir) => {
+  it('resolves @produck/eslint-rules version without consulting the npm registry', async () => {
+    await withTempDir('agent-toolkit-sync-lint-offline-version-', async (tempDir) => {
       await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
 
       const result = runCli(['sync-lint', '--cwd', tempDir], {
