@@ -4,10 +4,20 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 
-import { PACKAGE_ROOT, runCli, writeTextFile, withTempDir } from './helpers.mjs';
+import {
+  PACKAGE_ROOT,
+  runCli,
+  writeTextFile,
+  withTempDir,
+} from './helpers.mjs';
 
 const MANAGED_MARKER = '<!-- managed-by: @produck/agent-toolkit -->';
-const BUILTIN_NAMESPACE_DIR = path.join(PACKAGE_ROOT, 'publish-assets', 'instructions', 'produck');
+const BUILTIN_NAMESPACE_DIR = path.join(
+  PACKAGE_ROOT,
+  'publish-assets',
+  'instructions',
+  'produck',
+);
 const USER_SPACE_BOOTSTRAP_TEMPLATE = path.join(
   PACKAGE_ROOT,
   'bin',
@@ -57,12 +67,24 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
     await withTempDir('agent-toolkit-sync-empty-source-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
       await fs.mkdir(sourceDir, { recursive: true });
-      await writeTextFile(path.join(sourceDir, 'README.txt'), 'not an instructions file\n');
+      await writeTextFile(
+        path.join(sourceDir, 'README.txt'),
+        'not an instructions file\n',
+      );
 
-      const result = runCli(['sync-instructions', '--cwd', tempDir, '--source', sourceDir]);
+      const result = runCli([
+        'sync-instructions',
+        '--cwd',
+        tempDir,
+        '--source',
+        sourceDir,
+      ]);
 
       assert.equal(result.status, 2);
-      assert.match(result.stderr, /No \.instructions\.md files in source directory/);
+      assert.match(
+        result.stderr,
+        /No \.instructions\.md files in source directory/,
+      );
     });
   });
 
@@ -151,7 +173,10 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       await fs.mkdir(sourceDir, { recursive: true });
       await fs.mkdir(outDir, { recursive: true });
 
-      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample-content');
+      await writeTextFile(
+        path.join(sourceDir, '00-sample.instructions.md'),
+        'sample-content',
+      );
 
       const staleManaged = path.join(outDir, '90-stale.instructions.md');
       await writeTextFile(staleManaged, `${MANAGED_MARKER}\nstale\n`);
@@ -199,9 +224,16 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       const unmanagedStat = await fs.stat(staleUnmanaged);
       assert.equal(unmanagedStat.isFile(), true);
 
-      const bootstrapFile = path.join(tempDir, '.github', 'copilot-instructions.md');
+      const bootstrapFile = path.join(
+        tempDir,
+        '.github',
+        'copilot-instructions.md',
+      );
       const bootstrapText = await fs.readFile(bootstrapFile, 'utf8');
-      assert.match(bootstrapText, /\.github\/instructions\/produck\/\*\.instructions\.md/);
+      assert.match(
+        bootstrapText,
+        /\.github\/instructions\/produck\/\*\.instructions\.md/,
+      );
     });
   });
 
@@ -211,7 +243,10 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       const outDir = path.join(tempDir, '.github', 'instructions', 'produck');
 
       await fs.mkdir(sourceDir, { recursive: true });
-      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'v1\n');
+      await writeTextFile(
+        path.join(sourceDir, '00-sample.instructions.md'),
+        'v1\n',
+      );
 
       const firstRun = runCli([
         'sync-instructions',
@@ -225,7 +260,10 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
 
       assert.equal(firstRun.status, 0);
 
-      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'v2\n');
+      await writeTextFile(
+        path.join(sourceDir, '00-sample.instructions.md'),
+        'v2\n',
+      );
 
       const overwriteRun = runCli([
         'sync-instructions',
@@ -239,7 +277,10 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
 
       assert.equal(overwriteRun.status, 0);
       assert.equal(
-        await fs.readFile(path.join(outDir, '00-sample.instructions.md'), 'utf8'),
+        await fs.readFile(
+          path.join(outDir, '00-sample.instructions.md'),
+          'utf8',
+        ),
         'v2\n',
       );
     });
@@ -247,7 +288,12 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
 
   it('supports built-in source assets in default mode', async () => {
     await withTempDir('agent-toolkit-sync-default-source-', async (tempDir) => {
-      const dryRunResult = runCli(['sync-instructions', '--cwd', tempDir, '--dry-run']);
+      const dryRunResult = runCli([
+        'sync-instructions',
+        '--cwd',
+        tempDir,
+        '--dry-run',
+      ]);
 
       assert.equal(dryRunResult.status, 0);
       assert.match(dryRunResult.stdout, /"sourceType": "dir"/);
@@ -261,7 +307,11 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       const instructions = await listInstructionFiles(outDir);
       assert.equal(instructions.length > 0, true);
 
-      const bootstrapFile = path.join(tempDir, '.github', 'copilot-instructions.md');
+      const bootstrapFile = path.join(
+        tempDir,
+        '.github',
+        'copilot-instructions.md',
+      );
       const bootstrapExists = await fs.stat(bootstrapFile);
       assert.equal(bootstrapExists.isFile(), true);
     });
@@ -273,7 +323,10 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       const outDir = path.join(tempDir, '.github', 'instructions', 'produck');
 
       await fs.mkdir(sourceDir, { recursive: true });
-      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'same-content\n');
+      await writeTextFile(
+        path.join(sourceDir, '00-sample.instructions.md'),
+        'same-content\n',
+      );
 
       const firstRun = runCli([
         'sync-instructions',
@@ -304,25 +357,39 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
   });
 
   it('normalizes built-in instruction files when source file lacks trailing newline', async () => {
-    const targetFile = path.join(BUILTIN_NAMESPACE_DIR, '00-produck-base.instructions.md');
+    const targetFile = path.join(
+      BUILTIN_NAMESPACE_DIR,
+      '00-produck-base.instructions.md',
+    );
     const originalText = await fs.readFile(targetFile, 'utf8');
 
     try {
       await fs.writeFile(targetFile, originalText.replace(/\n$/, ''), 'utf8');
 
-      await withTempDir('agent-toolkit-sync-builtin-normalize-', async (tempDir) => {
-        const result = runCli(['sync-instructions', '--cwd', tempDir, '--dry-run']);
+      await withTempDir(
+        'agent-toolkit-sync-builtin-normalize-',
+        async (tempDir) => {
+          const result = runCli([
+            'sync-instructions',
+            '--cwd',
+            tempDir,
+            '--dry-run',
+          ]);
 
-        assert.equal(result.status, 0);
-        assert.match(result.stdout, /"mode": "directory"/);
-      });
+          assert.equal(result.status, 0);
+          assert.match(result.stdout, /"mode": "directory"/);
+        },
+      );
     } finally {
       await fs.writeFile(targetFile, originalText, 'utf8');
     }
   });
 
   it('normalizes user-space bootstrap template when template lacks trailing newline', async () => {
-    const originalTemplate = await fs.readFile(USER_SPACE_BOOTSTRAP_TEMPLATE, 'utf8');
+    const originalTemplate = await fs.readFile(
+      USER_SPACE_BOOTSTRAP_TEMPLATE,
+      'utf8',
+    );
 
     try {
       await fs.writeFile(
@@ -331,29 +398,43 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
         'utf8',
       );
 
-      await withTempDir('agent-toolkit-sync-bootstrap-normalize-', async (tempDir) => {
-        const sourceDir = path.join(tempDir, 'source');
-        await fs.mkdir(sourceDir, { recursive: true });
-        await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample\n');
+      await withTempDir(
+        'agent-toolkit-sync-bootstrap-normalize-',
+        async (tempDir) => {
+          const sourceDir = path.join(tempDir, 'source');
+          await fs.mkdir(sourceDir, { recursive: true });
+          await writeTextFile(
+            path.join(sourceDir, '00-sample.instructions.md'),
+            'sample\n',
+          );
 
-        const result = runCli([
-          'sync-instructions',
-          '--cwd',
-          tempDir,
-          '--source',
-          sourceDir,
-          '--out',
-          path.join(tempDir, '.github', 'instructions', 'produck'),
-        ]);
+          const result = runCli([
+            'sync-instructions',
+            '--cwd',
+            tempDir,
+            '--source',
+            sourceDir,
+            '--out',
+            path.join(tempDir, '.github', 'instructions', 'produck'),
+          ]);
 
-        assert.equal(result.status, 0);
+          assert.equal(result.status, 0);
 
-        const bootstrapFile = path.join(tempDir, '.github', 'copilot-instructions.md');
-        const bootstrapText = await fs.readFile(bootstrapFile, 'utf8');
-        assert.equal(bootstrapText.endsWith('\n'), true);
-      });
+          const bootstrapFile = path.join(
+            tempDir,
+            '.github',
+            'copilot-instructions.md',
+          );
+          const bootstrapText = await fs.readFile(bootstrapFile, 'utf8');
+          assert.equal(bootstrapText.endsWith('\n'), true);
+        },
+      );
     } finally {
-      await fs.writeFile(USER_SPACE_BOOTSTRAP_TEMPLATE, originalTemplate, 'utf8');
+      await fs.writeFile(
+        USER_SPACE_BOOTSTRAP_TEMPLATE,
+        originalTemplate,
+        'utf8',
+      );
     }
   });
 
@@ -364,12 +445,15 @@ describe('sync-instructions command', { concurrency: 1 }, () => {
       await fs.rm(missingDirPath, { recursive: true, force: true });
       await fs.rename(BUILTIN_NAMESPACE_DIR, missingDirPath);
 
-      await withTempDir('agent-toolkit-sync-missing-builtin-', async (tempDir) => {
-        const result = runCli(['sync-instructions', '--cwd', tempDir]);
+      await withTempDir(
+        'agent-toolkit-sync-missing-builtin-',
+        async (tempDir) => {
+          const result = runCli(['sync-instructions', '--cwd', tempDir]);
 
-        assert.equal(result.status, 2);
-        assert.match(result.stderr, /No built-in instruction assets found/);
-      });
+          assert.equal(result.status, 2);
+          assert.match(result.stderr, /No built-in instruction assets found/);
+        },
+      );
     } finally {
       const backupExists = await fs
         .stat(missingDirPath)

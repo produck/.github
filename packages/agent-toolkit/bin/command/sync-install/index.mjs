@@ -44,7 +44,9 @@ export function runSyncInstall(options) {
 
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const scripts =
-    pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
+    pkg.scripts &&
+    typeof pkg.scripts === 'object' &&
+    !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
 
@@ -57,7 +59,8 @@ export function runSyncInstall(options) {
       ? scripts[LEGACY_INSTALL_SCRIPT_KEY]
       : null;
 
-  const matchesRequiredInstall = previousInstall === REQUIRED_INSTALL_SCRIPT_VALUE;
+  const matchesRequiredInstall =
+    previousInstall === REQUIRED_INSTALL_SCRIPT_VALUE;
   const legacyInstallScriptPresent = previousLegacyInstall !== null;
   const requiresUpdate = !matchesRequiredInstall || legacyInstallScriptPresent;
 
@@ -65,7 +68,11 @@ export function runSyncInstall(options) {
     delete scripts[LEGACY_INSTALL_SCRIPT_KEY];
     scripts[REQUIRED_INSTALL_SCRIPT_KEY] = REQUIRED_INSTALL_SCRIPT_VALUE;
     pkg.scripts = scripts;
-    fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(
+      rootPackageJsonPath,
+      `${JSON.stringify(pkg, null, 2)}\n`,
+      'utf8',
+    );
   }
 
   const report = {

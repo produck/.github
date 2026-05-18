@@ -8,7 +8,10 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 const TOOLKIT_PACKAGE_NAME = '@produck/agent-toolkit';
 const DISTRIBUTION_SOURCE_PATH = '.github/distribution/produck';
-const LERNA_CLI_PATH = path.resolve(REPO_ROOT, 'node_modules/lerna/dist/cli.js');
+const LERNA_CLI_PATH = path.resolve(
+  REPO_ROOT,
+  'node_modules/lerna/dist/cli.js',
+);
 
 function runGit(args, options = {}) {
   const result = spawnSync('git', args, {
@@ -22,14 +25,21 @@ function runGit(args, options = {}) {
 
   if (result.status !== 0 && !options.allowFailure) {
     const stderr = result.stderr?.trim();
-    throw new Error(`git ${args.join(' ')} failed${stderr ? `: ${stderr}` : ''}`);
+    throw new Error(
+      `git ${args.join(' ')} failed${stderr ? `: ${stderr}` : ''}`,
+    );
   }
 
   return result;
 }
 
 function findLatestToolkitTag() {
-  const result = runGit(['tag', '--list', `${TOOLKIT_PACKAGE_NAME}@*`, '--sort=-v:refname']);
+  const result = runGit([
+    'tag',
+    '--list',
+    `${TOOLKIT_PACKAGE_NAME}@*`,
+    '--sort=-v:refname',
+  ]);
 
   return result.stdout
     .split(/\r?\n/)
@@ -57,7 +67,9 @@ function getDistributionSourceChangesSince(tagName) {
 }
 
 function hasForcePublishArg(args) {
-  return args.some((arg) => arg === '--force-publish' || arg.startsWith('--force-publish='));
+  return args.some(
+    (arg) => arg === '--force-publish' || arg.startsWith('--force-publish='),
+  );
 }
 
 function resolveForcePublish() {

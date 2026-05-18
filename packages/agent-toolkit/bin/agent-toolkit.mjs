@@ -4,23 +4,44 @@ import {
   printEnforceNodeBaselineHelp,
   runEnforceNodeBaseline,
 } from './command/enforce-node-baseline/index.mjs';
-import { printPreflightHelp, runPreflight } from './command/preflight/index.mjs';
-import { printRunCaptureHelp, runCapture } from './command/run-capture/index.mjs';
-import { printSummarizeHelp, runSummarize } from './command/summarize-log/index.mjs';
-import { printSyncCoverageHelp, runSyncCoverage } from './command/sync-coverage/index.mjs';
-import { printSyncInstallHelp, runSyncInstall } from './command/sync-install/index.mjs';
+import {
+  printPreflightHelp,
+  runPreflight,
+} from './command/preflight/index.mjs';
+import {
+  printRunCaptureHelp,
+  runCapture,
+} from './command/run-capture/index.mjs';
+import {
+  printSummarizeHelp,
+  runSummarize,
+} from './command/summarize-log/index.mjs';
+import {
+  printSyncCoverageHelp,
+  runSyncCoverage,
+} from './command/sync-coverage/index.mjs';
+import {
+  printSyncInstallHelp,
+  runSyncInstall,
+} from './command/sync-install/index.mjs';
 import {
   printSyncInstructionsHelp,
   runSyncInstructions,
 } from './command/sync-instructions/index.mjs';
-import { printSyncFormatHelp, runSyncFormat } from './command/sync-format/index.mjs';
+import {
+  printSyncFormatHelp,
+  runSyncFormat,
+} from './command/sync-format/index.mjs';
 import {
   printSyncEditorconfigHelp,
   runSyncEditorconfig,
 } from './command/sync-editorconfig/index.mjs';
 import { printSyncLintHelp, runSyncLint } from './command/sync-lint/index.mjs';
 import { printSyncGitHelp, runSyncGit } from './command/sync-git/index.mjs';
-import { printSyncPublishHelp, runSyncPublish } from './command/sync-publish/index.mjs';
+import {
+  printSyncPublishHelp,
+  runSyncPublish,
+} from './command/sync-publish/index.mjs';
 import { hasFlag, parseCommonArgs } from './command/shared/args.mjs';
 import {
   printValidateCommitMsgHelp,
@@ -98,7 +119,11 @@ function main() {
   const command = parsed.positional[0] || '';
   const options = parsed.options;
 
-  if (command === '--help' || command === '-h' || (!command && hasFlag(options, '--help'))) {
+  if (
+    command === '--help' ||
+    command === '-h' ||
+    (!command && hasFlag(options, '--help'))
+  ) {
     printMainHelp();
     process.exit(0);
   }

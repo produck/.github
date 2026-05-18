@@ -9,7 +9,12 @@ import { validateWorkspaceShape } from '../shared/workspace-validation.mjs';
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const REQUIRED_WORKSPACE_FIELDS = ['private', 'workspaces', 'scripts'];
-const REQUIRED_WORKSPACE_SCRIPTS = ['produck:install', 'test', 'produck:coverage', 'produck:lint'];
+const REQUIRED_WORKSPACE_SCRIPTS = [
+  'produck:install',
+  'test',
+  'produck:coverage',
+  'produck:lint',
+];
 
 export function printPreflightHelp() {
   printTextResource(HELP_FILE);
@@ -43,7 +48,11 @@ function validateWorkspacePackageJson(cwd, checkPath) {
     return check;
   }
 
-  const shape = validateWorkspaceShape(json, REQUIRED_WORKSPACE_FIELDS, REQUIRED_WORKSPACE_SCRIPTS);
+  const shape = validateWorkspaceShape(
+    json,
+    REQUIRED_WORKSPACE_FIELDS,
+    REQUIRED_WORKSPACE_SCRIPTS,
+  );
   check.missingFields = shape.missingFields;
   check.scriptTypeValid = shape.scriptTypeValid;
   check.missingScripts = shape.missingScripts;
@@ -57,7 +66,11 @@ export function runPreflight(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
   const requireTargets = options['--require'] || [];
   const ensureDirs = options['--ensure-dir'] || [];
-  const checkWorkspacePackageJson = getSingle(options, '--check-workspace-package-json', '');
+  const checkWorkspacePackageJson = getSingle(
+    options,
+    '--check-workspace-package-json',
+    '',
+  );
   const dryRun = hasFlag(options, '--dry-run');
   const jsonFile = getSingle(options, '--json', '');
 
@@ -99,7 +112,10 @@ export function runPreflight(options) {
   }
 
   if (checkWorkspacePackageJson) {
-    const workspaceCheck = validateWorkspacePackageJson(cwd, checkWorkspacePackageJson);
+    const workspaceCheck = validateWorkspacePackageJson(
+      cwd,
+      checkWorkspacePackageJson,
+    );
     report.workspacePackageJson = workspaceCheck;
     if (!workspaceCheck.ok) {
       report.ok = false;

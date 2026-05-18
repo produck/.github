@@ -26,7 +26,9 @@ export function runCapture(options) {
   }
 
   if (!allowPipe && cmd.includes('|')) {
-    console.error('Blocked command containing pipe. Use --allow-pipe if needed.');
+    console.error(
+      'Blocked command containing pipe. Use --allow-pipe if needed.',
+    );
     process.exit(2);
   }
 

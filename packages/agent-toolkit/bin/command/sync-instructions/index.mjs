@@ -3,18 +3,30 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { getSingle, hasFlag } from '../shared/args.mjs';
-import { loadTextResource, printTextResource } from '../shared/text-resource.mjs';
+import {
+  loadTextResource,
+  printTextResource,
+} from '../shared/text-resource.mjs';
 
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
 const PUBLISH_ASSETS_ROOT = path.resolve(PACKAGE_ROOT, 'publish-assets');
-const PUBLISH_INSTRUCTIONS_ROOT = path.resolve(PUBLISH_ASSETS_ROOT, 'instructions');
-const PUBLISH_NAMESPACE_ROOT = path.resolve(PUBLISH_INSTRUCTIONS_ROOT, 'produck');
+const PUBLISH_INSTRUCTIONS_ROOT = path.resolve(
+  PUBLISH_ASSETS_ROOT,
+  'instructions',
+);
+const PUBLISH_NAMESPACE_ROOT = path.resolve(
+  PUBLISH_INSTRUCTIONS_ROOT,
+  'produck',
+);
 const MANAGED_MARKER = '<!-- managed-by: @produck/agent-toolkit -->';
 const DEFAULT_NAMESPACE_OUT_DIR = '.github/instructions/produck';
 const USER_SPACE_ENTRYPOINT = '.github/copilot-instructions.md';
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
-const USER_SPACE_BOOTSTRAP_FILE = path.resolve(COMMAND_DIR, 'user-space-bootstrap.md');
+const USER_SPACE_BOOTSTRAP_FILE = path.resolve(
+  COMMAND_DIR,
+  'user-space-bootstrap.md',
+);
 
 export function printSyncInstructionsHelp() {
   printTextResource(HELP_FILE);
@@ -46,7 +58,9 @@ function loadDefaultInstructionsTemplate() {
   }
 
   console.error('No built-in instruction assets found.');
-  console.error('Run prepack/publish to generate publish-assets, or pass --source explicitly.');
+  console.error(
+    'Run prepack/publish to generate publish-assets, or pass --source explicitly.',
+  );
   process.exit(2);
 }
 
@@ -75,9 +89,14 @@ function isManagedFile(filePath) {
 }
 
 function buildUserSpaceBootstrapContent(namespaceDirPath, cwd) {
-  const namespaceDisplayPath = path.relative(cwd, namespaceDirPath).replace(/\\/g, '/');
+  const namespaceDisplayPath = path
+    .relative(cwd, namespaceDirPath)
+    .replace(/\\/g, '/');
   let content = loadTextResource(USER_SPACE_BOOTSTRAP_FILE);
-  content = content.replace(/\{\{NAMESPACE_GLOB\}\}/g, `${namespaceDisplayPath}/*.instructions.md`);
+  content = content.replace(
+    /\{\{NAMESPACE_GLOB\}\}/g,
+    `${namespaceDisplayPath}/*.instructions.md`,
+  );
   if (!content.endsWith('\n')) {
     content = `${content}\n`;
   }
@@ -114,7 +133,9 @@ export function runSyncInstructions(options) {
       sourceResolved = sourcePath;
       entries = readInstructionEntriesFromDirectory(sourcePath);
       if (entries.length === 0) {
-        console.error(`No .instructions.md files in source directory: ${sourcePath}`);
+        console.error(
+          `No .instructions.md files in source directory: ${sourcePath}`,
+        );
         process.exit(2);
       }
     } else {
@@ -138,7 +159,9 @@ export function runSyncInstructions(options) {
   const outLooksLikeFile = outArg.endsWith('.md');
 
   if (outLooksLikeFile && entries.length > 1) {
-    console.error('Target --out is a file path but source has multiple instruction files.');
+    console.error(
+      'Target --out is a file path but source has multiple instruction files.',
+    );
     console.error('Use an output directory for multi-file sync.');
     process.exit(2);
   }
@@ -190,7 +213,9 @@ export function runSyncInstructions(options) {
     }
   }
 
-  const toWrite = planned.filter((item) => !unchanged.includes(item.targetPath));
+  const toWrite = planned.filter(
+    (item) => !unchanged.includes(item.targetPath),
+  );
 
   const pruneDeletes = [];
   if (prune && fs.existsSync(outDir)) {

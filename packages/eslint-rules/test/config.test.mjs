@@ -26,9 +26,15 @@ describe('eslint config exports', () => {
   });
 
   it('returns a valid flat config fragment from .gitignore', async () => {
-    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'eslint-rules-'));
+    const fixtureRoot = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'eslint-rules-'),
+    );
 
-    await fs.writeFile(path.join(fixtureRoot, '.gitignore'), '# comment\n\ndist\n', 'utf8');
+    await fs.writeFile(
+      path.join(fixtureRoot, '.gitignore'),
+      '# comment\n\ndist\n',
+      'utf8',
+    );
 
     const eslintConfigPath = path.join(fixtureRoot, 'eslint.config.mjs');
 
@@ -43,11 +49,16 @@ describe('eslint config exports', () => {
   });
 
   it('throws when .gitignore is missing', async () => {
-    const fixtureRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'eslint-rules-'));
+    const fixtureRoot = await fs.mkdtemp(
+      path.join(os.tmpdir(), 'eslint-rules-'),
+    );
     const eslintConfigPath = path.join(fixtureRoot, 'eslint.config.mjs');
 
     await fs.writeFile(eslintConfigPath, 'export default [];\n', 'utf8');
 
-    assert.throws(() => excludeGitIgnore(pathToFileURL(eslintConfigPath).href), /ENOENT/);
+    assert.throws(
+      () => excludeGitIgnore(pathToFileURL(eslintConfigPath).href),
+      /ENOENT/,
+    );
   });
 });

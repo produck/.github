@@ -58,44 +58,62 @@ describe('sync-install command', () => {
   });
 
   it('fails when root package.json does not exist', async () => {
-    await withTempDir('agent-toolkit-sync-install-missing-pkg-', async (tempDir) => {
-      const result = runCli(['sync-install', '--cwd', tempDir]);
+    await withTempDir(
+      'agent-toolkit-sync-install-missing-pkg-',
+      async (tempDir) => {
+        const result = runCli(['sync-install', '--cwd', tempDir]);
 
-      assert.equal(result.status, 2);
-      assert.match(result.stderr, /Root package\.json does not exist/);
-    });
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Root package\.json does not exist/);
+      },
+    );
   });
 
   it('fails when root package.json is invalid JSON', async () => {
-    await withTempDir('agent-toolkit-sync-install-invalid-pkg-', async (tempDir) => {
-      await writeTextFile(path.join(tempDir, 'package.json'), '{ invalid json\n');
+    await withTempDir(
+      'agent-toolkit-sync-install-invalid-pkg-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{ invalid json\n',
+        );
 
-      const result = runCli(['sync-install', '--cwd', tempDir]);
+        const result = runCli(['sync-install', '--cwd', tempDir]);
 
-      assert.equal(result.status, 2);
-      assert.match(result.stderr, /Root package\.json is not valid JSON/);
-    });
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Root package\.json is not valid JSON/);
+      },
+    );
   });
 
   it('supports --dry-run without mutating files', async () => {
-    await withTempDir('agent-toolkit-sync-install-dry-run-', async (tempDir) => {
-      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+    await withTempDir(
+      'agent-toolkit-sync-install-dry-run-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
 
-      const result = runCli(['sync-install', '--cwd', tempDir, '--dry-run']);
-      assert.equal(result.status, 0);
+        const result = runCli(['sync-install', '--cwd', tempDir, '--dry-run']);
+        assert.equal(result.status, 0);
 
-      const report = JSON.parse(result.stdout);
-      assert.equal(report.mode, 'dry-run');
-      assert.equal(report.status.updated, false);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.mode, 'dry-run');
+        assert.equal(report.status.updated, false);
 
-      const pkg = await readJson(path.join(tempDir, 'package.json'));
-      assert.equal(pkg.scripts, undefined);
-    });
+        const pkg = await readJson(path.join(tempDir, 'package.json'));
+        assert.equal(pkg.scripts, undefined);
+      },
+    );
   });
 
   it('supports --json output report file', async () => {
     await withTempDir('agent-toolkit-sync-install-json-', async (tempDir) => {
-      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        '{"name":"tmp"}\n',
+      );
 
       const result = runCli([
         'sync-install',
@@ -106,23 +124,37 @@ describe('sync-install command', () => {
       ]);
       assert.equal(result.status, 0);
 
-      const report = await readJson(path.join(tempDir, 'logs', 'install-report.json'));
+      const report = await readJson(
+        path.join(tempDir, 'logs', 'install-report.json'),
+      );
       assert.equal(report.ok, true);
       assert.equal(report.status.updated, true);
     });
   });
 
   it('supports --check and --dry-run together with check taking precedence', async () => {
-    await withTempDir('agent-toolkit-sync-install-check-dry-run-', async (tempDir) => {
-      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+    await withTempDir(
+      'agent-toolkit-sync-install-check-dry-run-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
 
-      const result = runCli(['sync-install', '--cwd', tempDir, '--check', '--dry-run']);
-      assert.equal(result.status, 2);
+        const result = runCli([
+          'sync-install',
+          '--cwd',
+          tempDir,
+          '--check',
+          '--dry-run',
+        ]);
+        assert.equal(result.status, 2);
 
-      const report = JSON.parse(result.stdout);
-      assert.equal(report.mode, 'check');
-      assert.equal(report.ok, false);
-      assert.equal(report.status.updated, false);
-    });
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.mode, 'check');
+        assert.equal(report.ok, false);
+        assert.equal(report.status.updated, false);
+      },
+    );
   });
 });

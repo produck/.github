@@ -33,7 +33,10 @@ describe('preflight command', () => {
   });
 
   it('fails when cwd does not exist', () => {
-    const missingCwd = path.join(os.tmpdir(), 'agent-toolkit-preflight-missing-cwd');
+    const missingCwd = path.join(
+      os.tmpdir(),
+      'agent-toolkit-preflight-missing-cwd',
+    );
     const result = runCli(['preflight', '--cwd', missingCwd]);
 
     assert.equal(result.status, 2);
@@ -41,37 +44,40 @@ describe('preflight command', () => {
   });
 
   it('validates workspace package.json baseline when workspaces are explicit', async () => {
-    await withTempDir('agent-toolkit-preflight-workspace-ok-', async (tempDir) => {
-      const packageJson = {
-        name: 'tmp-workspace',
-        private: true,
-        workspaces: ['packages/agent-toolkit', 'packages/eslint-rules'],
-        scripts: {
-          'produck:install': 'npm -v && npm install',
-          test: 'npm run test --workspaces --if-present',
-          'produck:coverage': 'npm run coverage --workspaces --if-present',
-          'produck:lint': 'eslint --fix . --max-warnings=0',
-        },
-      };
-      await writeTextFile(
-        path.join(tempDir, 'package.json'),
-        `${JSON.stringify(packageJson, null, 2)}\n`,
-      );
+    await withTempDir(
+      'agent-toolkit-preflight-workspace-ok-',
+      async (tempDir) => {
+        const packageJson = {
+          name: 'tmp-workspace',
+          private: true,
+          workspaces: ['packages/agent-toolkit', 'packages/eslint-rules'],
+          scripts: {
+            'produck:install': 'npm -v && npm install',
+            test: 'npm run test --workspaces --if-present',
+            'produck:coverage': 'npm run coverage --workspaces --if-present',
+            'produck:lint': 'eslint --fix . --max-warnings=0',
+          },
+        };
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify(packageJson, null, 2)}\n`,
+        );
 
-      const result = runCli([
-        'preflight',
-        '--cwd',
-        tempDir,
-        '--check-workspace-package-json',
-        'package.json',
-      ]);
+        const result = runCli([
+          'preflight',
+          '--cwd',
+          tempDir,
+          '--check-workspace-package-json',
+          'package.json',
+        ]);
 
-      assert.equal(result.status, 0);
-      const report = JSON.parse(result.stdout);
-      assert.equal(report.ok, true);
-      assert.deepEqual(report.workspacePackageJson.missingScripts, []);
-      assert.deepEqual(report.workspacePackageJson.wildcardWorkspaces, []);
-    });
+        assert.equal(result.status, 0);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+        assert.deepEqual(report.workspacePackageJson.missingScripts, []);
+        assert.deepEqual(report.workspacePackageJson.wildcardWorkspaces, []);
+      },
+    );
   });
 });
 
@@ -94,7 +100,10 @@ describe('summarize-log command', () => {
   it('supports match and last filters', async () => {
     await withTempDir('agent-toolkit-summarize-', async (tempDir) => {
       const logFile = path.join(tempDir, 'run.log');
-      await writeTextFile(logFile, ['line1', 'ERROR one', 'line3', 'ERROR two'].join('\n'));
+      await writeTextFile(
+        logFile,
+        ['line1', 'ERROR one', 'line3', 'ERROR two'].join('\n'),
+      );
 
       const result = runCli([
         'summarize-log',
@@ -153,25 +162,28 @@ describe('run-capture command', () => {
   });
 
   it('captures output and writes default meta file', async () => {
-    await withTempDir('agent-toolkit-capture-default-meta-', async (tempDir) => {
-      const outFile = path.join(tempDir, 'capture.log');
-      const result = runCli([
-        'run-capture',
-        '--cwd',
-        tempDir,
-        '--cmd',
-        'node -e "console.log(\'ok\')"',
-        '--out',
-        outFile,
-      ]);
+    await withTempDir(
+      'agent-toolkit-capture-default-meta-',
+      async (tempDir) => {
+        const outFile = path.join(tempDir, 'capture.log');
+        const result = runCli([
+          'run-capture',
+          '--cwd',
+          tempDir,
+          '--cmd',
+          'node -e "console.log(\'ok\')"',
+          '--out',
+          outFile,
+        ]);
 
-      assert.equal(result.status, 0);
-      assert.equal(fs.existsSync(outFile), true);
-      assert.equal(fs.existsSync(`${outFile}.meta.json`), true);
+        assert.equal(result.status, 0);
+        assert.equal(fs.existsSync(outFile), true);
+        assert.equal(fs.existsSync(`${outFile}.meta.json`), true);
 
-      const output = fs.readFileSync(outFile, 'utf8');
-      assert.match(output, /ok/);
-    });
+        const output = fs.readFileSync(outFile, 'utf8');
+        assert.match(output, /ok/);
+      },
+    );
   });
 
   it('respects explicit meta path and propagates child exit code', async () => {

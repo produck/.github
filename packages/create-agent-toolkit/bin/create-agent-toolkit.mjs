@@ -5,12 +5,18 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const require = createRequire(fileURLToPath(import.meta.url));
-const agentToolkitRoot = path.dirname(require.resolve('@produck/agent-toolkit/package.json'));
+const agentToolkitRoot = path.dirname(
+  require.resolve('@produck/agent-toolkit/package.json'),
+);
 const toolkitBin = path.join(agentToolkitRoot, 'bin', 'agent-toolkit.mjs');
 
-const result = spawnSync(process.execPath, [toolkitBin, 'enforce-node-baseline', '--cwd', '.'], {
-  stdio: 'inherit',
-  cwd: process.cwd(),
-});
+const result = spawnSync(
+  process.execPath,
+  [toolkitBin, 'enforce-node-baseline', '--cwd', '.'],
+  {
+    stdio: 'inherit',
+    cwd: process.cwd(),
+  },
+);
 
 process.exit(result.status ?? 0);

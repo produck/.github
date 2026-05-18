@@ -13,4 +13,6 @@ export const config: EsLint.Linter.Config;
  * @param eslintConfigPath - Pass import.meta.url to
  * locate `.gitignore` relative to project root.
  */
-export function excludeGitIgnore(eslintConfigPath: string): EsLint.Linter.Config;
+export function excludeGitIgnore(
+  eslintConfigPath: string,
+): EsLint.Linter.Config;

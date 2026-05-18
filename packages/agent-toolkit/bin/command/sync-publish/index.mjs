@@ -17,11 +17,9 @@ const LERNA_TEMPLATE_CANDIDATE_PATHS = [
 
 const REQUIRED_PUBLISH_CHECK_SCRIPT_KEY = 'produck:publish:check';
 const REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE =
-  'npm run produck:install && npm run produck:format && npm run produck:lint && npm run produck:coverage';
-const USER_PUBLISH_SCRIPT_KEY = 'publish';
+  'npm run produck:install && npm run produck:coverage && produck:commit:check';
 const REQUIRED_PUBLISH_SCRIPT_KEY = 'produck:publish';
-const REQUIRED_PUBLISH_SCRIPT_FALLBACK_VALUE = 'npm run produck:publish:check && lerna publish';
-const REQUIRED_PUBLISH_SCRIPT_WITH_USER_PUBLISH =
+const REQUIRED_PUBLISH_SCRIPT_VALUE =
   'npm run produck:publish:check && npm run publish --';
 const REQUIRED_LERNA_VERSION_COMMIT_HOOKS = false;
 
@@ -36,14 +34,6 @@ function parseJsonFile(filePath, label) {
     console.error(`${label} is not valid JSON: ${filePath}`);
     process.exit(2);
   }
-}
-
-function buildRequiredPublishScriptValue(hasUserPublishScript) {
-  if (hasUserPublishScript) {
-    return REQUIRED_PUBLISH_SCRIPT_WITH_USER_PUBLISH;
-  }
-
-  return REQUIRED_PUBLISH_SCRIPT_FALLBACK_VALUE;
 }
 
 function loadRequiredLernaTemplate() {
@@ -61,16 +51,21 @@ function loadRequiredLernaTemplate() {
 
   const template = parseJsonFile(templatePath, 'lerna template');
   if (typeof template.version !== 'string') {
-    console.error(`lerna template must have a "version" field: ${templatePath}`);
+    console.error(
+      `lerna template must have a "version" field: ${templatePath}`,
+    );
     process.exit(2);
   }
 
   const normalizedTemplate = {
     ...template,
     command: {
-      ...(template.command && typeof template.command === 'object' ? template.command : {}),
+      ...(template.command && typeof template.command === 'object'
+        ? template.command
+        : {}),
       version: {
-        ...(template?.command?.version && typeof template.command.version === 'object'
+        ...(template?.command?.version &&
+        typeof template.command.version === 'object'
           ? template.command.version
           : {}),
         commitHooks: REQUIRED_LERNA_VERSION_COMMIT_HOOKS,
@@ -113,12 +108,15 @@ export function runSyncPublish(options) {
     const lernaConfig = parseJsonFile(lernaConfigPath, 'lerna.json');
 
     if (typeof lernaConfig.version !== 'string') {
-      console.error(`lerna.json must have a "version" field: ${lernaConfigPath}`);
+      console.error(
+        `lerna.json must have a "version" field: ${lernaConfigPath}`,
+      );
       process.exit(2);
     }
 
     const currentCommitHooks = lernaConfig?.command?.version?.commitHooks;
-    matchesRequiredLernaCommitHooks = currentCommitHooks === REQUIRED_LERNA_VERSION_COMMIT_HOOKS;
+    matchesRequiredLernaCommitHooks =
+      currentCommitHooks === REQUIRED_LERNA_VERSION_COMMIT_HOOKS;
     matchesRequiredLernaCommitHooksBefore = matchesRequiredLernaCommitHooks;
 
     if (mode === 'sync' && !matchesRequiredLernaCommitHooks) {
@@ -129,14 +127,19 @@ export function runSyncPublish(options) {
             ? lernaConfig.command
             : {}),
           version: {
-            ...(lernaConfig?.command?.version && typeof lernaConfig.command.version === 'object'
+            ...(lernaConfig?.command?.version &&
+            typeof lernaConfig.command.version === 'object'
               ? lernaConfig.command.version
               : {}),
             commitHooks: REQUIRED_LERNA_VERSION_COMMIT_HOOKS,
           },
         },
       };
-      fs.writeFileSync(lernaConfigPath, `${JSON.stringify(nextLernaConfig, null, 2)}\n`, 'utf8');
+      fs.writeFileSync(
+        lernaConfigPath,
+        `${JSON.stringify(nextLernaConfig, null, 2)}\n`,
+        'utf8',
+      );
       matchesRequiredLernaCommitHooks = true;
     }
   }
@@ -149,13 +152,11 @@ export function runSyncPublish(options) {
 
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const scripts =
-    pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
+    pkg.scripts &&
+    typeof pkg.scripts === 'object' &&
+    !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
-  const hasUserPublishScript =
-    typeof scripts[USER_PUBLISH_SCRIPT_KEY] === 'string' &&
-    scripts[USER_PUBLISH_SCRIPT_KEY].trim() !== '';
-  const requiredPublishScriptValue = buildRequiredPublishScriptValue(hasUserPublishScript);
 
   const previousPublishCheck =
     typeof scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY] === 'string'
@@ -166,8 +167,10 @@ export function runSyncPublish(options) {
       ? scripts[REQUIRED_PUBLISH_SCRIPT_KEY]
       : null;
 
-  const matchesRequiredPublishCheck = previousPublishCheck === REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
-  const matchesRequiredPublish = previousPublish === requiredPublishScriptValue;
+  const matchesRequiredPublishCheck =
+    previousPublishCheck === REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
+  const matchesRequiredPublish =
+    previousPublish === REQUIRED_PUBLISH_SCRIPT_VALUE;
   const lernaRequiresCreation = !lernaExistedBefore && !lernaDefaultCreated;
   const requiresUpdate =
     !matchesRequiredPublishCheck ||
@@ -175,11 +178,19 @@ export function runSyncPublish(options) {
     lernaRequiresCreation ||
     !matchesRequiredLernaCommitHooks;
 
-  if (mode === 'sync' && (!matchesRequiredPublishCheck || !matchesRequiredPublish)) {
-    scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY] = REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
-    scripts[REQUIRED_PUBLISH_SCRIPT_KEY] = requiredPublishScriptValue;
+  if (
+    mode === 'sync' &&
+    (!matchesRequiredPublishCheck || !matchesRequiredPublish)
+  ) {
+    scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY] =
+      REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
+    scripts[REQUIRED_PUBLISH_SCRIPT_KEY] = REQUIRED_PUBLISH_SCRIPT_VALUE;
     pkg.scripts = scripts;
-    fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(
+      rootPackageJsonPath,
+      `${JSON.stringify(pkg, null, 2)}\n`,
+      'utf8',
+    );
   }
 
   const report = {
@@ -193,21 +204,25 @@ export function runSyncPublish(options) {
       publishCheckScriptKey: REQUIRED_PUBLISH_CHECK_SCRIPT_KEY,
       publishCheckScriptValue: REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE,
       publishScriptKey: REQUIRED_PUBLISH_SCRIPT_KEY,
-      publishScriptValue: requiredPublishScriptValue,
+      publishScriptValue: REQUIRED_PUBLISH_SCRIPT_VALUE,
       lernaVersionCommitHooks: REQUIRED_LERNA_VERSION_COMMIT_HOOKS,
     },
     status: {
-      hasUserPublishScript,
       lernaExistedBefore,
       lernaDefaultCreated,
-      matchesRequiredLernaCommitHooksBefore: matchesRequiredLernaCommitHooksBefore,
+      matchesRequiredLernaCommitHooksBefore:
+        matchesRequiredLernaCommitHooksBefore,
       matchesRequiredLernaCommitHooksAfter: matchesRequiredLernaCommitHooks,
       matchesRequiredPublishCheckBefore: matchesRequiredPublishCheck,
       matchesRequiredPublishCheckAfter:
-        !matchesRequiredPublishCheck && mode === 'sync' ? true : matchesRequiredPublishCheck,
+        !matchesRequiredPublishCheck && mode === 'sync'
+          ? true
+          : matchesRequiredPublishCheck,
       matchesRequiredPublishBefore: matchesRequiredPublish,
       matchesRequiredPublishAfter:
-        !matchesRequiredPublish && mode === 'sync' ? true : matchesRequiredPublish,
+        !matchesRequiredPublish && mode === 'sync'
+          ? true
+          : matchesRequiredPublish,
       updated: requiresUpdate && mode === 'sync',
     },
   };

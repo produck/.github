@@ -13,8 +13,14 @@ const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const TOOLKIT_PACKAGE_JSON = path.resolve(PACKAGE_ROOT, 'package.json');
 const TOOLING_BASELINE_CANDIDATE_PATHS = [
-  path.resolve(REPO_ROOT, '.github/distribution/produck/tooling-version-baseline.json'),
-  path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
+  path.resolve(
+    REPO_ROOT,
+    '.github/distribution/produck/tooling-version-baseline.json',
+  ),
+  path.resolve(
+    PACKAGE_ROOT,
+    'publish-assets/instructions/produck/tooling-version-baseline.json',
+  ),
 ];
 
 const GITATTRIBUTES_FILE = '.gitattributes';
@@ -26,7 +32,8 @@ const REQUIRED_BASELINE_SCRIPT_KEY = 'produck:baseline';
 const REQUIRED_BASELINE_SCRIPT_VALUE =
   'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
 const REQUIRED_COMMIT_CHECK_SCRIPT_KEY = 'produck:commit:check';
-const REQUIRED_COMMIT_CHECK_SCRIPT_VALUE = 'npm run produck:format && npm run produck:lint';
+const REQUIRED_COMMIT_CHECK_SCRIPT_VALUE =
+  'npm run produck:format && npm run produck:lint';
 const REQUIRED_PREPARE_SCRIPT_KEY = 'prepare';
 const REQUIRED_PREPARE_SCRIPT_VALUE = 'husky';
 
@@ -39,7 +46,8 @@ const GITIGNORE_SOURCE_CANDIDATE_PATHS = [
   path.resolve(PACKAGE_ROOT, 'publish-assets/gitignore'),
 ];
 
-const REQUIRED_PRE_COMMIT_HOOK = '#!/usr/bin/env sh\nnpm run produck:commit:check\n';
+const REQUIRED_PRE_COMMIT_HOOK =
+  '#!/usr/bin/env sh\nnpm run produck:commit:check\n';
 const REQUIRED_COMMIT_MSG_HOOK =
   '#!/usr/bin/env sh\nnode ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"\n';
 
@@ -57,15 +65,21 @@ function parseJsonFile(filePath, label) {
 }
 
 function getRequiredToolkitDevDependency() {
-  const overrideVersion = String(process.env.PRODUCK_TOOLKIT_VERSION_OVERRIDE || '').trim();
+  const overrideVersion = String(
+    process.env.PRODUCK_TOOLKIT_VERSION_OVERRIDE || '',
+  ).trim();
   if (overrideVersion) {
     return overrideVersion;
   }
 
   const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const latestResult = spawnSync(npmCommand, ['view', '@produck/agent-toolkit', 'version'], {
-    encoding: 'utf8',
-  });
+  const latestResult = spawnSync(
+    npmCommand,
+    ['view', '@produck/agent-toolkit', 'version'],
+    {
+      encoding: 'utf8',
+    },
+  );
 
   const latestVersion = String(latestResult.stdout || '').trim();
   if (latestResult.status === 0 && latestVersion) {
@@ -76,7 +90,9 @@ function getRequiredToolkitDevDependency() {
   const version = typeof pkg.version === 'string' ? pkg.version.trim() : '';
 
   if (!version) {
-    console.error(`Toolkit package version is missing: ${TOOLKIT_PACKAGE_JSON}`);
+    console.error(
+      `Toolkit package version is missing: ${TOOLKIT_PACKAGE_JSON}`,
+    );
     process.exit(2);
   }
 
@@ -84,12 +100,16 @@ function getRequiredToolkitDevDependency() {
 }
 
 function loadToolingBaseline() {
-  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find((candidatePath) => {
-    return fs.existsSync(candidatePath);
-  });
+  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find(
+    (candidatePath) => {
+      return fs.existsSync(candidatePath);
+    },
+  );
 
   if (!toolingBaselinePath) {
-    console.error('Tooling baseline file does not exist in expected locations:');
+    console.error(
+      'Tooling baseline file does not exist in expected locations:',
+    );
     for (const candidatePath of TOOLING_BASELINE_CANDIDATE_PATHS) {
       console.error(`- ${candidatePath}`);
     }
@@ -134,16 +154,20 @@ function findMissingGitignoreEntries(currentContent, requiredEntries) {
     return [...requiredEntries];
   }
 
-  const existingLines = new Set(currentContent.split('\n').map((line) => line.trimEnd()));
+  const existingLines = new Set(
+    currentContent.split('\n').map((line) => line.trimEnd()),
+  );
 
   return requiredEntries.filter((entry) => !existingLines.has(entry));
 }
 
 function loadGitSourceFiles() {
-  const gitattributesSourcePath = GITATTRIBUTES_SOURCE_CANDIDATE_PATHS.find((p) =>
+  const gitattributesSourcePath = GITATTRIBUTES_SOURCE_CANDIDATE_PATHS.find(
+    (p) => fs.existsSync(p),
+  );
+  const gitignoreSourcePath = GITIGNORE_SOURCE_CANDIDATE_PATHS.find((p) =>
     fs.existsSync(p),
   );
-  const gitignoreSourcePath = GITIGNORE_SOURCE_CANDIDATE_PATHS.find((p) => fs.existsSync(p));
 
   if (!gitattributesSourcePath) {
     console.error('Org .gitattributes source not found in expected locations:');
@@ -175,7 +199,9 @@ function loadGitSourceFiles() {
 
 function buildScriptState(pkg) {
   const scripts =
-    pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
+    pkg.scripts &&
+    typeof pkg.scripts === 'object' &&
+    !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
 
@@ -207,8 +233,14 @@ function buildDevDependencyState(pkg) {
   return {
     devDependencies,
     previousManaged: {
-      husky: typeof devDependencies.husky === 'string' ? devDependencies.husky : null,
-      lerna: typeof devDependencies.lerna === 'string' ? devDependencies.lerna : null,
+      husky:
+        typeof devDependencies.husky === 'string'
+          ? devDependencies.husky
+          : null,
+      lerna:
+        typeof devDependencies.lerna === 'string'
+          ? devDependencies.lerna
+          : null,
       '@produck/agent-toolkit':
         typeof devDependencies['@produck/agent-toolkit'] === 'string'
           ? devDependencies['@produck/agent-toolkit']
@@ -260,11 +292,15 @@ export function runSyncGit(options) {
     requiredDevDependencies,
   );
 
-  const matchesRequiredBaseline = !(REQUIRED_BASELINE_SCRIPT_KEY in scriptValidation.mismatches);
+  const matchesRequiredBaseline = !(
+    REQUIRED_BASELINE_SCRIPT_KEY in scriptValidation.mismatches
+  );
   const matchesRequiredCommitCheck = !(
     REQUIRED_COMMIT_CHECK_SCRIPT_KEY in scriptValidation.mismatches
   );
-  const matchesRequiredPrepare = !(REQUIRED_PREPARE_SCRIPT_KEY in scriptValidation.mismatches);
+  const matchesRequiredPrepare = !(
+    REQUIRED_PREPARE_SCRIPT_KEY in scriptValidation.mismatches
+  );
   const matchesRequiredManagedDevDependencies = dependencyValidation.ok;
 
   const gitAttributesPath = path.resolve(cwd, GITATTRIBUTES_FILE);
@@ -280,14 +316,17 @@ export function runSyncGit(options) {
   const gitignoreExists = currentGitignoreContent !== null;
   const preCommitHookExists = currentPreCommitHook !== null;
   const commitMsgHookExists = currentCommitMsgHook !== null;
-  const matchesRequiredGitAttributes = currentContent === requiredGitAttributesContent;
+  const matchesRequiredGitAttributes =
+    currentContent === requiredGitAttributesContent;
   const missingGitignoreEntries = findMissingGitignoreEntries(
     currentGitignoreContent,
     gitignoreRequiredEntries,
   );
   const matchesRequiredGitignore = missingGitignoreEntries.length === 0;
-  const matchesRequiredPreCommitHook = currentPreCommitHook === REQUIRED_PRE_COMMIT_HOOK;
-  const matchesRequiredCommitMsgHook = currentCommitMsgHook === REQUIRED_COMMIT_MSG_HOOK;
+  const matchesRequiredPreCommitHook =
+    currentPreCommitHook === REQUIRED_PRE_COMMIT_HOOK;
+  const matchesRequiredCommitMsgHook =
+    currentCommitMsgHook === REQUIRED_COMMIT_MSG_HOOK;
 
   const mismatches = [];
   if (!matchesRequiredGitAttributes) {
@@ -337,16 +376,23 @@ export function runSyncGit(options) {
         fs.writeFileSync(gitignorePath, gitignoreOrgContent, 'utf8');
       } else {
         const appendText = `\n# produck:org-baseline\n${missingGitignoreEntries.join('\n')}\n`;
-        fs.writeFileSync(gitignorePath, currentGitignoreContent + appendText, 'utf8');
+        fs.writeFileSync(
+          gitignorePath,
+          currentGitignoreContent + appendText,
+          'utf8',
+        );
       }
     }
 
     fs.writeFileSync(preCommitHookPath, REQUIRED_PRE_COMMIT_HOOK, 'utf8');
     fs.writeFileSync(commitMsgHookPath, REQUIRED_COMMIT_MSG_HOOK, 'utf8');
 
-    scriptState.scripts[REQUIRED_BASELINE_SCRIPT_KEY] = REQUIRED_BASELINE_SCRIPT_VALUE;
-    scriptState.scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY] = REQUIRED_COMMIT_CHECK_SCRIPT_VALUE;
-    scriptState.scripts[REQUIRED_PREPARE_SCRIPT_KEY] = REQUIRED_PREPARE_SCRIPT_VALUE;
+    scriptState.scripts[REQUIRED_BASELINE_SCRIPT_KEY] =
+      REQUIRED_BASELINE_SCRIPT_VALUE;
+    scriptState.scripts[REQUIRED_COMMIT_CHECK_SCRIPT_KEY] =
+      REQUIRED_COMMIT_CHECK_SCRIPT_VALUE;
+    scriptState.scripts[REQUIRED_PREPARE_SCRIPT_KEY] =
+      REQUIRED_PREPARE_SCRIPT_VALUE;
     pkg.scripts = scriptState.scripts;
 
     for (const [name, version] of Object.entries(requiredDevDependencies)) {
@@ -354,7 +400,11 @@ export function runSyncGit(options) {
     }
     pkg.devDependencies = dependencyState.devDependencies;
 
-    fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(
+      rootPackageJsonPath,
+      `${JSON.stringify(pkg, null, 2)}\n`,
+      'utf8',
+    );
   }
 
   const report = {
@@ -393,12 +443,16 @@ export function runSyncGit(options) {
       matchesRequiredBaselineBefore: matchesRequiredBaseline,
       matchesRequiredCommitCheckBefore: matchesRequiredCommitCheck,
       matchesRequiredPrepareBefore: matchesRequiredPrepare,
-      matchesRequiredManagedDevDependenciesBefore: matchesRequiredManagedDevDependencies,
+      matchesRequiredManagedDevDependenciesBefore:
+        matchesRequiredManagedDevDependencies,
       mismatchesBefore: mismatches,
       fileExistsAfter: requiresUpdate && mode === 'sync' ? true : fileExists,
-      gitignoreExistsAfter: requiresUpdate && mode === 'sync' ? true : gitignoreExists,
-      preCommitHookExistsAfter: requiresUpdate && mode === 'sync' ? true : preCommitHookExists,
-      commitMsgHookExistsAfter: requiresUpdate && mode === 'sync' ? true : commitMsgHookExists,
+      gitignoreExistsAfter:
+        requiresUpdate && mode === 'sync' ? true : gitignoreExists,
+      preCommitHookExistsAfter:
+        requiresUpdate && mode === 'sync' ? true : preCommitHookExists,
+      commitMsgHookExistsAfter:
+        requiresUpdate && mode === 'sync' ? true : commitMsgHookExists,
       matchesRequiredGitAttributesAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredGitAttributes,
       matchesRequiredGitignoreAfter:
@@ -416,7 +470,9 @@ export function runSyncGit(options) {
       matchesRequiredPrepareAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrepare,
       matchesRequiredManagedDevDependenciesAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredManagedDevDependencies,
+        requiresUpdate && mode === 'sync'
+          ? true
+          : matchesRequiredManagedDevDependencies,
       mismatchesAfter: requiresUpdate && mode === 'sync' ? [] : mismatches,
       updated: requiresUpdate && mode === 'sync',
     },

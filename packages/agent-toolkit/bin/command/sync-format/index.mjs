@@ -10,8 +10,14 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const TOOLING_BASELINE_CANDIDATE_PATHS = [
-  path.resolve(REPO_ROOT, '.github/distribution/produck/tooling-version-baseline.json'),
-  path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
+  path.resolve(
+    REPO_ROOT,
+    '.github/distribution/produck/tooling-version-baseline.json',
+  ),
+  path.resolve(
+    PACKAGE_ROOT,
+    'publish-assets/instructions/produck/tooling-version-baseline.json',
+  ),
 ];
 const PRETTIER_CONFIG_FILE = '.prettierrc';
 const PRETTIER_IGNORE_FILE = '.prettierignore';
@@ -31,7 +37,9 @@ const REQUIRED_FORMAT_SCRIPT_VALUE =
   'prettier --write . --ignore-path .prettierignore --ignore-path .gitignore';
 
 function loadPrettierConfigContent() {
-  const sourcePath = PRETTIER_CONFIG_SOURCE_CANDIDATE_PATHS.find((p) => fs.existsSync(p));
+  const sourcePath = PRETTIER_CONFIG_SOURCE_CANDIDATE_PATHS.find((p) =>
+    fs.existsSync(p),
+  );
 
   if (!sourcePath) {
     console.error('Org .prettierrc source not found in expected locations:');
@@ -50,10 +58,14 @@ function loadPrettierConfigContent() {
 }
 
 function loadPrettierIgnoreContent() {
-  const sourcePath = PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS.find((p) => fs.existsSync(p));
+  const sourcePath = PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS.find((p) =>
+    fs.existsSync(p),
+  );
 
   if (!sourcePath) {
-    console.error('Org .prettierignore source not found in expected locations:');
+    console.error(
+      'Org .prettierignore source not found in expected locations:',
+    );
     for (const p of PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS) {
       console.error(`- ${p}`);
     }
@@ -88,12 +100,16 @@ function parseJsonFile(filePath, label) {
 }
 
 function loadToolingBaseline() {
-  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find((candidatePath) => {
-    return fs.existsSync(candidatePath);
-  });
+  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find(
+    (candidatePath) => {
+      return fs.existsSync(candidatePath);
+    },
+  );
 
   if (!toolingBaselinePath) {
-    console.error('Tooling baseline file does not exist in expected locations:');
+    console.error(
+      'Tooling baseline file does not exist in expected locations:',
+    );
     for (const candidatePath of TOOLING_BASELINE_CANDIDATE_PATHS) {
       console.error(`- ${candidatePath}`);
     }
@@ -101,7 +117,9 @@ function loadToolingBaseline() {
   }
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
-  const prettierVersion = String(baseline?.tools?.prettier?.version || '').trim();
+  const prettierVersion = String(
+    baseline?.tools?.prettier?.version || '',
+  ).trim();
 
   if (!prettierVersion) {
     console.error(
@@ -134,12 +152,18 @@ export function runSyncFormat(options) {
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const toolingBaseline = loadToolingBaseline();
   const requiredPrettierVersion = toolingBaseline.prettierVersion;
-  const { sourcePath: prettierConfigSourcePath, content: requiredPrettierConfigContent } =
-    loadPrettierConfigContent();
-  const { sourcePath: prettierIgnoreSourcePath, content: REQUIRED_PRETTIER_IGNORE_CONTENT } =
-    loadPrettierIgnoreContent();
+  const {
+    sourcePath: prettierConfigSourcePath,
+    content: requiredPrettierConfigContent,
+  } = loadPrettierConfigContent();
+  const {
+    sourcePath: prettierIgnoreSourcePath,
+    content: REQUIRED_PRETTIER_IGNORE_CONTENT,
+  } = loadPrettierIgnoreContent();
   const scripts =
-    pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
+    pkg.scripts &&
+    typeof pkg.scripts === 'object' &&
+    !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
   const devDependencies =
@@ -164,9 +188,12 @@ export function runSyncFormat(options) {
   const previousPrettierIgnore = readFileIfExists(prettierIgnorePath);
 
   const matchesRequiredFormat = previousFormat === REQUIRED_FORMAT_SCRIPT_VALUE;
-  const matchesRequiredPrettierConfig = previousPrettierConfig === requiredPrettierConfigContent;
-  const matchesRequiredPrettierDep = previousPrettierDep === requiredPrettierVersion;
-  const matchesRequiredPrettierIgnore = previousPrettierIgnore === REQUIRED_PRETTIER_IGNORE_CONTENT;
+  const matchesRequiredPrettierConfig =
+    previousPrettierConfig === requiredPrettierConfigContent;
+  const matchesRequiredPrettierDep =
+    previousPrettierDep === requiredPrettierVersion;
+  const matchesRequiredPrettierIgnore =
+    previousPrettierIgnore === REQUIRED_PRETTIER_IGNORE_CONTENT;
 
   const requiresUpdate =
     !matchesRequiredFormat ||
@@ -178,12 +205,21 @@ export function runSyncFormat(options) {
     scripts[REQUIRED_FORMAT_SCRIPT_KEY] = REQUIRED_FORMAT_SCRIPT_VALUE;
     pkg.scripts = scripts;
 
-    devDependencies[REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY] = requiredPrettierVersion;
+    devDependencies[REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY] =
+      requiredPrettierVersion;
     pkg.devDependencies = devDependencies;
 
-    fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(
+      rootPackageJsonPath,
+      `${JSON.stringify(pkg, null, 2)}\n`,
+      'utf8',
+    );
     fs.writeFileSync(prettierConfigPath, requiredPrettierConfigContent, 'utf8');
-    fs.writeFileSync(prettierIgnorePath, REQUIRED_PRETTIER_IGNORE_CONTENT, 'utf8');
+    fs.writeFileSync(
+      prettierIgnorePath,
+      REQUIRED_PRETTIER_IGNORE_CONTENT,
+      'utf8',
+    );
   }
 
   const report = {
@@ -199,20 +235,27 @@ export function runSyncFormat(options) {
       prettierConfigSourcePath,
       prettierIgnorePath: path.relative(cwd, prettierIgnorePath),
       prettierIgnoreSourcePath,
-      managedDevDependencies: { [REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY]: requiredPrettierVersion },
+      managedDevDependencies: {
+        [REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY]: requiredPrettierVersion,
+      },
     },
     status: {
       matchesRequiredFormatBefore: matchesRequiredFormat,
       matchesRequiredPrettierConfigBefore: matchesRequiredPrettierConfig,
       matchesRequiredPrettierDepBefore: matchesRequiredPrettierDep,
       matchesRequiredPrettierIgnoreBefore: matchesRequiredPrettierIgnore,
-      matchesRequiredFormatAfter: requiresUpdate && mode === 'sync' ? true : matchesRequiredFormat,
+      matchesRequiredFormatAfter:
+        requiresUpdate && mode === 'sync' ? true : matchesRequiredFormat,
       matchesRequiredPrettierConfigAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredPrettierConfig,
+        requiresUpdate && mode === 'sync'
+          ? true
+          : matchesRequiredPrettierConfig,
       matchesRequiredPrettierDepAfter:
         requiresUpdate && mode === 'sync' ? true : matchesRequiredPrettierDep,
       matchesRequiredPrettierIgnoreAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredPrettierIgnore,
+        requiresUpdate && mode === 'sync'
+          ? true
+          : matchesRequiredPrettierIgnore,
       updated: requiresUpdate && mode === 'sync',
     },
   };

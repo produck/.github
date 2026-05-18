@@ -10,8 +10,14 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const TOOLING_BASELINE_CANDIDATE_PATHS = [
-  path.resolve(REPO_ROOT, '.github/distribution/produck/tooling-version-baseline.json'),
-  path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
+  path.resolve(
+    REPO_ROOT,
+    '.github/distribution/produck/tooling-version-baseline.json',
+  ),
+  path.resolve(
+    PACKAGE_ROOT,
+    'publish-assets/instructions/produck/tooling-version-baseline.json',
+  ),
 ];
 const ESLINT_RULES_PACKAGE_NAME = '@produck/eslint-rules';
 const ESLINT_CONFIG_FILE = 'eslint.config.mjs';
@@ -60,18 +66,29 @@ function getRequiredEslintRulesDevDependency() {
   // sync-lint runs as an installed dependency, fall back to the publish-assets
   // tooling baseline (which build-publish-assets injects at prepack time from
   // the same package.json).
-  const inTreeEslintRulesPkgPath = path.resolve(REPO_ROOT, 'packages/eslint-rules/package.json');
+  const inTreeEslintRulesPkgPath = path.resolve(
+    REPO_ROOT,
+    'packages/eslint-rules/package.json',
+  );
   if (fs.existsSync(inTreeEslintRulesPkgPath)) {
-    const eslintRulesPkg = parseJsonFile(inTreeEslintRulesPkgPath, 'eslint-rules package.json');
-    const version = typeof eslintRulesPkg.version === 'string' ? eslintRulesPkg.version.trim() : '';
+    const eslintRulesPkg = parseJsonFile(
+      inTreeEslintRulesPkgPath,
+      'eslint-rules package.json',
+    );
+    const version =
+      typeof eslintRulesPkg.version === 'string'
+        ? eslintRulesPkg.version.trim()
+        : '';
     if (version) {
       return version;
     }
   }
 
-  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find((candidatePath) => {
-    return fs.existsSync(candidatePath);
-  });
+  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find(
+    (candidatePath) => {
+      return fs.existsSync(candidatePath);
+    },
+  );
 
   if (!toolingBaselinePath) {
     console.error('Cannot resolve @produck/eslint-rules version. Looked at:');
@@ -84,7 +101,8 @@ function getRequiredEslintRulesDevDependency() {
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
   const entry = baseline?.tools?.[ESLINT_RULES_PACKAGE_NAME];
-  const version = typeof entry?.version === 'string' ? entry.version.trim() : '';
+  const version =
+    typeof entry?.version === 'string' ? entry.version.trim() : '';
 
   if (!version) {
     console.error(
@@ -155,7 +173,9 @@ export function runSyncLint(options) {
 
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const scripts =
-    pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
+    pkg.scripts &&
+    typeof pkg.scripts === 'object' &&
+    !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
   const devDependencies =
@@ -180,7 +200,8 @@ export function runSyncLint(options) {
   const previousEslintConfig = readFileIfExists(eslintConfigPath);
 
   const matchesRequiredLint = previousLint === REQUIRED_LINT_SCRIPT_VALUE;
-  const matchesRequiredEslintRules = previousEslintRules === requiredEslintRulesDependency;
+  const matchesRequiredEslintRules =
+    previousEslintRules === requiredEslintRulesDependency;
 
   let eslintConfigAction = 'unchanged';
   let matchesRequiredEslintConfig = false;
@@ -204,7 +225,9 @@ export function runSyncLint(options) {
   }
 
   const requiresUpdate =
-    !matchesRequiredLint || !matchesRequiredEslintRules || !matchesRequiredEslintConfig;
+    !matchesRequiredLint ||
+    !matchesRequiredEslintRules ||
+    !matchesRequiredEslintConfig;
   const hasUnpatchableEslintConfig = eslintConfigAction === 'unpatchable';
 
   if (mode === 'sync' && requiresUpdate && !hasUnpatchableEslintConfig) {
@@ -214,8 +237,16 @@ export function runSyncLint(options) {
     devDependencies['@produck/eslint-rules'] = requiredEslintRulesDependency;
     pkg.devDependencies = devDependencies;
 
-    fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(eslintConfigPath, nextEslintConfigText || REQUIRED_ESLINT_CONFIG, 'utf8');
+    fs.writeFileSync(
+      rootPackageJsonPath,
+      `${JSON.stringify(pkg, null, 2)}\n`,
+      'utf8',
+    );
+    fs.writeFileSync(
+      eslintConfigPath,
+      nextEslintConfigText || REQUIRED_ESLINT_CONFIG,
+      'utf8',
+    );
   }
 
   const report = {

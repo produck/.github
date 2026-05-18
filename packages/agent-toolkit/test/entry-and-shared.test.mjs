@@ -5,10 +5,23 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 
 import { printMainHelp } from '../bin/command/main/index.mjs';
-import { getMulti, getSingle, hasFlag, parseCommonArgs } from '../bin/command/shared/args.mjs';
-import { loadTextResource, printTextResource } from '../bin/command/shared/text-resource.mjs';
+import {
+  getMulti,
+  getSingle,
+  hasFlag,
+  parseCommonArgs,
+} from '../bin/command/shared/args.mjs';
+import {
+  loadTextResource,
+  printTextResource,
+} from '../bin/command/shared/text-resource.mjs';
 
-import { PACKAGE_ROOT, runCli, writeTextFile, withTempDir } from './helpers.mjs';
+import {
+  PACKAGE_ROOT,
+  runCli,
+  writeTextFile,
+  withTempDir,
+} from './helpers.mjs';
 
 const LOAD_MISSING_RESOURCE_PROBE = path.resolve(
   PACKAGE_ROOT,
@@ -62,7 +75,10 @@ describe('shared argument utilities', () => {
 
     assert.equal(getSingle(options, '--cwd', 'fallback'), 'repo-b');
     assert.equal(getSingle(options, '--missing', 'fallback'), 'fallback');
-    assert.deepEqual(getMulti(options, '--require'), ['package.json', '.editorconfig']);
+    assert.deepEqual(getMulti(options, '--require'), [
+      'package.json',
+      '.editorconfig',
+    ]);
     assert.deepEqual(getMulti(options, '--unknown'), []);
     assert.equal(hasFlag(options, '--cwd'), true);
     assert.equal(hasFlag(options, '--unknown'), false);
@@ -87,11 +103,18 @@ describe('shared text resources', () => {
   });
 
   it('exits when resource file is missing', () => {
-    const missingPath = path.join(os.tmpdir(), 'agent-toolkit-resource-does-not-exist.txt');
-    const result = spawnSync(process.execPath, [LOAD_MISSING_RESOURCE_PROBE, missingPath], {
-      cwd: PACKAGE_ROOT,
-      encoding: 'utf8',
-    });
+    const missingPath = path.join(
+      os.tmpdir(),
+      'agent-toolkit-resource-does-not-exist.txt',
+    );
+    const result = spawnSync(
+      process.execPath,
+      [LOAD_MISSING_RESOURCE_PROBE, missingPath],
+      {
+        cwd: PACKAGE_ROOT,
+        encoding: 'utf8',
+      },
+    );
 
     assert.equal(result.status, 2);
     assert.match(result.stderr, /Resource file not found/);
@@ -117,7 +140,10 @@ describe('main command router', () => {
   it('runs enforce-node-baseline as default when no command is provided', async () => {
     await withTempDir('agent-toolkit-default-command-', async (tempDir) => {
       const sourceDir = path.join(tempDir, 'source');
-      await writeTextFile(path.join(sourceDir, '00-sample.instructions.md'), 'sample\n');
+      await writeTextFile(
+        path.join(sourceDir, '00-sample.instructions.md'),
+        'sample\n',
+      );
 
       const rootPackageJson = {
         name: 'tmp-workspace',
@@ -135,9 +161,18 @@ describe('main command router', () => {
         path.join(tempDir, 'package.json'),
         `${JSON.stringify(rootPackageJson, null, 2)}\n`,
       );
-      await writeTextFile(path.join(tempDir, 'packages/a/package.json'), '{"name":"a"}\n');
+      await writeTextFile(
+        path.join(tempDir, 'packages/a/package.json'),
+        '{"name":"a"}\n',
+      );
 
-      const result = runCli(['--cwd', tempDir, '--source', sourceDir, '--dry-run']);
+      const result = runCli([
+        '--cwd',
+        tempDir,
+        '--source',
+        sourceDir,
+        '--dry-run',
+      ]);
 
       assert.equal(result.status, 0);
 

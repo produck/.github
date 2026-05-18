@@ -2,7 +2,13 @@
   "check-coverage": true,
   "all": true,
   "branches": 99.5,
-  "exclude": ["**/node_modules/**", "**/coverage/**", "**/dist/**", "**/build/**", "**/out/**"],
+  "exclude": [
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/out/**"
+  ],
   "functions": 99.5,
   "include": [],
   "reporter": ["lcov", "html", "text-summary"],

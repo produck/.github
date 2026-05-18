@@ -11,11 +11,15 @@ const PACKAGE_ROOT = path.resolve(TEST_DIR, '..');
 const TOOLKIT_BIN = path.resolve(PACKAGE_ROOT, 'bin/agent-toolkit.mjs');
 
 function runValidateArgs(args, spawnOptions = {}) {
-  return spawnSync(process.execPath, [TOOLKIT_BIN, 'validate-commit-msg', ...args], {
-    cwd: PACKAGE_ROOT,
-    encoding: 'utf8',
-    env: { ...process.env, ...(spawnOptions.env || {}) },
-  });
+  return spawnSync(
+    process.execPath,
+    [TOOLKIT_BIN, 'validate-commit-msg', ...args],
+    {
+      cwd: PACKAGE_ROOT,
+      encoding: 'utf8',
+      env: { ...process.env, ...(spawnOptions.env || {}) },
+    },
+  );
 }
 
 function runValidate(messageFile) {
@@ -23,7 +27,9 @@ function runValidate(messageFile) {
 }
 
 async function withMessage(content, runner) {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-toolkit-msg-'));
+  const tempDir = await fs.mkdtemp(
+    path.join(os.tmpdir(), 'agent-toolkit-msg-'),
+  );
   const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
 
   await fs.writeFile(messageFile, content, 'utf8');
@@ -44,7 +50,10 @@ describe('validate-commit-msg', () => {
   });
 
   it('fails when message file is missing', () => {
-    const missingPath = path.join(os.tmpdir(), 'agent-toolkit-missing-message-file.txt');
+    const missingPath = path.join(
+      os.tmpdir(),
+      'agent-toolkit-missing-message-file.txt',
+    );
     const result = runValidate(missingPath);
 
     assert.equal(result.status, 2);
@@ -61,9 +70,13 @@ describe('validate-commit-msg', () => {
   });
 
   it('accepts messages with trailing blank lines', async () => {
-    const message = ['workspace:', '[FIX] <docs>: keep final message strict', '', '', ''].join(
-      '\n',
-    );
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: keep final message strict',
+      '',
+      '',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -112,7 +125,11 @@ describe('validate-commit-msg', () => {
   });
 
   it('accepts sectioned tagged commit lines', async () => {
-    const message = ['workspace:', '[FIX] <docs>: clarify validate command output', ''].join('\n');
+    const message = [
+      'workspace:',
+      '[FIX] <docs>: clarify validate command output',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -190,15 +207,18 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects monorepo messages without a section header', async () => {
-    await withMessage('[FIX] <docs>: missing scope line\n', async (messageFile) => {
-      const result = runValidate(messageFile);
+    await withMessage(
+      '[FIX] <docs>: missing scope line\n',
+      async (messageFile) => {
+        const result = runValidate(messageFile);
 
-      assert.equal(result.status, 1);
-      assert.match(
-        result.stderr,
-        /section header is required before tagged lines in monorepo mode/i,
-      );
-    });
+        assert.equal(result.status, 1);
+        assert.match(
+          result.stderr,
+          /section header is required before tagged lines in monorepo mode/i,
+        );
+      },
+    );
   });
 
   it('allows [PUBLISH] without a section header in monorepo mode', async () => {
@@ -233,7 +253,9 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects disallowed targets', async () => {
-    const message = ['workspace:', '[FIX] <feature>: add capability', ''].join('\n');
+    const message = ['workspace:', '[FIX] <feature>: add capability', ''].join(
+      '\n',
+    );
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -266,7 +288,13 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects empty lines in commit message', async () => {
-    const message = ['workspace:', '[FIX] first line', '', '[FIX] second line', ''].join('\n');
+    const message = [
+      'workspace:',
+      '[FIX] first line',
+      '',
+      '[FIX] second line',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -306,12 +334,19 @@ describe('validate-commit-msg', () => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
-      assert.match(result.stderr, /must start with \[TAG\] followed by a space/i);
+      assert.match(
+        result.stderr,
+        /must start with \[TAG\] followed by a space/i,
+      );
     });
   });
 
   it('reports validateCommitLine errors inside section mode', async () => {
-    const message = ['workspace:', '[CHANGED] invalid tag inside section', ''].join('\n');
+    const message = [
+      'workspace:',
+      '[CHANGED] invalid tag inside section',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -341,7 +376,11 @@ describe('validate-commit-msg', () => {
   });
 
   it('accepts wildcard scope for mixed monorepo commits', async () => {
-    const message = ['*:', '[FIX] <infra>: align mixed workspace/package changes', ''].join('\n');
+    const message = [
+      '*:',
+      '[FIX] <infra>: align mixed workspace/package changes',
+      '',
+    ].join('\n');
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
@@ -352,13 +391,18 @@ describe('validate-commit-msg', () => {
   });
 
   it('rejects section scope outside workspace/package-name/* convention', async () => {
-    const message = ['core:', '[FIX] <docs>: invalid scope name', ''].join('\n');
+    const message = ['core:', '[FIX] <docs>: invalid scope name', ''].join(
+      '\n',
+    );
 
     await withMessage(message, async (messageFile) => {
       const result = runValidate(messageFile);
 
       assert.equal(result.status, 1);
-      assert.match(result.stderr, /section header "core:" is not allowed in monorepo mode/i);
+      assert.match(
+        result.stderr,
+        /section header "core:" is not allowed in monorepo mode/i,
+      );
     });
   });
 

@@ -39,7 +39,8 @@ export function runSyncEditorconfig(options) {
   const editorconfigPath = path.resolve(cwd, EDITORCONFIG_FILE);
   const currentContent = readFileIfExists(editorconfigPath);
   const fileExists = currentContent !== null;
-  const upToDate = fileExists && currentContent === REQUIRED_EDITORCONFIG_CONTENT;
+  const upToDate =
+    fileExists && currentContent === REQUIRED_EDITORCONFIG_CONTENT;
 
   const mismatches = [];
   if (!upToDate) {

@@ -18,12 +18,18 @@ export function validateWorkspaceShape(pkg, requiredFields, requiredScripts) {
   const missingFields = findMissingKeys(pkg, requiredFields);
   const scripts = toObjectRecord(pkg.scripts);
   const scriptTypeValid =
-    typeof pkg.scripts === 'object' && pkg.scripts !== null && !Array.isArray(pkg.scripts);
-  const missingScripts = scriptTypeValid ? findMissingKeys(scripts, requiredScripts) : [];
+    typeof pkg.scripts === 'object' &&
+    pkg.scripts !== null &&
+    !Array.isArray(pkg.scripts);
+  const missingScripts = scriptTypeValid
+    ? findMissingKeys(scripts, requiredScripts)
+    : [];
 
   const workspacesIsArray = Array.isArray(pkg.workspaces);
   const wildcardWorkspaces = workspacesIsArray
-    ? pkg.workspaces.map((entry) => String(entry)).filter((entry) => GLOB_TOKEN_PATTERN.test(entry))
+    ? pkg.workspaces
+      .map((entry) => String(entry))
+      .filter((entry) => GLOB_TOKEN_PATTERN.test(entry))
     : ['<non-array-workspaces>'];
 
   const privateIsTrue = pkg.private === true;

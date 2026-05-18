@@ -7,19 +7,43 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(SCRIPT_DIR, '..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const SOURCE_DIR = path.resolve(REPO_ROOT, '.github/distribution/produck');
-const OUTPUT_DIR = path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck');
-const SOURCE_TOOLING_BASELINE_PATH = path.resolve(SOURCE_DIR, 'tooling-version-baseline.json');
-const OUTPUT_TOOLING_BASELINE_PATH = path.resolve(OUTPUT_DIR, 'tooling-version-baseline.json');
+const OUTPUT_DIR = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/instructions/produck',
+);
+const SOURCE_TOOLING_BASELINE_PATH = path.resolve(
+  SOURCE_DIR,
+  'tooling-version-baseline.json',
+);
+const OUTPUT_TOOLING_BASELINE_PATH = path.resolve(
+  OUTPUT_DIR,
+  'tooling-version-baseline.json',
+);
 const SOURCE_GITATTRIBUTES_PATH = path.resolve(REPO_ROOT, '.gitattributes');
 const SOURCE_GITIGNORE_PATH = path.resolve(REPO_ROOT, '.gitignore');
 const SOURCE_PRETTIERRC_PATH = path.resolve(REPO_ROOT, '.prettierrc');
 const SOURCE_PRETTIERIGNORE_PATH = path.resolve(REPO_ROOT, '.prettierignore');
 const SOURCE_LERNA_PATH = path.resolve(REPO_ROOT, 'lerna.json');
-const OUTPUT_GITATTRIBUTES_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitattributes');
-const OUTPUT_GITIGNORE_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitignore');
-const OUTPUT_PRETTIERRC_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/prettierrc');
-const OUTPUT_PRETTIERIGNORE_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/prettierignore');
-const OUTPUT_LERNA_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/lerna.json');
+const OUTPUT_GITATTRIBUTES_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/gitattributes',
+);
+const OUTPUT_GITIGNORE_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/gitignore',
+);
+const OUTPUT_PRETTIERRC_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/prettierrc',
+);
+const OUTPUT_PRETTIERIGNORE_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/prettierignore',
+);
+const OUTPUT_LERNA_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/lerna.json',
+);
 const LEGACY_OUTPUT_PATH = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/instructions/org.instructions.md',
@@ -53,14 +77,20 @@ function validateSourceFile(fileName, text) {
 
 function readAndValidateToolingBaseline() {
   if (!fs.existsSync(SOURCE_TOOLING_BASELINE_PATH)) {
-    throw new Error(`Missing tooling baseline source file: ${SOURCE_TOOLING_BASELINE_PATH}`);
+    throw new Error(
+      `Missing tooling baseline source file: ${SOURCE_TOOLING_BASELINE_PATH}`,
+    );
   }
 
   let baseline;
   try {
-    baseline = JSON.parse(fs.readFileSync(SOURCE_TOOLING_BASELINE_PATH, 'utf8'));
+    baseline = JSON.parse(
+      fs.readFileSync(SOURCE_TOOLING_BASELINE_PATH, 'utf8'),
+    );
   } catch {
-    throw new Error(`Invalid tooling baseline JSON: ${SOURCE_TOOLING_BASELINE_PATH}`);
+    throw new Error(
+      `Invalid tooling baseline JSON: ${SOURCE_TOOLING_BASELINE_PATH}`,
+    );
   }
 
   const c8Version = baseline?.tools?.c8?.version;
@@ -68,24 +98,40 @@ function readAndValidateToolingBaseline() {
   const coverageScriptTemplate = baseline?.coverage?.scriptTemplate;
 
   if (typeof baseline.schemaVersion !== 'number') {
-    throw new Error(`Invalid tooling baseline schemaVersion in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+    throw new Error(
+      `Invalid tooling baseline schemaVersion in: ${SOURCE_TOOLING_BASELINE_PATH}`,
+    );
   }
 
   if (typeof c8Version !== 'string' || c8Version.trim() === '') {
-    throw new Error(`Invalid tools.c8.version in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+    throw new Error(
+      `Invalid tools.c8.version in: ${SOURCE_TOOLING_BASELINE_PATH}`,
+    );
   }
 
   if (typeof lernaVersion !== 'string' || lernaVersion.trim() === '') {
-    throw new Error(`Invalid tools.lerna.version in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+    throw new Error(
+      `Invalid tools.lerna.version in: ${SOURCE_TOOLING_BASELINE_PATH}`,
+    );
   }
 
-  if (typeof coverageScriptTemplate !== 'string' || coverageScriptTemplate.trim() === '') {
-    throw new Error(`Invalid coverage.scriptTemplate in: ${SOURCE_TOOLING_BASELINE_PATH}`);
+  if (
+    typeof coverageScriptTemplate !== 'string' ||
+    coverageScriptTemplate.trim() === ''
+  ) {
+    throw new Error(
+      `Invalid coverage.scriptTemplate in: ${SOURCE_TOOLING_BASELINE_PATH}`,
+    );
   }
 
-  const eslintRulesPkgPath = path.resolve(PACKAGE_ROOT, '../eslint-rules/package.json');
+  const eslintRulesPkgPath = path.resolve(
+    PACKAGE_ROOT,
+    '../eslint-rules/package.json',
+  );
   if (fs.existsSync(eslintRulesPkgPath)) {
-    const eslintRulesPkg = JSON.parse(fs.readFileSync(eslintRulesPkgPath, 'utf8'));
+    const eslintRulesPkg = JSON.parse(
+      fs.readFileSync(eslintRulesPkgPath, 'utf8'),
+    );
     const version = eslintRulesPkg.version;
     if (typeof version === 'string' && version.trim()) {
       if (!baseline.tools) baseline.tools = {};
@@ -129,7 +175,9 @@ function cleanStaleManagedFiles(expectedNames) {
   if (!fs.existsSync(OUTPUT_DIR)) {
     return;
   }
-  const existing = fs.readdirSync(OUTPUT_DIR).filter((name) => name.endsWith('.instructions.md'));
+  const existing = fs
+    .readdirSync(OUTPUT_DIR)
+    .filter((name) => name.endsWith('.instructions.md'));
   for (const name of existing) {
     if (expectedNames.has(name)) {
       continue;
@@ -162,7 +210,9 @@ function run() {
   );
 
   if (!fs.existsSync(SOURCE_GITATTRIBUTES_PATH)) {
-    throw new Error(`Missing source .gitattributes: ${SOURCE_GITATTRIBUTES_PATH}`);
+    throw new Error(
+      `Missing source .gitattributes: ${SOURCE_GITATTRIBUTES_PATH}`,
+    );
   }
   if (!fs.existsSync(SOURCE_GITIGNORE_PATH)) {
     throw new Error(`Missing source .gitignore: ${SOURCE_GITIGNORE_PATH}`);
@@ -171,7 +221,9 @@ function run() {
     throw new Error(`Missing source .prettierrc: ${SOURCE_PRETTIERRC_PATH}`);
   }
   if (!fs.existsSync(SOURCE_PRETTIERIGNORE_PATH)) {
-    throw new Error(`Missing source .prettierignore: ${SOURCE_PRETTIERIGNORE_PATH}`);
+    throw new Error(
+      `Missing source .prettierignore: ${SOURCE_PRETTIERIGNORE_PATH}`,
+    );
   }
   if (!fs.existsSync(SOURCE_LERNA_PATH)) {
     throw new Error(`Missing source lerna.json: ${SOURCE_LERNA_PATH}`);
@@ -191,14 +243,18 @@ function run() {
     normalize(fs.readFileSync(SOURCE_GITIGNORE_PATH, 'utf8')),
     'utf8',
   );
-  process.stdout.write(`Generated ${OUTPUT_GITIGNORE_PATH} from ${SOURCE_GITIGNORE_PATH}\n`);
+  process.stdout.write(
+    `Generated ${OUTPUT_GITIGNORE_PATH} from ${SOURCE_GITIGNORE_PATH}\n`,
+  );
 
   fs.writeFileSync(
     OUTPUT_PRETTIERRC_PATH,
     normalize(fs.readFileSync(SOURCE_PRETTIERRC_PATH, 'utf8')),
     'utf8',
   );
-  process.stdout.write(`Generated ${OUTPUT_PRETTIERRC_PATH} from ${SOURCE_PRETTIERRC_PATH}\n`);
+  process.stdout.write(
+    `Generated ${OUTPUT_PRETTIERRC_PATH} from ${SOURCE_PRETTIERRC_PATH}\n`,
+  );
 
   fs.writeFileSync(
     OUTPUT_PRETTIERIGNORE_PATH,
@@ -214,7 +270,9 @@ function run() {
     normalize(fs.readFileSync(SOURCE_LERNA_PATH, 'utf8')),
     'utf8',
   );
-  process.stdout.write(`Generated ${OUTPUT_LERNA_PATH} from ${SOURCE_LERNA_PATH}\n`);
+  process.stdout.write(
+    `Generated ${OUTPUT_LERNA_PATH} from ${SOURCE_LERNA_PATH}\n`,
+  );
 
   cleanStaleManagedFiles(expectedNames);
 

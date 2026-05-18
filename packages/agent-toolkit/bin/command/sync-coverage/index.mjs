@@ -10,8 +10,14 @@ const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const PACKAGE_ROOT = path.resolve(COMMAND_DIR, '../../..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const TOOLING_BASELINE_CANDIDATE_PATHS = [
-  path.resolve(REPO_ROOT, '.github/distribution/produck/tooling-version-baseline.json'),
-  path.resolve(PACKAGE_ROOT, 'publish-assets/instructions/produck/tooling-version-baseline.json'),
+  path.resolve(
+    REPO_ROOT,
+    '.github/distribution/produck/tooling-version-baseline.json',
+  ),
+  path.resolve(
+    PACKAGE_ROOT,
+    'publish-assets/instructions/produck/tooling-version-baseline.json',
+  ),
 ];
 const GLOB_TOKEN_PATTERN = /[*?{}[\]]/;
 const REQUIRED_ROOT_COVERAGE_SCRIPT_KEY = 'produck:coverage';
@@ -19,9 +25,13 @@ const REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE =
   'c8 --config .c8rc.json npm run test --workspaces --if-present';
 const REQUIRED_COVERAGE_SCRIPT_KEY = 'produck:coverage';
 const REQUIRED_TEST_SCRIPT_KEY = 'test';
-const DEFAULT_TEST_SCRIPT_VALUE = 'node -e "console.log(\'No tests configured\')"';
+const DEFAULT_TEST_SCRIPT_VALUE =
+  'node -e "console.log(\'No tests configured\')"';
 const REQUIRED_C8_CONFIG_FILE = '.c8rc.json';
-const REQUIRED_C8_CONFIG_TEMPLATE_FILE = path.resolve(COMMAND_DIR, 'required-c8-config.json');
+const REQUIRED_C8_CONFIG_TEMPLATE_FILE = path.resolve(
+  COMMAND_DIR,
+  'required-c8-config.json',
+);
 
 export function printSyncCoverageHelp() {
   printTextResource(HELP_FILE);
@@ -37,12 +47,16 @@ function parseJsonFile(filePath, label) {
 }
 
 function loadToolingBaseline() {
-  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find((candidatePath) => {
-    return fs.existsSync(candidatePath);
-  });
+  const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find(
+    (candidatePath) => {
+      return fs.existsSync(candidatePath);
+    },
+  );
 
   if (!toolingBaselinePath) {
-    console.error('Tooling baseline file does not exist in expected locations:');
+    console.error(
+      'Tooling baseline file does not exist in expected locations:',
+    );
     for (const candidatePath of TOOLING_BASELINE_CANDIDATE_PATHS) {
       console.error(`- ${candidatePath}`);
     }
@@ -51,7 +65,9 @@ function loadToolingBaseline() {
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
   if (typeof baseline.schemaVersion !== 'number') {
-    console.error(`Tooling baseline schemaVersion must be a number: ${toolingBaselinePath}`);
+    console.error(
+      `Tooling baseline schemaVersion must be a number: ${toolingBaselinePath}`,
+    );
     process.exit(2);
   }
 
@@ -103,7 +119,10 @@ function loadRequiredC8ConfigContent() {
     process.exit(2);
   }
 
-  const template = parseJsonFile(REQUIRED_C8_CONFIG_TEMPLATE_FILE, 'Required c8 config template');
+  const template = parseJsonFile(
+    REQUIRED_C8_CONFIG_TEMPLATE_FILE,
+    'Required c8 config template',
+  );
   return `${JSON.stringify(template, null, 2)}\n`;
 }
 
@@ -118,7 +137,10 @@ function resolveWorkspacePaths(cwd, options) {
     return [];
   }
 
-  const rootPackageJson = parseJsonFile(rootPackageJsonPath, 'Root package.json');
+  const rootPackageJson = parseJsonFile(
+    rootPackageJsonPath,
+    'Root package.json',
+  );
   if (!Array.isArray(rootPackageJson.workspaces)) {
     return [];
   }
@@ -130,20 +152,29 @@ function resolveWorkspacePaths(cwd, options) {
 
   const hasGlob = workspaces.some((entry) => GLOB_TOKEN_PATTERN.test(entry));
   if (hasGlob) {
-    console.error('Root package.json `workspaces` must use explicit paths without glob tokens');
+    console.error(
+      'Root package.json `workspaces` must use explicit paths without glob tokens',
+    );
     process.exit(2);
   }
 
   return workspaces;
 }
 
-function syncRootCoverage(cwd, mode, requiredC8Version, requiredC8ConfigContent) {
+function syncRootCoverage(
+  cwd,
+  mode,
+  requiredC8Version,
+  requiredC8ConfigContent,
+) {
   const rootPackageJsonPath = path.resolve(cwd, 'package.json');
   const c8ConfigPath = path.resolve(cwd, REQUIRED_C8_CONFIG_FILE);
   const currentC8ConfigContent = readFileIfExists(c8ConfigPath);
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const scripts =
-    pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
+    pkg.scripts &&
+    typeof pkg.scripts === 'object' &&
+    !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
   const devDependencies =
@@ -160,19 +191,26 @@ function syncRootCoverage(cwd, mode, requiredC8Version, requiredC8ConfigContent)
     typeof devDependencies.c8 === 'string' ? devDependencies.c8 : null;
   const matchesRequiredRootCoverageBefore =
     previousRootCoverageScript === REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE;
-  const matchesRequiredC8DevDependencyBefore = previousC8DevDependency === requiredC8Version;
-  const matchesRequiredC8ConfigBefore = currentC8ConfigContent === requiredC8ConfigContent;
+  const matchesRequiredC8DevDependencyBefore =
+    previousC8DevDependency === requiredC8Version;
+  const matchesRequiredC8ConfigBefore =
+    currentC8ConfigContent === requiredC8ConfigContent;
   const requiresUpdate =
     !matchesRequiredRootCoverageBefore ||
     !matchesRequiredC8DevDependencyBefore ||
     !matchesRequiredC8ConfigBefore;
 
   if (mode === 'sync' && requiresUpdate) {
-    scripts[REQUIRED_ROOT_COVERAGE_SCRIPT_KEY] = REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE;
+    scripts[REQUIRED_ROOT_COVERAGE_SCRIPT_KEY] =
+      REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE;
     pkg.scripts = scripts;
     devDependencies.c8 = requiredC8Version;
     pkg.devDependencies = devDependencies;
-    fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(
+      rootPackageJsonPath,
+      `${JSON.stringify(pkg, null, 2)}\n`,
+      'utf8',
+    );
     fs.writeFileSync(c8ConfigPath, requiredC8ConfigContent, 'utf8');
   }
 
@@ -190,11 +228,17 @@ function syncRootCoverage(cwd, mode, requiredC8Version, requiredC8ConfigContent)
       matchesRequiredC8DevDependencyBefore,
       matchesRequiredC8ConfigBefore,
       matchesRequiredRootCoverageAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredRootCoverageBefore,
+        requiresUpdate && mode === 'sync'
+          ? true
+          : matchesRequiredRootCoverageBefore,
       matchesRequiredC8DevDependencyAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredC8DevDependencyBefore,
+        requiresUpdate && mode === 'sync'
+          ? true
+          : matchesRequiredC8DevDependencyBefore,
       matchesRequiredC8ConfigAfter:
-        requiresUpdate && mode === 'sync' ? true : matchesRequiredC8ConfigBefore,
+        requiresUpdate && mode === 'sync'
+          ? true
+          : matchesRequiredC8ConfigBefore,
       updated: requiresUpdate && mode === 'sync',
     },
   };
@@ -248,7 +292,9 @@ function reconcileCoverageScript(
   }
 
   const scripts =
-    pkg.scripts && typeof pkg.scripts === 'object' && !Array.isArray(pkg.scripts)
+    pkg.scripts &&
+    typeof pkg.scripts === 'object' &&
+    !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
   const devDependencies =
@@ -272,9 +318,11 @@ function reconcileCoverageScript(
   result.previousCoverage = previousCoverage;
   result.previousTestScript = previousTestScript;
   result.previousC8DevDependency = previousC8DevDependency;
-  result.matchesRequiredCoverageBefore = previousCoverage === requiredCoverageScript;
+  result.matchesRequiredCoverageBefore =
+    previousCoverage === requiredCoverageScript;
   result.hasRequiredTestScriptBefore = previousTestScript !== null;
-  result.matchesRequiredC8DevDependencyBefore = previousC8DevDependency === requiredC8Version;
+  result.matchesRequiredC8DevDependencyBefore =
+    previousC8DevDependency === requiredC8Version;
 
   if (
     (!result.matchesRequiredCoverageBefore ||
@@ -289,7 +337,11 @@ function reconcileCoverageScript(
     devDependencies.c8 = requiredC8Version;
     pkg.scripts = scripts;
     pkg.devDependencies = devDependencies;
-    fs.writeFileSync(packageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
+    fs.writeFileSync(
+      packageJsonPath,
+      `${JSON.stringify(pkg, null, 2)}\n`,
+      'utf8',
+    );
     result.updated = true;
   }
 
@@ -306,9 +358,11 @@ function reconcileCoverageScript(
       ? requiredC8Version
       : previousC8DevDependency;
 
-  result.matchesRequiredCoverageAfter = result.updated || result.matchesRequiredCoverageBefore;
+  result.matchesRequiredCoverageAfter =
+    result.updated || result.matchesRequiredCoverageBefore;
   result.hasRequiredTestScriptAfter =
-    (mode === 'sync' && !result.hasRequiredTestScriptBefore) || result.hasRequiredTestScriptBefore;
+    (mode === 'sync' && !result.hasRequiredTestScriptBefore) ||
+    result.hasRequiredTestScriptBefore;
   result.matchesRequiredC8DevDependencyAfter =
     result.updated || result.matchesRequiredC8DevDependencyBefore;
   return result;
@@ -319,7 +373,8 @@ export function runSyncCoverage(options) {
   const check = hasFlag(options, '--check');
   const dryRun = hasFlag(options, '--dry-run');
   const jsonFile = getSingle(options, '--json', '');
-  const { baseline: toolingBaseline, toolingBaselinePath } = loadToolingBaseline();
+  const { baseline: toolingBaseline, toolingBaselinePath } =
+    loadToolingBaseline();
   const requiredCoverageScript = buildRequiredCoverageScript(toolingBaseline);
   const requiredC8Version = buildRequiredC8DevDependency(toolingBaseline);
   const requiredC8ConfigContent = loadRequiredC8ConfigContent();
@@ -330,7 +385,12 @@ export function runSyncCoverage(options) {
   }
 
   const mode = dryRun ? 'dry-run' : check ? 'check' : 'sync';
-  const root = syncRootCoverage(cwd, mode, requiredC8Version, requiredC8ConfigContent);
+  const root = syncRootCoverage(
+    cwd,
+    mode,
+    requiredC8Version,
+    requiredC8ConfigContent,
+  );
   const workspacePaths = resolveWorkspacePaths(cwd, options);
 
   const report = {

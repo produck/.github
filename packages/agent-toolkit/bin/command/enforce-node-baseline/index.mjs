@@ -98,7 +98,13 @@ export function runEnforceNodeBaseline(options) {
     syncInstructionsArgs.push('--dry-run');
   }
 
-  const preflightArgs = ['preflight', '--cwd', cwd, '--require', 'package.json'];
+  const preflightArgs = [
+    'preflight',
+    '--cwd',
+    cwd,
+    '--require',
+    'package.json',
+  ];
   if (mode !== 'sync') {
     preflightArgs.push('--check-workspace-package-json', 'package.json');
   }
