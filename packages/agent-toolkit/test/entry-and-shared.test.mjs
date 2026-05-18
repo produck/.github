@@ -15,6 +15,11 @@ import {
   loadTextResource,
   printTextResource,
 } from '../bin/command/shared/text-resource.mjs';
+import {
+  toObjectRecord,
+  validateWorkspaceShape,
+  validateRequiredExactEntries,
+} from '../bin/command/shared/workspace-validation.mjs';
 
 import {
   PACKAGE_ROOT,
@@ -32,11 +37,8 @@ function captureStdout(callback) {
   const chunks = [];
   const originalWrite = process.stdout.write;
 
-  process.stdout.write = (chunk, encoding, cb) => {
+  process.stdout.write = (chunk) => {
     chunks.push(String(chunk));
-    if (typeof cb === 'function') {
-      cb();
-    }
     return true;
   };
 
@@ -229,5 +231,48 @@ describe('main command router', () => {
 
     assert.equal(result.status, 0);
     assert.match(result.stdout, /agent-toolkit commands:/);
+  });
+});
+
+describe('workspace-validation utilities', () => {
+  it('toObjectRecord returns empty object for non-object values', () => {
+    assert.deepEqual(toObjectRecord(null), {});
+    assert.deepEqual(toObjectRecord([1, 2, 3]), {});
+    assert.deepEqual(toObjectRecord('string'), {});
+  });
+
+  it('validateWorkspaceShape reports invalid scripts type', () => {
+    const result = validateWorkspaceShape(
+      { scripts: null, workspaces: [] },
+      [],
+      ['build'],
+    );
+
+    assert.equal(result.scriptTypeValid, false);
+    assert.deepEqual(result.missingScripts, []);
+  });
+
+  it('validateWorkspaceShape reports non-array workspaces', () => {
+    const result = validateWorkspaceShape(
+      { scripts: {}, workspaces: 'not-an-array' },
+      [],
+      [],
+    );
+
+    assert.equal(result.ok, false);
+    assert.deepEqual(result.wildcardWorkspaces, ['<non-array-workspaces>']);
+  });
+
+  it('validateRequiredExactEntries reports null and actual value for mismatches', () => {
+    const result = validateRequiredExactEntries(
+      { foo: 'wrong' },
+      { foo: 'bar', baz: 'qux' },
+    );
+
+    assert.equal(result.ok, false);
+    assert.equal(result.mismatches.foo.actual, 'wrong');
+    assert.equal(result.mismatches.foo.expected, 'bar');
+    assert.equal(result.mismatches.baz.actual, null);
+    assert.equal(result.mismatches.baz.expected, 'qux');
   });
 });

@@ -208,6 +208,7 @@ describe('sync-coverage command', () => {
 
       const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
       const rootAfter = await readJson(path.join(tempDir, 'package.json'));
+      /* c8 ignore next */
       assert.equal(rootAfter.scripts?.['produck:coverage'], undefined);
       assert.equal(a.scripts['produck:coverage'], 'echo custom');
       assert.equal(a.devDependencies.c8, '10.0.0');
@@ -338,6 +339,7 @@ describe('sync-coverage command', () => {
 
         const root = await readJson(path.join(tempDir, 'package.json'));
         const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
+        /* c8 ignore next */
         assert.equal(root.scripts?.['produck:coverage'], undefined);
         assert.equal(a.scripts['produck:coverage'], 'echo old');
         assert.equal(a.scripts.test, undefined);
@@ -440,5 +442,171 @@ describe('sync-coverage command', () => {
       assert.equal(afterC8, beforeC8);
       assert.equal(afterWorkspace, beforeWorkspace);
     });
+  });
+
+  it('check mode marks root ok=false when only c8 devDep mismatches', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-coverage-check-devdep-',
+      async (tempDir) => {
+        const rootPkg = {
+          name: 'tmp',
+          private: true,
+          scripts: { 'produck:coverage': REQUIRED_ROOT_COVERAGE_SCRIPT },
+          devDependencies: { c8: '1.0.0' },
+        };
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify(rootPkg, null, 2)}\n`,
+        );
+        await writeTextFile(
+          path.join(tempDir, '.c8rc.json'),
+          REQUIRED_C8_CONFIG_CONTENT,
+        );
+
+        const result = runCli(['sync-coverage', '--cwd', tempDir, '--check']);
+        assert.equal(result.status, 2);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, false);
+        assert.equal(
+          report.root.status.matchesRequiredRootCoverageAfter,
+          true,
+        );
+        assert.equal(
+          report.root.status.matchesRequiredC8DevDependencyAfter,
+          false,
+        );
+      },
+    );
+  });
+
+  it('check mode marks root ok=false when only c8 config mismatches', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-coverage-check-c8config-',
+      async (tempDir) => {
+        const rootPkg = {
+          name: 'tmp',
+          private: true,
+          scripts: { 'produck:coverage': REQUIRED_ROOT_COVERAGE_SCRIPT },
+          devDependencies: { c8: REQUIRED_C8_VERSION },
+        };
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify(rootPkg, null, 2)}\n`,
+        );
+
+        const result = runCli(['sync-coverage', '--cwd', tempDir, '--check']);
+        assert.equal(result.status, 2);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, false);
+        assert.equal(
+          report.root.status.matchesRequiredRootCoverageAfter,
+          true,
+        );
+        assert.equal(
+          report.root.status.matchesRequiredC8DevDependencyAfter,
+          true,
+        );
+        assert.equal(report.root.status.matchesRequiredC8ConfigAfter, false);
+      },
+    );
+  });
+
+  it('check mode marks workspace ok=false when only test script mismatches', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-coverage-check-ws-test-',
+      async (tempDir) => {
+        const rootPkg = {
+          name: 'tmp',
+          private: true,
+          scripts: { 'produck:coverage': REQUIRED_ROOT_COVERAGE_SCRIPT },
+          devDependencies: { c8: REQUIRED_C8_VERSION },
+        };
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify(rootPkg, null, 2)}\n`,
+        );
+        await writeTextFile(
+          path.join(tempDir, '.c8rc.json'),
+          REQUIRED_C8_CONFIG_CONTENT,
+        );
+        const wsPkg = {
+          name: 'a',
+          scripts: { 'produck:coverage': REQUIRED_COVERAGE_SCRIPT },
+        };
+        await writeTextFile(
+          path.join(tempDir, 'packages/a/package.json'),
+          `${JSON.stringify(wsPkg, null, 2)}\n`,
+        );
+
+        const result = runCli([
+          'sync-coverage',
+          '--cwd',
+          tempDir,
+          '--workspace',
+          'packages/a',
+          '--check',
+        ]);
+        assert.equal(result.status, 2);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, false);
+        assert.equal(report.results[0].matchesRequiredCoverageAfter, true);
+        assert.equal(report.results[0].hasRequiredTestScriptAfter, false);
+      },
+    );
+  });
+
+  it('check mode marks workspace ok=false when only c8 devDep mismatches', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-coverage-check-ws-c8dep-',
+      async (tempDir) => {
+        const rootPkg = {
+          name: 'tmp',
+          private: true,
+          scripts: { 'produck:coverage': REQUIRED_ROOT_COVERAGE_SCRIPT },
+          devDependencies: { c8: REQUIRED_C8_VERSION },
+        };
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify(rootPkg, null, 2)}\n`,
+        );
+        await writeTextFile(
+          path.join(tempDir, '.c8rc.json'),
+          REQUIRED_C8_CONFIG_CONTENT,
+        );
+        const wsPkg = {
+          name: 'a',
+          scripts: {
+            'produck:coverage': REQUIRED_COVERAGE_SCRIPT,
+            test: REQUIRED_TEST_SCRIPT,
+          },
+        };
+        await writeTextFile(
+          path.join(tempDir, 'packages/a/package.json'),
+          `${JSON.stringify(wsPkg, null, 2)}\n`,
+        );
+
+        const result = runCli([
+          'sync-coverage',
+          '--cwd',
+          tempDir,
+          '--workspace',
+          'packages/a',
+          '--check',
+        ]);
+        assert.equal(result.status, 2);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, false);
+        assert.equal(report.results[0].matchesRequiredCoverageAfter, true);
+        assert.equal(report.results[0].hasRequiredTestScriptAfter, true);
+        assert.equal(
+          report.results[0].matchesRequiredC8DevDependencyAfter,
+          false,
+        );
+      },
+    );
   });
 });

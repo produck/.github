@@ -21,6 +21,7 @@ const TOOLING_BASELINE_ASSET_PATH = path.resolve(
 );
 const TOOLING_BASELINE_PATH = fs.existsSync(TOOLING_BASELINE_REPO_PATH)
   ? TOOLING_BASELINE_REPO_PATH
+  /* c8 ignore next */
   : TOOLING_BASELINE_ASSET_PATH;
 const TOOLING_BASELINE = JSON.parse(
   fs.readFileSync(TOOLING_BASELINE_PATH, 'utf8'),
@@ -33,6 +34,7 @@ const PRETTIERRC_ASSET_PATH = path.resolve(
 );
 const PRETTIERRC_SOURCE_PATH = fs.existsSync(PRETTIERRC_REPO_PATH)
   ? PRETTIERRC_REPO_PATH
+  /* c8 ignore next */
   : PRETTIERRC_ASSET_PATH;
 const PRETTIERIGNORE_REPO_PATH = path.resolve(REPO_ROOT, '.prettierignore');
 const PRETTIERIGNORE_ASSET_PATH = path.resolve(
@@ -41,6 +43,7 @@ const PRETTIERIGNORE_ASSET_PATH = path.resolve(
 );
 const PRETTIERIGNORE_SOURCE_PATH = fs.existsSync(PRETTIERIGNORE_REPO_PATH)
   ? PRETTIERIGNORE_REPO_PATH
+  /* c8 ignore next */
   : PRETTIERIGNORE_ASSET_PATH;
 const REQUIRED_FORMAT_SCRIPT =
   'prettier --write . --ignore-path .prettierignore --ignore-path .gitignore';

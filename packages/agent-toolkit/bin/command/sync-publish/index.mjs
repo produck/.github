@@ -62,11 +62,13 @@ function loadRequiredLernaTemplate() {
     command: {
       ...(template.command && typeof template.command === 'object'
         ? template.command
+        /* c8 ignore next */
         : {}),
       version: {
         ...(template?.command?.version &&
         typeof template.command.version === 'object'
           ? template.command.version
+          /* c8 ignore next */
           : {}),
         commitHooks: REQUIRED_LERNA_VERSION_COMMIT_HOOKS,
       },

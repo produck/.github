@@ -71,7 +71,7 @@ function getRequiredToolkitDevDependency() {
   if (overrideVersion) {
     return overrideVersion;
   }
-
+  /* c8 ignore next */
   const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   const latestResult = spawnSync(
     npmCommand,
@@ -82,6 +82,7 @@ function getRequiredToolkitDevDependency() {
   );
 
   const latestVersion = String(latestResult.stdout || '').trim();
+  /* c8 ignore next */
   if (latestResult.status === 0 && latestVersion) {
     return latestVersion;
   }

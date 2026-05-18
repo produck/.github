@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 
@@ -156,5 +157,16 @@ describe('sync-install command', () => {
         assert.equal(report.status.updated, false);
       },
     );
+  });
+
+  it('fails when --cwd does not exist', () => {
+    const result = runCli([
+      'sync-install',
+      '--cwd',
+      path.join(os.tmpdir(), 'agent-toolkit-sync-install-no-cwd-999'),
+    ]);
+
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /CWD does not exist/);
   });
 });

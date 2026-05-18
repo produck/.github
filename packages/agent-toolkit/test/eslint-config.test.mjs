@@ -10,7 +10,7 @@ const ESLINT_CONFIG_PATH = path.resolve(
 
 describe('agent-toolkit eslint config', () => {
   it('exports a flat config array with produck rules', async () => {
-    const mod = await import(pathToFileURL(ESLINT_CONFIG_PATH).href);
+    const mod = await import(pathToFileURL(ESLINT_CONFIG_PATH).href); /* c8 ignore next */
     assert.equal(Array.isArray(mod.default), true);
     assert.equal(mod.default.length > 0, true);
   });

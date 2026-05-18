@@ -208,8 +208,7 @@ describe('sync-publish command', () => {
       assert.equal(report.status.matchesRequiredLernaCommitHooksAfter, false);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
-      assert.equal(pkg.scripts?.['produck:publish:check'], undefined);
-      assert.equal(pkg.scripts?.['produck:publish'], undefined);
+      assert.equal(pkg.scripts, undefined);
     });
   });
 
@@ -234,8 +233,7 @@ describe('sync-publish command', () => {
         assert.equal(report.status.updated, false);
 
         const pkg = await readJson(path.join(tempDir, 'package.json'));
-        assert.equal(pkg.scripts?.['produck:publish:check'], undefined);
-        assert.equal(pkg.scripts?.['produck:publish'], undefined);
+        assert.equal(pkg.scripts, undefined);
       },
     );
   });

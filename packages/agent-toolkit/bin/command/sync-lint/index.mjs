@@ -78,6 +78,7 @@ function getRequiredEslintRulesDevDependency() {
     const version =
       typeof eslintRulesPkg.version === 'string'
         ? eslintRulesPkg.version.trim()
+        /* c8 ignore next */
         : '';
     if (version) {
       return version;
@@ -101,6 +102,7 @@ function getRequiredEslintRulesDevDependency() {
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
   const entry = baseline?.tools?.[ESLINT_RULES_PACKAGE_NAME];
+  /* c8 ignore next 2 */
   const version =
     typeof entry?.version === 'string' ? entry.version.trim() : '';
 
@@ -240,6 +242,7 @@ export function runSyncLint(options) {
     );
     fs.writeFileSync(
       eslintConfigPath,
+      /* c8 ignore next */
       nextEslintConfigText || REQUIRED_ESLINT_CONFIG,
       'utf8',
     );

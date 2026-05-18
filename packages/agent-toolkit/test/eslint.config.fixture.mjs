@@ -9,5 +9,4 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   ProduckRule.config,
-  ProduckRule.excludeGitIgnore(import.meta.url),
 ];

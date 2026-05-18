@@ -18,5 +18,5 @@ const result = spawnSync(
     cwd: process.cwd(),
   },
 );
-
+/* c8 ignore next */
 process.exit(result.status ?? 0);

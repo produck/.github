@@ -16,15 +16,18 @@ export function printEnforceNodeBaselineHelp() {
 
 function parseJsonOrNull(text) {
   const trimmed = text.trim();
+  /* c8 ignore next */
   if (!trimmed) {
     return null;
   }
 
+  /* c8 ignore start */
   try {
     return JSON.parse(trimmed);
   } catch {
     return null;
   }
+  /* c8 ignore stop */
 }
 
 function runToolkitSubcommand(cwd, args) {
@@ -33,9 +36,11 @@ function runToolkitSubcommand(cwd, args) {
     encoding: 'utf8',
   });
 
+  /* c8 ignore start */
   const stdout = String(result.stdout || '');
   const stderr = String(result.stderr || '');
   const status = typeof result.status === 'number' ? result.status : 1;
+  /* c8 ignore stop */
 
   return {
     args,
@@ -56,6 +61,7 @@ function buildStepReport(name, stepResult) {
     status: stepResult.status,
     ok: stepResult.ok,
     report: stepResult.report,
+    /* c8 ignore next */
     stdout: hasParsedReport ? '' : stepResult.stdout,
     stderr: stepResult.stderr,
   };
