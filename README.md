@@ -3,6 +3,14 @@
 This repository defines organization-level collaboration policies for
 repositories in the produck organization.
 
+## Baseline Distribution
+
+```bash
+npm create @produck/agent-toolkit@latest
+```
+
+From [@produck/agent-toolkit](packages/agent-toolkit/README.md)
+
 ## Start Here
 
 - **Organization instructions**: [.instructions.md](.instructions.md) — Quick

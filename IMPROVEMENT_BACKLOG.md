@@ -120,13 +120,13 @@ lack a visible review template. Add a PR template under
 All five distribution instruction files currently use `applyTo: '**'`, which
 broadcasts every baseline into every prompt. Suggested narrowing:
 
-| File          | Suggested `applyTo`                                          |
-| ------------- | ------------------------------------------------------------ |
-| `00-base`     | `'**'`                                                       |
-| `10-node`     | `'**/package.json,**/*.{mjs,cjs,js,ts}'`                     |
-| `12-test`     | `'**/test/**,**/*.test.*'`                                   |
-| `15-workspace`| `'**/package.json,eslint.config.mjs,.prettierrc'`            |
-| `20-commit`   | `'**'` (commit messages, not bound to a file path)           |
+| File           | Suggested `applyTo`                                |
+| -------------- | -------------------------------------------------- |
+| `00-base`      | `'**'`                                             |
+| `10-node`      | `'**/package.json,**/*.{mjs,cjs,js,ts}'`           |
+| `12-test`      | `'**/test/**,**/*.test.*'`                         |
+| `15-workspace` | `'**/package.json,eslint.config.mjs,.prettierrc'`  |
+| `20-commit`    | `'**'` (commit messages, not bound to a file path) |
 
 Expected benefit: ~30% reduction in AI prompt token usage on average.
 
