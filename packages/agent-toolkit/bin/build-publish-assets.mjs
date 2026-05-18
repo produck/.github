@@ -13,9 +13,11 @@ const OUTPUT_TOOLING_BASELINE_PATH = path.resolve(OUTPUT_DIR, 'tooling-version-b
 const SOURCE_GITATTRIBUTES_PATH = path.resolve(REPO_ROOT, '.gitattributes');
 const SOURCE_GITIGNORE_PATH = path.resolve(REPO_ROOT, '.gitignore');
 const SOURCE_PRETTIERIGNORE_PATH = path.resolve(REPO_ROOT, '.prettierignore');
+const SOURCE_LERNA_PATH = path.resolve(REPO_ROOT, 'lerna.json');
 const OUTPUT_GITATTRIBUTES_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitattributes');
 const OUTPUT_GITIGNORE_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitignore');
 const OUTPUT_PRETTIERIGNORE_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/prettierignore');
+const OUTPUT_LERNA_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/lerna.json');
 const LEGACY_OUTPUT_PATH = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/instructions/org.instructions.md',
@@ -166,6 +168,9 @@ function run() {
   if (!fs.existsSync(SOURCE_PRETTIERIGNORE_PATH)) {
     throw new Error(`Missing source .prettierignore: ${SOURCE_PRETTIERIGNORE_PATH}`);
   }
+  if (!fs.existsSync(SOURCE_LERNA_PATH)) {
+    throw new Error(`Missing source lerna.json: ${SOURCE_LERNA_PATH}`);
+  }
 
   fs.writeFileSync(
     OUTPUT_GITATTRIBUTES_PATH,
@@ -191,6 +196,13 @@ function run() {
   process.stdout.write(
     `Generated ${OUTPUT_PRETTIERIGNORE_PATH} from ${SOURCE_PRETTIERIGNORE_PATH}\n`,
   );
+
+  fs.writeFileSync(
+    OUTPUT_LERNA_PATH,
+    normalize(fs.readFileSync(SOURCE_LERNA_PATH, 'utf8')),
+    'utf8',
+  );
+  process.stdout.write(`Generated ${OUTPUT_LERNA_PATH} from ${SOURCE_LERNA_PATH}\n`);
 
   cleanStaleManagedFiles(expectedNames);
 

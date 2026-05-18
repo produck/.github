@@ -1,6 +1,9 @@
 {
   "$schema": "./node_modules/lerna/schemas/lerna-schema.json",
   "command": {
+    "version": {
+      "commitHooks": false
+    },
     "publish": {
       "ignoreScripts": false,
       "message": "[PUBLISH]"

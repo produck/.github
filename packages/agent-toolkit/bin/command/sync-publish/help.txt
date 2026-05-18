@@ -5,11 +5,13 @@ agent-toolkit sync-publish [--cwd <dir>] [--check] [--dry-run]
 Behavior:
 
 - Reads lerna.json in <dir> to detect monorepo publish mode
-- If lerna.json is absent, sync mode creates a default lerna.json
+- If lerna.json is absent, sync mode creates one from organization sample
+  (repo root lerna.json / publish-assets/lerna.json)
 - Sync mode applies organization-required root publish scripts:
-  - scripts.produck:publish:check = npm run produck:format && npm run produck:lint && npm run produck:coverage
+  - scripts.produck:publish:check = npm run produck:install && npm run produck:format && npm run produck:lint && npm run produck:coverage
   - scripts.produck:publish = npm run produck:publish:check && npm run publish --
     when scripts.publish exists; otherwise it falls back to lerna publish
+  - Enforces lerna.json command.version.commitHooks = false so publish/version commits skip git commit hooks
 
 Rules:
 

@@ -33,10 +33,14 @@ describe('sync-publish command', () => {
       assert.equal(report.ok, true);
       assert.equal(report.status.lernaExistedBefore, true);
       assert.equal(report.status.updated, true);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksAfter, true);
+      assert.match(report.required.lernaTemplatePath, /lerna\.json$/);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
+      const lerna = await readJson(path.join(tempDir, 'lerna.json'));
       assert.equal(pkg.scripts['produck:publish:check'], REQUIRED_PUBLISH_CHECK_SCRIPT);
       assert.equal(pkg.scripts['produck:publish'], REQUIRED_PUBLISH_SCRIPT);
+      assert.equal(lerna.command.version.commitHooks, false);
     });
   });
 
@@ -52,11 +56,16 @@ describe('sync-publish command', () => {
       assert.equal(report.status.lernaExistedBefore, false);
       assert.equal(report.status.lernaDefaultCreated, true);
       assert.equal(report.status.updated, true);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksAfter, true);
+      assert.match(report.required.lernaTemplatePath, /lerna\.json$/);
 
       assert.equal(fs.existsSync(path.join(tempDir, 'lerna.json')), true);
       const pkg = await readJson(path.join(tempDir, 'package.json'));
+      const lerna = await readJson(path.join(tempDir, 'lerna.json'));
       assert.equal(pkg.scripts['produck:publish:check'], REQUIRED_PUBLISH_CHECK_SCRIPT);
       assert.equal(pkg.scripts['produck:publish'], REQUIRED_PUBLISH_SCRIPT);
+      assert.equal(lerna.command.version.commitHooks, false);
+      assert.equal(lerna.command.publish.message, '[PUBLISH]');
     });
   });
 
@@ -74,11 +83,14 @@ describe('sync-publish command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
       assert.equal(report.status.hasUserPublishScript, true);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksAfter, true);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
+      const lerna = await readJson(path.join(tempDir, 'lerna.json'));
       assert.equal(pkg.scripts.publish, 'node ./scripts/publish.mjs');
       assert.equal(pkg.scripts['produck:publish:check'], REQUIRED_PUBLISH_CHECK_SCRIPT);
       assert.equal(pkg.scripts['produck:publish'], REQUIRED_PUBLISH_SCRIPT_WITH_USER_PUBLISH);
+      assert.equal(lerna.command.version.commitHooks, false);
     });
   });
 
@@ -121,6 +133,7 @@ describe('sync-publish command', () => {
       assert.equal(report.status.updated, false);
       assert.equal(report.status.matchesRequiredPublishCheckBefore, false);
       assert.equal(report.status.matchesRequiredPublishBefore, false);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksAfter, false);
 
       const pkg = await readJson(path.join(tempDir, 'package.json'));
       assert.equal(pkg.scripts?.['produck:publish:check'], undefined);
@@ -152,7 +165,10 @@ describe('sync-publish command', () => {
         path.join(tempDir, 'package.json'),
         `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT } }, null, 2)}\n`,
       );
-      await writeTextFile(path.join(tempDir, 'lerna.json'), '{"version":"independent"}\n');
+      await writeTextFile(
+        path.join(tempDir, 'lerna.json'),
+        '{"version":"independent","command":{"version":{"commitHooks":false}}}\n',
+      );
 
       const result = runCli(['sync-publish', '--cwd', tempDir]);
       assert.equal(result.status, 0);
@@ -162,6 +178,7 @@ describe('sync-publish command', () => {
       assert.equal(report.status.updated, false);
       assert.equal(report.status.matchesRequiredPublishCheckBefore, true);
       assert.equal(report.status.matchesRequiredPublishBefore, true);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksBefore, true);
     });
   });
 
@@ -171,7 +188,10 @@ describe('sync-publish command', () => {
         path.join(tempDir, 'package.json'),
         `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT } }, null, 2)}\n`,
       );
-      await writeTextFile(path.join(tempDir, 'lerna.json'), '{"version":"independent"}\n');
+      await writeTextFile(
+        path.join(tempDir, 'lerna.json'),
+        '{"version":"independent","command":{"version":{"commitHooks":false}}}\n',
+      );
 
       const result = runCli(['sync-publish', '--cwd', tempDir, '--check']);
       assert.equal(result.status, 0);
@@ -180,6 +200,27 @@ describe('sync-publish command', () => {
       assert.equal(report.ok, true);
       assert.equal(report.status.matchesRequiredPublishCheckBefore, true);
       assert.equal(report.status.matchesRequiredPublishBefore, true);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksBefore, true);
+    });
+  });
+
+  it('sync mode enforces lerna command.version.commitHooks=false for existing lerna config', async () => {
+    await withTempDir('agent-toolkit-sync-publish-lerna-commit-hooks-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{"name":"tmp"}\n');
+      await writeTextFile(
+        path.join(tempDir, 'lerna.json'),
+        '{"version":"independent","command":{"version":{"commitHooks":true}}}\n',
+      );
+
+      const result = runCli(['sync-publish', '--cwd', tempDir]);
+      assert.equal(result.status, 0);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksBefore, false);
+      assert.equal(report.status.matchesRequiredLernaCommitHooksAfter, true);
+
+      const lerna = await readJson(path.join(tempDir, 'lerna.json'));
+      assert.equal(lerna.command.version.commitHooks, false);
     });
   });
 
