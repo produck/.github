@@ -133,10 +133,6 @@ function resolveWorkspacePaths(cwd, options) {
   }
 
   const rootPackageJsonPath = path.resolve(cwd, 'package.json');
-  if (!fs.existsSync(rootPackageJsonPath)) {
-    return [];
-  }
-
   const rootPackageJson = parseJsonFile(
     rootPackageJsonPath,
     'Root package.json',

@@ -347,6 +347,46 @@ describe('sync-coverage command', () => {
     );
   });
 
+  it('handles root package without workspaces', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-coverage-no-workspaces-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
+        );
+
+        const result = runCli(['sync-coverage', '--cwd', tempDir]);
+        assert.equal(result.status, 0);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+        assert.deepEqual(report.workspaces, []);
+        assert.deepEqual(report.results, []);
+      },
+    );
+  });
+
+  it('handles root package with empty workspaces array', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-coverage-empty-workspaces-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify({ name: 'tmp', private: true, workspaces: [] }, null, 2)}\n`,
+        );
+
+        const result = runCli(['sync-coverage', '--cwd', tempDir]);
+        assert.equal(result.status, 0);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+        assert.deepEqual(report.workspaces, []);
+        assert.deepEqual(report.results, []);
+      },
+    );
+  });
+
   it('is a no-op on second run after state is synchronized', async () => {
     await withTempDir('agent-toolkit-sync-coverage-no-op-', async (tempDir) => {
       const rootPackage = {

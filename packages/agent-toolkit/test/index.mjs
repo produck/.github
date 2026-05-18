@@ -1,5 +1,7 @@
 import './enforce-node-baseline.test.mjs';
 import './entry-and-shared.test.mjs';
+import './build-publish-assets.test.mjs';
+import './fault-injection.test.mjs';
 import './preflight-summarize-run-capture.test.mjs';
 import './sync-coverage.test.mjs';
 import './sync-format.test.mjs';
