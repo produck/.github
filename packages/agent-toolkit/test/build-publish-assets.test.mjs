@@ -11,7 +11,7 @@ const BUILD_SCRIPT = path.resolve(PACKAGE_ROOT, 'bin/build-publish-assets.mjs');
 
 function runBuildPatched(patchCode) {
   const code = [
-    "import fs from 'node:fs';",
+    'import fs from \'node:fs\';',
     patchCode,
     `await import(${JSON.stringify(pathToFileURL(BUILD_SCRIPT).href)});`,
   ].join('\n');
@@ -44,7 +44,7 @@ describe('build-publish-assets script', () => {
         'const originalReadFileSync = fs.readFileSync;',
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
-        "  if (/\\.instructions\\.md$/.test(s)) return 'body only\\n';",
+        '  if (/\\.instructions\\.md$/.test(s)) return \'body only\\n\';',
         '  return originalReadFileSync(p, enc);',
         '};',
       ].join('\n'),
@@ -60,7 +60,7 @@ describe('build-publish-assets script', () => {
         'const originalReadFileSync = fs.readFileSync;',
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
-        "  if (/\\.instructions\\.md$/.test(s)) return '---\\nname: x\\n---\\n<!-- managed-by: @produck/agent-toolkit -->\\n';",
+        '  if (/\\.instructions\\.md$/.test(s)) return \'---\\nname: x\\n---\\n<!-- managed-by: @produck/agent-toolkit -->\\n\';',
         '  return originalReadFileSync(p, enc);',
         '};',
       ].join('\n'),
@@ -76,9 +76,9 @@ describe('build-publish-assets script', () => {
         'const originalReadFileSync = fs.readFileSync;',
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
-        "  if (/\\.instructions\\.md$/.test(s)) return '---\\napplyTo: " +
+        '  if (/\\.instructions\\.md$/.test(s)) return \'---\\napplyTo: ' +
           '"**/*"' +
-          "\\n---\\ncontent\\n';",
+          '\\n---\\ncontent\\n\';',
         '  return originalReadFileSync(p, enc);',
         '};',
       ].join('\n'),
@@ -110,7 +110,7 @@ describe('build-publish-assets script', () => {
         'const originalReadFileSync = fs.readFileSync;',
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
-        "  if (/tooling-version-baseline\\.json$/.test(s)) return '{invalid-json';",
+        '  if (/tooling-version-baseline\\.json$/.test(s)) return \'{invalid-json\';',
         '  return originalReadFileSync(p, enc);',
         '};',
       ].join('\n'),
@@ -127,7 +127,7 @@ describe('build-publish-assets script', () => {
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
         '  if (/tooling-version-baseline\\.json$/.test(s)) {',
-        "    return JSON.stringify({ tools: { c8: { version: '11.0.0' }, lerna: { version: '9.0.7' } }, coverage: { scriptTemplate: 'c8 {c8.version}' } });",
+        '    return JSON.stringify({ tools: { c8: { version: \'11.0.0\' }, lerna: { version: \'9.0.7\' } }, coverage: { scriptTemplate: \'c8 {c8.version}\' } });',
         '  }',
         '  return originalReadFileSync(p, enc);',
         '};',
@@ -145,7 +145,7 @@ describe('build-publish-assets script', () => {
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
         '  if (/tooling-version-baseline\\.json$/.test(s)) {',
-        "    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: '' }, lerna: { version: '9.0.7' } }, coverage: { scriptTemplate: 'c8 {c8.version}' } });",
+        '    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: \'\' }, lerna: { version: \'9.0.7\' } }, coverage: { scriptTemplate: \'c8 {c8.version}\' } });',
         '  }',
         '  return originalReadFileSync(p, enc);',
         '};',
@@ -163,7 +163,7 @@ describe('build-publish-assets script', () => {
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
         '  if (/tooling-version-baseline\\.json$/.test(s)) {',
-        "    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: '11.0.0' }, lerna: { version: '' } }, coverage: { scriptTemplate: 'c8 {c8.version}' } });",
+        '    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: \'11.0.0\' }, lerna: { version: \'\' } }, coverage: { scriptTemplate: \'c8 {c8.version}\' } });',
         '  }',
         '  return originalReadFileSync(p, enc);',
         '};',
@@ -181,7 +181,7 @@ describe('build-publish-assets script', () => {
         'fs.readFileSync = (p, enc) => {',
         '  const s = String(p);',
         '  if (/tooling-version-baseline\\.json$/.test(s)) {',
-        "    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: '11.0.0' }, lerna: { version: '9.0.7' } }, coverage: { scriptTemplate: '' } });",
+        '    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: \'11.0.0\' }, lerna: { version: \'9.0.7\' } }, coverage: { scriptTemplate: \'\' } });',
         '  }',
         '  return originalReadFileSync(p, enc);',
         '};',
