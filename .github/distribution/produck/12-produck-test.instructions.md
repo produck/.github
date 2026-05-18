@@ -82,7 +82,8 @@ Rules for `only` mode:
 - Scoped coverage (for partial branch verification during development):
   `npm exec -- c8 --reporter=lcov --reporter=html --reporter=text-summary node --test-only test/index.mjs`
 - Before merge or release, run full coverage via `npm run produck:coverage`.
-- See Node.js Baseline for coverage script governance details.
+- See [Node.js Baseline](10-produck-node.instructions.md) for coverage script
+  governance details.
 
 ## Regression discipline
 

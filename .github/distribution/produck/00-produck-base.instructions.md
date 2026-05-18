@@ -18,20 +18,26 @@ in the `produck` organization.
 
 ## Instruction source split
 
-To separate organization-only governance from downstream-distributable
-baseline, policy sources are split as follows:
+Path semantics differ between the upstream policy repository and downstream
+repositories:
 
-- Downstream-distributable source:
-  `.github/distribution/produck/*.instructions.md`
-- Organization-only source (not distributed):
-  `.github/instructions/produck/*.instructions.md`
+- Upstream policy repository (this `produck/.github` repo):
+  - `.github/distribution/produck/*.instructions.md` — canonical baseline,
+    distributed to downstream repositories.
+  - `.github/instructions/produck/*.instructions.md` — reserved for
+    organization-only governance that should NOT be distributed.
+- Downstream repositories (consumers of the baseline):
+  - `.github/instructions/produck/*.instructions.md` — synced copy of the
+    upstream canonical baseline (managed by `agent-toolkit sync-instructions`).
+  - `.github/copilot-instructions.md` — repository-specific exceptions and
+    stricter local constraints.
 
-Editing rule:
+Editing rule (upstream only):
 
 - Update downstream baseline rules directly in
   `.github/distribution/produck/*.instructions.md`.
-- Update organization-only workflow/governance in
-  `.github/instructions/produck/`.
+- Add organization-only governance under
+  `.github/instructions/produck/` only when it must not be distributed.
 
 ## Default expectations
 
@@ -243,7 +249,8 @@ locally in downstream repositories at a fixed version managed by the
 organization baseline.
 
 - Local install and pinned version are deployed by
-  `agent-toolkit sync-husky-hooks`.
+  `agent-toolkit sync-git` (root devDependency pinning) and
+  `agent-toolkit sync-install` (root install script baseline).
 - Invocation uses the locally installed copy:
   `npm exec -- <bin> ...`.
 - Do not use `npm exec --package=<pkg>@latest` for routine invocations.
@@ -282,31 +289,21 @@ Rollback runbook (minimum):
 
 ### Recommended organization AI instruction template
 
-Use the following template text in organization AI instructions:
+When authoring organization-level AI instruction text (for example in
+organization settings), reference the canonical sources in this baseline
+instead of duplicating their content:
 
-- Use Chinese for discussion unless repository rules require another language.
-- Follow existing repository patterns; do not invent APIs, files, commands, or
-  config keys.
-- Node-first execution policy:
-  - Use Node scripts first for file/path/output processing.
-  - For large output tasks, use two phases: capture full output, then analyze.
-  - Avoid fragile shell pipeline post-processing for long-output commands.
-- Central package policy:
-  - Central package is installed locally at a fixed organization-baseline version.
-  - Invoke via `npm exec -- <bin> ...` to use the locally installed copy.
-  - Print resolved package version before high-impact execution.
-  - Use dry-run first for risky operations; keep rollback path to pinned version.
-- Commit message policy:
-  - Every non-empty commit message line must start with `[TAG]`.
-  - Empty lines are not allowed between commit message lines.
-  - Use only allowed tags: `[INIT]`, `[ADD]`, `[REMOVE]`, `[FIX]`,
-    `[REFACTOR]`, `[UPGRADE]`.
-  - Optional target syntax is `[TAG] <target>: <summary>` with target in:
-    `docs`, `test`, `ci`, `deps`, `api`, `schema`, `infra`, `fmt`.
-- Do not assume scripts from organization `.github` repository exist in target
-  repositories.
-- If a repository provides stricter rules, repository rules override
-  organization defaults.
+- Language and default expectations: see `Default expectations` and
+  `Language conventions` sections above.
+- Node-first execution policy: see `Terminal long-output protocol` above.
+- Central package policy: see `Central package execution policy` above.
+- Commit message policy: see
+  [Commit Convention](20-produck-commit.instructions.md) (canonical source
+  for tag whitelist, target whitelist, and validator usage).
+- Cross-repository assumptions: do not assume scripts from the organization
+  `.github` repository exist in target repositories.
+- Precedence: repository-specific stricter rules override organization
+  defaults.
 
 ## Precedence
 

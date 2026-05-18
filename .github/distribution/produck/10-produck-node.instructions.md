@@ -29,8 +29,9 @@ Notes:
 
 - Script key names are fixed and must match exactly.
 - Keep the script key name `produck:install` (organization-reserved key).
-- Required root script value for `produck:install` is:
-  `npm -v && npm install`
+- The required value for `produck:install` is governed by
+  `agent-toolkit sync-install`; see the Monorepo mode section below for the
+  canonical value.
 - `publish` may be a no-op when repository-specific release workflow does not
   use npm publishing.
 - Coverage governance policy:

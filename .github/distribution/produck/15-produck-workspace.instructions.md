@@ -11,13 +11,6 @@ applyTo: '**'
 
 The Produck monorepo provides unified configuration across all packages for consistency and ease of maintenance.
 
-## Distribution classification
-
-This document is maintained directly as a downstream-distributable source.
-
-- Authoritative path:
-  `.github/distribution/produck/15-produck-workspace.instructions.md`
-
 ## Shared Configurations
 
 ### 1. ESLint Configuration (`eslint.config.mjs`)

@@ -18,6 +18,7 @@ These files are distributed via `publish-assets` to all downstream repositories.
 ## Local Repository Notes
 
 This repository has no local-specific exceptions. For organization-specific
-governance or team workflow overrides, create files in
-`.github/instructions/produck/` following the pattern documented in
-`.github/distribution/produck/README.md`.
+governance or team workflow overrides, add files under
+`.github/instructions/produck/` using the same `.instructions.md` format as the
+canonical sources, and reference the relevant canonical document for baseline
+rules.
