@@ -21,21 +21,7 @@ const REQUIRED_COVERAGE_SCRIPT_KEY = 'produck:coverage';
 const REQUIRED_TEST_SCRIPT_KEY = 'test';
 const DEFAULT_TEST_SCRIPT_VALUE = 'node -e "console.log(\'No tests configured\')"';
 const REQUIRED_C8_CONFIG_FILE = '.c8rc.json';
-const REQUIRED_C8_CONFIG_CONTENT = `${JSON.stringify(
-  {
-    'check-coverage': true,
-    all: true,
-    branches: 99.5,
-    exclude: ['**/node_modules/**', '**/coverage/**', '**/dist/**', '**/build/**', '**/out/**'],
-    functions: 99.5,
-    include: ['src/**', 'extension/**'],
-    reporter: ['lcov', 'html', 'text-summary'],
-    statements: 99.5,
-    lines: 99.5,
-  },
-  null,
-  2,
-)}\n`;
+const REQUIRED_C8_CONFIG_TEMPLATE_FILE = path.resolve(COMMAND_DIR, 'required-c8-config.json');
 
 export function printSyncCoverageHelp() {
   printTextResource(HELP_FILE);
@@ -109,6 +95,18 @@ function readFileIfExists(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
+function loadRequiredC8ConfigContent() {
+  if (!fs.existsSync(REQUIRED_C8_CONFIG_TEMPLATE_FILE)) {
+    console.error(
+      `Required c8 config template does not exist: ${REQUIRED_C8_CONFIG_TEMPLATE_FILE}`,
+    );
+    process.exit(2);
+  }
+
+  const template = parseJsonFile(REQUIRED_C8_CONFIG_TEMPLATE_FILE, 'Required c8 config template');
+  return `${JSON.stringify(template, null, 2)}\n`;
+}
+
 function resolveWorkspacePaths(cwd, options) {
   const manual = getMulti(options, '--workspace');
   if (manual.length > 0) {
@@ -139,7 +137,7 @@ function resolveWorkspacePaths(cwd, options) {
   return workspaces;
 }
 
-function syncRootCoverage(cwd, mode, requiredC8Version) {
+function syncRootCoverage(cwd, mode, requiredC8Version, requiredC8ConfigContent) {
   const rootPackageJsonPath = path.resolve(cwd, 'package.json');
   const c8ConfigPath = path.resolve(cwd, REQUIRED_C8_CONFIG_FILE);
   const currentC8ConfigContent = readFileIfExists(c8ConfigPath);
@@ -163,7 +161,7 @@ function syncRootCoverage(cwd, mode, requiredC8Version) {
   const matchesRequiredRootCoverageBefore =
     previousRootCoverageScript === REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE;
   const matchesRequiredC8DevDependencyBefore = previousC8DevDependency === requiredC8Version;
-  const matchesRequiredC8ConfigBefore = currentC8ConfigContent === REQUIRED_C8_CONFIG_CONTENT;
+  const matchesRequiredC8ConfigBefore = currentC8ConfigContent === requiredC8ConfigContent;
   const requiresUpdate =
     !matchesRequiredRootCoverageBefore ||
     !matchesRequiredC8DevDependencyBefore ||
@@ -175,7 +173,7 @@ function syncRootCoverage(cwd, mode, requiredC8Version) {
     devDependencies.c8 = requiredC8Version;
     pkg.devDependencies = devDependencies;
     fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(c8ConfigPath, REQUIRED_C8_CONFIG_CONTENT, 'utf8');
+    fs.writeFileSync(c8ConfigPath, requiredC8ConfigContent, 'utf8');
   }
 
   return {
@@ -184,7 +182,7 @@ function syncRootCoverage(cwd, mode, requiredC8Version) {
       rootCoverageScriptKey: REQUIRED_ROOT_COVERAGE_SCRIPT_KEY,
       rootCoverageScriptValue: REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE,
       c8ConfigFile: REQUIRED_C8_CONFIG_FILE,
-      c8ConfigContent: REQUIRED_C8_CONFIG_CONTENT,
+      c8ConfigContent: requiredC8ConfigContent,
       c8DevDependency: requiredC8Version,
     },
     status: {
@@ -324,6 +322,7 @@ export function runSyncCoverage(options) {
   const { baseline: toolingBaseline, toolingBaselinePath } = loadToolingBaseline();
   const requiredCoverageScript = buildRequiredCoverageScript(toolingBaseline);
   const requiredC8Version = buildRequiredC8DevDependency(toolingBaseline);
+  const requiredC8ConfigContent = loadRequiredC8ConfigContent();
 
   if (!fs.existsSync(cwd)) {
     console.error(`CWD does not exist: ${cwd}`);
@@ -331,7 +330,7 @@ export function runSyncCoverage(options) {
   }
 
   const mode = dryRun ? 'dry-run' : check ? 'check' : 'sync';
-  const root = syncRootCoverage(cwd, mode, requiredC8Version);
+  const root = syncRootCoverage(cwd, mode, requiredC8Version, requiredC8ConfigContent);
   const workspacePaths = resolveWorkspacePaths(cwd, options);
 
   const report = {

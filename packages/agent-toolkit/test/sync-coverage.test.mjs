@@ -25,18 +25,15 @@ const REQUIRED_COVERAGE_SCRIPT = String(TOOLING_BASELINE.coverage.scriptTemplate
   String(TOOLING_BASELINE.tools.c8.version),
 );
 const REQUIRED_TEST_SCRIPT = 'node -e "console.log(\'No tests configured\')"';
+const REQUIRED_C8_CONFIG_TEMPLATE_FILE = path.join(
+  PACKAGE_ROOT,
+  'bin',
+  'command',
+  'sync-coverage',
+  'required-c8-config.json',
+);
 const REQUIRED_C8_CONFIG_CONTENT = `${JSON.stringify(
-  {
-    'check-coverage': true,
-    all: true,
-    branches: 99.5,
-    exclude: ['**/node_modules/**', '**/coverage/**', '**/dist/**', '**/build/**', '**/out/**'],
-    functions: 99.5,
-    include: ['src/**', 'extension/**'],
-    reporter: ['lcov', 'html', 'text-summary'],
-    statements: 99.5,
-    lines: 99.5,
-  },
+  JSON.parse(fs.readFileSync(REQUIRED_C8_CONFIG_TEMPLATE_FILE, 'utf8')),
   null,
   2,
 )}\n`;
