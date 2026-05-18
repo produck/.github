@@ -78,8 +78,8 @@ function getRequiredEslintRulesDevDependency() {
     const version =
       typeof eslintRulesPkg.version === 'string'
         ? eslintRulesPkg.version.trim()
-        /* c8 ignore next */
-        : '';
+        : /* c8 ignore next */
+        '';
     if (version) {
       return version;
     }

@@ -468,10 +468,7 @@ describe('sync-coverage command', () => {
 
         const report = JSON.parse(result.stdout);
         assert.equal(report.ok, false);
-        assert.equal(
-          report.root.status.matchesRequiredRootCoverageAfter,
-          true,
-        );
+        assert.equal(report.root.status.matchesRequiredRootCoverageAfter, true);
         assert.equal(
           report.root.status.matchesRequiredC8DevDependencyAfter,
           false,
@@ -500,10 +497,7 @@ describe('sync-coverage command', () => {
 
         const report = JSON.parse(result.stdout);
         assert.equal(report.ok, false);
-        assert.equal(
-          report.root.status.matchesRequiredRootCoverageAfter,
-          true,
-        );
+        assert.equal(report.root.status.matchesRequiredRootCoverageAfter, true);
         assert.equal(
           report.root.status.matchesRequiredC8DevDependencyAfter,
           true,
