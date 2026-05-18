@@ -9,6 +9,7 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 const TOOLKIT_PACKAGE_NAME = '@produck/agent-toolkit';
 const DISTRIBUTION_SOURCE_PATH = '.github/distribution/produck';
 const PREVIEW_FLAG = '--preview-resolved-command';
+const NO_VERIFY_FLAG = '--no-verify';
 const LERNA_CLI_PATH = path.resolve(REPO_ROOT, 'node_modules/lerna/dist/cli.js');
 
 function runGit(args, options = {}) {
@@ -95,7 +96,8 @@ function resolveForcePublish() {
 function run() {
   const rawArgs = process.argv.slice(2);
   const previewOnly = rawArgs.includes(PREVIEW_FLAG);
-  const userArgs = rawArgs.filter((arg) => arg !== PREVIEW_FLAG);
+  const noVerify = rawArgs.includes(NO_VERIFY_FLAG);
+  const userArgs = rawArgs.filter((arg) => arg !== PREVIEW_FLAG && arg !== NO_VERIFY_FLAG);
 
   const publishArgs = ['publish', ...userArgs];
 
@@ -123,6 +125,7 @@ function run() {
     process.stdout.write(
       `[lerna-publish] command: ${process.execPath} ${LERNA_CLI_PATH} ${publishArgs.join(' ')}\n`,
     );
+    process.stdout.write(`[lerna-publish] hooks: ${noVerify ? 'disabled' : 'enabled'}\n`);
     return;
   }
 
@@ -133,10 +136,19 @@ function run() {
     process.exit(1);
   }
 
+  const childEnv = {
+    ...process.env,
+    ...(noVerify ? { HUSKY: '0', HUSKY_SKIP_HOOKS: '1' } : {}),
+  };
+
+  if (noVerify) {
+    process.stdout.write('[lerna-publish] --no-verify enabled: skipping husky git hooks\n');
+  }
+
   const result = spawnSync(process.execPath, [LERNA_CLI_PATH, ...publishArgs], {
     cwd: REPO_ROOT,
     stdio: 'inherit',
-    env: process.env,
+    env: childEnv,
   });
 
   if (result.error) {
