@@ -1,6 +1,6 @@
 {
   "name": "@produck/agent-toolkit",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Central CLI toolkit for organization AI execution workflows",
   "type": "module",
   "repository": {
