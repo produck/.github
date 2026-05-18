@@ -11,7 +11,9 @@ const PACKAGE_ROOT = path.resolve(TEST_DIR, '..');
 const BIN_PATH = path.resolve(PACKAGE_ROOT, 'bin/create-agent-toolkit.mjs');
 
 test('runs toolkit bootstrap command against cwd', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'create-agent-toolkit-'));
+  const tempDir = await fs.mkdtemp(
+    path.join(os.tmpdir(), 'create-agent-toolkit-'),
+  );
   try {
     const result = spawnSync(process.execPath, [BIN_PATH], {
       cwd: tempDir,
