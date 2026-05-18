@@ -1,14 +1,23 @@
 # Repository AI Instructions
 
-This repository uses organization baseline instructions from:
+This is the `produck` organization policy monorepo that maintains canonical AI
+collaboration and engineering baseline rules.
 
-- .github/instructions/produck/\*.instructions.md
+## Single Source of Truth
 
-Repository-specific rules should be written in this file.
-Keep organization baseline rules in the produck namespace files above.
+All rules are maintained in `.github/distribution/produck/`:
 
-Recommended usage:
+- `00-produck-base.instructions.md` — General AI collaboration baseline
+- `10-produck-node.instructions.md` — Node.js repository baseline
+- `12-produck-test.instructions.md` — Test authoring baseline
+- `15-produck-workspace.instructions.md` — Workspace shared configuration guide
+- `20-produck-commit.instructions.md` — Commit convention
 
-- Add local constraints and exceptions here.
-- Do not copy organization baseline content into this file.
-- Keep this file focused on repository-only behavior.
+These files are distributed via `publish-assets` to all downstream repositories.
+
+## Local Repository Notes
+
+This repository has no local-specific exceptions. For organization-specific
+governance or team workflow overrides, create files in
+`.github/instructions/produck/` following the pattern documented in
+`.github/distribution/produck/README.md`.
