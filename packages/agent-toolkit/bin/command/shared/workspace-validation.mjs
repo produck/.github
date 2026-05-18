@@ -28,8 +28,8 @@ export function validateWorkspaceShape(pkg, requiredFields, requiredScripts) {
   const workspacesIsArray = Array.isArray(pkg.workspaces);
   const wildcardWorkspaces = workspacesIsArray
     ? pkg.workspaces
-      .map((entry) => String(entry))
-      .filter((entry) => GLOB_TOKEN_PATTERN.test(entry))
+        .map((entry) => String(entry))
+        .filter((entry) => GLOB_TOKEN_PATTERN.test(entry))
     : ['<non-array-workspaces>'];
 
   const privateIsTrue = pkg.private === true;

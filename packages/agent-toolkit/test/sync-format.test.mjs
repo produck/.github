@@ -108,6 +108,17 @@ describe('sync-format command', () => {
     });
   });
 
+  it('fails when --cwd does not exist', () => {
+    const result = runCli([
+      'sync-format',
+      '--cwd',
+      'd:\\missing-sync-format-cwd',
+    ]);
+
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /CWD does not exist/);
+  });
+
   it('fails when root package.json does not exist', async () => {
     await withTempDir(
       'agent-toolkit-sync-format-missing-pkg-',
@@ -177,6 +188,43 @@ describe('sync-format command', () => {
       assert.equal(report.ok, true);
       assert.equal(report.status.updated, true);
     });
+  });
+
+  it('reports no update when required prettier files already exist', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-format-pre-existing-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          JSON.stringify(
+            {
+              name: 'tmp',
+              scripts: { 'produck:format': REQUIRED_FORMAT_SCRIPT },
+              devDependencies: { prettier: REQUIRED_PRETTIER_VERSION },
+            },
+            null,
+            2,
+          ) + '\n',
+        );
+        await writeTextFile(
+          path.join(tempDir, '.prettierrc'),
+          REQUIRED_PRETTIER_CONFIG,
+        );
+        await writeTextFile(
+          path.join(tempDir, '.prettierignore'),
+          REQUIRED_PRETTIER_IGNORE,
+        );
+
+        const result = runCli(['sync-format', '--cwd', tempDir]);
+        assert.equal(result.status, 0);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+        assert.equal(report.status.matchesRequiredPrettierConfigBefore, true);
+        assert.equal(report.status.matchesRequiredPrettierIgnoreBefore, true);
+        assert.equal(report.status.updated, false);
+      },
+    );
   });
 
   it('supports --check and --dry-run together with check taking precedence', async () => {

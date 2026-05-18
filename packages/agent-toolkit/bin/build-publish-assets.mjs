@@ -134,7 +134,6 @@ function readAndValidateToolingBaseline() {
     );
     const version = eslintRulesPkg.version;
     if (typeof version === 'string' && version.trim()) {
-      if (!baseline.tools) baseline.tools = {};
       baseline.tools['@produck/eslint-rules'] = {
         version,
         policy: 'pinned',
@@ -172,9 +171,6 @@ function readSourceEntries() {
 }
 
 function cleanStaleManagedFiles(expectedNames) {
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    return;
-  }
   const existing = fs
     .readdirSync(OUTPUT_DIR)
     .filter((name) => name.endsWith('.instructions.md'));

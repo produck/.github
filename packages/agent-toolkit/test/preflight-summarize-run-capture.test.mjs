@@ -79,6 +79,48 @@ describe('preflight command', () => {
       },
     );
   });
+
+  it('reports missing workspace package.json in check mode', async () => {
+    await withTempDir(
+      'agent-toolkit-preflight-workspace-missing-',
+      async (tempDir) => {
+        const result = runCli([
+          'preflight',
+          '--cwd',
+          tempDir,
+          '--check-workspace-package-json',
+          'package.json',
+        ]);
+
+        assert.equal(result.status, 2);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, false);
+        assert.equal(report.workspacePackageJson.exists, false);
+      },
+    );
+  });
+
+  it('reports invalid workspace package.json in check mode', async () => {
+    await withTempDir(
+      'agent-toolkit-preflight-workspace-invalid-json-',
+      async (tempDir) => {
+        await writeTextFile(path.join(tempDir, 'package.json'), '{invalid\n');
+
+        const result = runCli([
+          'preflight',
+          '--cwd',
+          tempDir,
+          '--check-workspace-package-json',
+          'package.json',
+        ]);
+
+        assert.equal(result.status, 2);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, false);
+        assert.equal(report.workspacePackageJson.validJson, false);
+      },
+    );
+  });
 });
 
 describe('summarize-log command', () => {

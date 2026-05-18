@@ -13,12 +13,37 @@ function toModuleUrl(filePath) {
   return pathToFileURL(filePath).href;
 }
 
+function toOptions(argv) {
+  const options = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (!String(token).startsWith('--')) {
+      continue;
+    }
+    const next = argv[i + 1];
+    if (!next || String(next).startsWith('--')) {
+      if (!options[token]) {
+        options[token] = [];
+      }
+      options[token].push(true);
+      continue;
+    }
+    if (!options[token]) {
+      options[token] = [];
+    }
+    options[token].push(String(next));
+    i += 1;
+  }
+  return options;
+}
+
 function runPatched(modulePath, functionName, args, patchCode) {
+  const options = toOptions(args);
   const code = [
-    'import fs from \'node:fs\';',
+    "import fs from 'node:fs';",
     patchCode,
     `const mod = await import(${JSON.stringify(toModuleUrl(modulePath))});`,
-    `mod.${functionName}(${JSON.stringify(args)});`,
+    `mod.${functionName}(${JSON.stringify(options)});`,
   ].join('\n');
 
   return spawnSync(process.execPath, ['--input-type=module', '--eval', code], {
@@ -129,6 +154,39 @@ describe('fault injection coverage for sync commands', () => {
     );
   });
 
+  it('sync-format fails when tooling baseline prettier version is empty', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-format-empty-prettier-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-format/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncFormat',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { prettier: { version: "" } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /tools\.prettier\.version/);
+      },
+    );
+  });
+
   it('sync-format fails when .prettierignore source candidates are missing', async () => {
     await withTempDir(
       'agent-toolkit-fault-sync-format-prettierignore-',
@@ -183,7 +241,7 @@ describe('fault injection coverage for sync commands', () => {
             'const originalReadFileSync = fs.readFileSync;',
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
-            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ tools: { c8: { version: \'11.0.0\' } }, coverage: { scriptTemplate: \'npm exec --package=c8@{c8.version} -- c8 --config .c8rc.json npm run test\' } });',
+            "  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ tools: { c8: { version: '11.0.0' } }, coverage: { scriptTemplate: 'npm exec --package=c8@{c8.version} -- c8 --config .c8rc.json npm run test' } });",
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -216,7 +274,7 @@ describe('fault injection coverage for sync commands', () => {
             'const originalReadFileSync = fs.readFileSync;',
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
-            '  if (/required-c8-config\\.json$/.test(s)) return \'{invalid-json\';',
+            "  if (/required-c8-config\\.json$/.test(s)) return '{invalid-json';",
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -226,6 +284,111 @@ describe('fault injection coverage for sync commands', () => {
         assert.match(
           result.stderr,
           /Required c8 config template is not valid JSON/,
+        );
+      },
+    );
+  });
+
+  it('sync-coverage fails when tooling baseline candidates are missing', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-coverage-no-baseline-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-coverage/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncCoverage',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Tooling baseline file does not exist/);
+      },
+    );
+  });
+
+  it('sync-coverage fails when tooling baseline c8 version is empty', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-coverage-empty-c8-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-coverage/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncCoverage',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: "" } }, coverage: { scriptTemplate: "c8 --config .c8rc.json npm run test" } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(
+          result.stderr,
+          /tools\.c8\.version must be a non-empty string/,
+        );
+      },
+    );
+  });
+
+  it('sync-coverage fails when tooling baseline coverage template is empty', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-coverage-empty-template-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-coverage/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncCoverage',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: "11.0.0" } }, coverage: { scriptTemplate: "" } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(
+          result.stderr,
+          /coverage\.scriptTemplate must be a non-empty string/,
         );
       },
     );
@@ -264,6 +427,85 @@ describe('fault injection coverage for sync commands', () => {
           result.stderr,
           /Cannot resolve @produck\/eslint-rules version/,
         );
+      },
+    );
+  });
+
+  it('sync-lint fails when tooling baseline eslint-rules version is empty', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-lint-empty-baseline-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-lint/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncLint',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (s.includes("packages\\\\eslint-rules\\\\package.json") || s.includes("packages/eslint-rules/package.json")) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { "@produck/eslint-rules": { version: "" } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /must be a non-empty string/);
+      },
+    );
+  });
+
+  it('sync-lint uses baseline eslint-rules version when in-tree package is unavailable', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-lint-baseline-version-success-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-lint/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncLint',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (s.includes("packages\\\\eslint-rules\\\\package.json") || s.includes("packages/eslint-rules/package.json")) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { "@produck/eslint-rules": { version: "1.2.3" } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.required.eslintRulesVersion, '1.2.3');
       },
     );
   });
@@ -326,7 +568,7 @@ describe('fault injection coverage for sync commands', () => {
             'const originalReadFileSync = fs.readFileSync;',
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
-            '  if (/publish-assets[\\\\/]lerna\\.json$/.test(s) || /\\.github[\\\\/]lerna\\.json$/.test(s)) return \'{invalid-json\';',
+            "  if (/publish-assets[\\\\/]lerna\\.json$/.test(s) || /\\.github[\\\\/]lerna\\.json$/.test(s)) return '{invalid-json';",
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -334,6 +576,42 @@ describe('fault injection coverage for sync commands', () => {
 
         assert.equal(result.status, 2);
         assert.match(result.stderr, /lerna template is not valid JSON/);
+      },
+    );
+  });
+
+  it('sync-publish fails when lerna template has no version field', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-publish-template-no-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-publish/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncPublish',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/lerna\\.json$/.test(s)) return JSON.stringify({ command: { version: { commitHooks: true } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(
+          result.stderr,
+          /lerna template must have a "version" field/,
+        );
       },
     );
   });
@@ -418,7 +696,7 @@ describe('fault injection coverage for sync commands', () => {
             'const originalReadFileSync = fs.readFileSync;',
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
-            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { husky: { version: \'\' }, lerna: { version: \'\' } } });',
+            "  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { husky: { version: '' }, lerna: { version: '' } } });",
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -429,6 +707,398 @@ describe('fault injection coverage for sync commands', () => {
           result.stderr,
           /must define fixed tools\.husky\/lerna\.version/,
         );
+      },
+    );
+  });
+
+  it('sync-git fails when tooling baseline candidates are missing', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-git-no-baseline-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(ROOT, 'bin/command/sync-git/index.mjs');
+        const result = runPatched(
+          modulePath,
+          'runSyncGit',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Tooling baseline file does not exist/);
+      },
+    );
+  });
+
+  it('sync-git uses npm latest version when npm lookup succeeds', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-git-npm-success-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(ROOT, 'bin/command/sync-git/index.mjs');
+        const result = runPatched(
+          modulePath,
+          'runSyncGit',
+          ['--cwd', tempDir],
+          [
+            'import os from "node:os";',
+            'import path from "node:path";',
+            'const binDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-toolkit-fault-npm-bin-"));',
+            'const npmName = process.platform === "win32" ? "npm.cmd" : "npm";',
+            'const npmPath = path.join(binDir, npmName);',
+            'if (process.platform === "win32") {',
+            '  fs.writeFileSync(npmPath, "@echo off\\necho 9.8.7\\n", "utf8");',
+            '} else {',
+            '  fs.writeFileSync(npmPath, "#!/bin/sh\\necho 9.8.7\\n", "utf8");',
+            '  fs.chmodSync(npmPath, 0o755);',
+            '}',
+            'process.env.PATH = binDir;',
+            'process.env.PRODUCK_TOOLKIT_VERSION_OVERRIDE = "";',
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (s.endsWith("packages\\agent-toolkit\\package.json") || s.endsWith("packages/agent-toolkit/package.json")) return JSON.stringify({ name: "@produck/agent-toolkit" });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        const report = JSON.parse(result.stdout);
+        assert.match(
+          report.required.managedDevDependencies['@produck/agent-toolkit'],
+          /^\d+\.\d+\.\d+$/,
+        );
+      },
+    );
+  });
+
+  it('sync-git fails when npm lookup fails and local toolkit package has no version', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-git-missing-local-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(ROOT, 'bin/command/sync-git/index.mjs');
+        const result = runPatched(
+          modulePath,
+          'runSyncGit',
+          ['--cwd', tempDir],
+          [
+            'process.env.PATH = "";',
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (s.endsWith("packages\\\\agent-toolkit\\\\package.json") || s.endsWith("packages/agent-toolkit/package.json")) return JSON.stringify({ name: "@produck/agent-toolkit" });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Toolkit package version is missing/);
+      },
+    );
+  });
+
+  it('validate-commit-msg supports non-monorepo flow without section headers', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-non-monorepo-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(messageFile, '[FIX] <docs>: standalone message\n');
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['--file', messageFile],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/package\\.json$/.test(s) && !s.endsWith("COMMIT_EDITMSG")) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      },
+    );
+  });
+
+  it('validate-commit-msg reports line-level errors in non-monorepo flow', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-line-errors-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(messageFile, '[CHANGED] invalid tag\n');
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['--file', messageFile],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/package\\.json$/.test(s) && !s.endsWith("COMMIT_EDITMSG")) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, /tag \[CHANGED\] is not allowed/i);
+      },
+    );
+  });
+
+  it('validate-commit-msg parser accepts extra argv tokens and standalone flags', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-options-shape-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(messageFile, '[FIX] <docs>: standalone line\n');
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['ignored-positional', '--check', '--file', messageFile],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/package\\.json$/.test(s) && !s.endsWith("COMMIT_EDITMSG")) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      },
+    );
+  });
+
+  it('validate-commit-msg handles workspace metadata collection edge cases', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-workspace-metadata-edge-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(
+          messageFile,
+          'workspace:\n[FIX] <docs>: keep sections strict\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['--file', messageFile],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/[\\/]\\.github[\\/]package\\.json$/.test(s)) return JSON.stringify({ workspaces: ["missing-ws", "broken-ws"] });',
+            '  if (/broken-ws[\\/]package\\.json$/.test(s)) return "{invalid-json";',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/missing-ws[\\/]package\\.json$/.test(s)) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      },
+    );
+  });
+
+  it('validate-commit-msg tolerates root package disappearing after monorepo check', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-root-disappears-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(
+          messageFile,
+          'workspace:\n[FIX] <docs>: keep sections strict\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['--file', messageFile],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'let rootPackageCheckCount = 0;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/[\\/]\\.github[\\/]package\\.json$/.test(s)) {',
+            '    rootPackageCheckCount += 1;',
+            '    return rootPackageCheckCount === 1;',
+            '  }',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      },
+    );
+  });
+
+  it('validate-commit-msg tolerates root package JSON parse failure after monorepo check', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-root-second-read-invalid-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(
+          messageFile,
+          'workspace:\n[FIX] <docs>: keep sections strict\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['--file', messageFile],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'let rootPackageReadCount = 0;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/[\\/]\\.github[\\/]package\\.json$/.test(s)) {',
+            '    rootPackageReadCount += 1;',
+            '    if (rootPackageReadCount === 1) return JSON.stringify({ workspaces: ["packages/agent-toolkit"] });',
+            '    return "{invalid-json";',
+            '  }',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      },
+    );
+  });
+
+  it('validate-commit-msg tolerates empty workspaces after monorepo check', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-root-second-read-empty-workspaces-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(
+          messageFile,
+          'workspace:\n[FIX] <docs>: keep sections strict\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['--file', messageFile],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'let rootPackageReadCount = 0;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/[\\/]\\.github[\\/]package\\.json$/.test(s)) {',
+            '    rootPackageReadCount += 1;',
+            '    if (rootPackageReadCount === 1) return JSON.stringify({ workspaces: ["packages/agent-toolkit"] });',
+            '    return JSON.stringify({ workspaces: [] });',
+            '  }',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        assert.match(result.stdout, /validation passed/i);
+      },
+    );
+  });
+
+  it('validate-commit-msg allows non-section empty-line diagnostics in non-monorepo mode', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-validate-msg-non-section-empty-line-',
+      async (tempDir) => {
+        const messageFile = path.join(tempDir, 'COMMIT_EDITMSG');
+        await writeTextFile(
+          messageFile,
+          '[FIX] <docs>: first line\n\n[FIX] <docs>: second line\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/validate-commit-msg/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runValidateCommitMsg',
+          ['--file', messageFile],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/package\\.json$/.test(s) && !s.endsWith("COMMIT_EDITMSG")) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, /empty line is not allowed/i);
       },
     );
   });

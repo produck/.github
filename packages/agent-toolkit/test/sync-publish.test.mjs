@@ -20,6 +20,17 @@ describe('sync-publish command', () => {
     assert.match(result.stdout, /produck:publish/);
   });
 
+  it('fails when --cwd does not exist', () => {
+    const result = runCli([
+      'sync-publish',
+      '--cwd',
+      'd:\\missing-sync-publish-cwd',
+    ]);
+
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /CWD does not exist/);
+  });
+
   it('applies required publish script when lerna.json exists', async () => {
     await withTempDir('agent-toolkit-sync-publish-sync-', async (tempDir) => {
       await writeTextFile(
@@ -155,6 +166,22 @@ describe('sync-publish command', () => {
         const result = runCli(['sync-publish', '--cwd', tempDir]);
         assert.equal(result.status, 2);
         assert.match(result.stderr, /lerna\.json must have a "version" field/);
+      },
+    );
+  });
+
+  it('fails when root package.json does not exist', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-publish-missing-package-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'lerna.json'),
+          '{"version":"independent"}\n',
+        );
+
+        const result = runCli(['sync-publish', '--cwd', tempDir]);
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Root package\.json does not exist/);
       },
     );
   });

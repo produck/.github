@@ -200,6 +200,48 @@ describe('sync-git command', () => {
     });
   });
 
+  it('reports hook mismatches as different content when hook files exist', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-git-hook-mismatch-different-content-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify({ name: 'tmp' })}\n`,
+        );
+        await writeTextFile(
+          path.join(tempDir, '.gitattributes'),
+          REQUIRED_GITATTRIBUTES_CONTENT,
+        );
+        await writeTextFile(
+          path.join(tempDir, '.gitignore'),
+          `${REQUIRED_GITIGNORE_ENTRIES.join('\n')}\n`,
+        );
+        await writeTextFile(
+          path.join(tempDir, '.husky/pre-commit'),
+          '#!/usr/bin/env sh\necho custom\n',
+        );
+        await writeTextFile(
+          path.join(tempDir, '.husky/commit-msg'),
+          '#!/usr/bin/env sh\necho custom\n',
+        );
+
+        const result = runCli(['sync-git', '--cwd', tempDir, '--check']);
+        assert.equal(result.status, 2);
+
+        const report = JSON.parse(result.stdout);
+        const preCommitMismatch = report.status.mismatchesBefore.find(
+          (item) => item.file === '.husky/pre-commit',
+        );
+        const commitMsgMismatch = report.status.mismatchesBefore.find(
+          (item) => item.file === '.husky/commit-msg',
+        );
+
+        assert.equal(preCommitMismatch.actual, 'different content');
+        assert.equal(commitMsgMismatch.actual, 'different content');
+      },
+    );
+  });
+
   it('supports --dry-run without writing files', async () => {
     await withTempDir('agent-toolkit-sync-git-dry-run-', async (tempDir) => {
       await writeTextFile(
@@ -267,6 +309,32 @@ describe('sync-git command', () => {
 
         const pkg = await readJson(path.join(tempDir, 'package.json'));
         assert.equal(pkg.devDependencies['@produck/agent-toolkit'], '9.9.9');
+      },
+    );
+  });
+
+  it('uses npm latest version when npm lookup succeeds', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-git-npm-latest-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify({ name: 'tmp' })}\n`,
+        );
+
+        const result = runCli(['sync-git', '--cwd', tempDir], {
+          env: {
+            PATH: process.env.PATH,
+            PRODUCK_TOOLKIT_VERSION_OVERRIDE: '',
+          },
+        });
+        assert.equal(result.status, 0);
+
+        const pkg = await readJson(path.join(tempDir, 'package.json'));
+        assert.match(
+          pkg.devDependencies['@produck/agent-toolkit'],
+          /^\d+\.\d+\.\d+$/,
+        );
       },
     );
   });

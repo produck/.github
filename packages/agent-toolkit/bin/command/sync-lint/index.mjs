@@ -115,10 +115,6 @@ function getRequiredEslintRulesDevDependency() {
 }
 
 function patchEslintConfig(existing) {
-  if (existing.includes('@produck/eslint-rules')) {
-    return { ok: true, patched: false, output: existing };
-  }
-
   const importRegex = /^import\s.+;\s*$/gm;
   let lastImport = null;
   let match = importRegex.exec(existing);
