@@ -58,6 +58,29 @@ describe('sync-coverage command', () => {
     assert.match(result.stderr, /CWD does not exist/);
   });
 
+  it('fails when root package.json is invalid JSON', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-invalid-root-json-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{invalid-json}\n');
+
+      const result = runCli(['sync-coverage', '--cwd', tempDir]);
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Root package\.json is not valid JSON/);
+    });
+  });
+
+  it('fails when root workspaces contains glob token', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-workspace-glob-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', private: true, workspaces: ['packages/*'] }, null, 2)}\n`,
+      );
+
+      const result = runCli(['sync-coverage', '--cwd', tempDir]);
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /must use explicit paths without glob tokens/);
+    });
+  });
+
   it('applies root c8 config and workspace coverage sync', async () => {
     await withTempDir('agent-toolkit-sync-coverage-sync-', async (tempDir) => {
       const rootPackage = {
@@ -181,6 +204,55 @@ describe('sync-coverage command', () => {
       const report = await readJson(reportFile);
       assert.equal(report.ok, true);
       assert.deepEqual(report.workspaces, ['packages/a']);
+    });
+  });
+
+  it('check mode reports missing workspace package.json as error item', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-missing-workspace-pkg-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
+      );
+
+      const result = runCli([
+        'sync-coverage',
+        '--cwd',
+        tempDir,
+        '--workspace',
+        'packages/missing',
+        '--check',
+      ]);
+
+      assert.equal(result.status, 2);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, false);
+      assert.equal(report.results.length, 1);
+      assert.match(report.results[0].error, /Workspace package\.json does not exist/);
+    });
+  });
+
+  it('check mode reports invalid workspace package.json as error item', async () => {
+    await withTempDir('agent-toolkit-sync-coverage-invalid-workspace-json-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
+      );
+      await writeTextFile(path.join(tempDir, 'packages/a/package.json'), '{invalid-json}\n');
+
+      const result = runCli([
+        'sync-coverage',
+        '--cwd',
+        tempDir,
+        '--workspace',
+        'packages/a',
+        '--check',
+      ]);
+
+      assert.equal(result.status, 2);
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.ok, false);
+      assert.equal(report.results.length, 1);
+      assert.match(report.results[0].error, /Workspace package\.json is not valid JSON/);
     });
   });
 

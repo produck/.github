@@ -21,6 +21,11 @@ const TOOLING_BASELINE_PATH = fs.existsSync(TOOLING_BASELINE_REPO_PATH)
   : TOOLING_BASELINE_ASSET_PATH;
 const TOOLING_BASELINE = JSON.parse(fs.readFileSync(TOOLING_BASELINE_PATH, 'utf8'));
 const REQUIRED_PRETTIER_VERSION = TOOLING_BASELINE.tools.prettier.version;
+const PRETTIERRC_REPO_PATH = path.resolve(REPO_ROOT, '.prettierrc');
+const PRETTIERRC_ASSET_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/prettierrc');
+const PRETTIERRC_SOURCE_PATH = fs.existsSync(PRETTIERRC_REPO_PATH)
+  ? PRETTIERRC_REPO_PATH
+  : PRETTIERRC_ASSET_PATH;
 const PRETTIERIGNORE_REPO_PATH = path.resolve(REPO_ROOT, '.prettierignore');
 const PRETTIERIGNORE_ASSET_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/prettierignore');
 const PRETTIERIGNORE_SOURCE_PATH = fs.existsSync(PRETTIERIGNORE_REPO_PATH)
@@ -30,16 +35,7 @@ const REQUIRED_FORMAT_SCRIPT =
   'prettier --write . --ignore-path .prettierignore --ignore-path .gitignore';
 const REQUIRED_PRETTIER_IGNORE = fs.readFileSync(PRETTIERIGNORE_SOURCE_PATH, 'utf8');
 const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
-  {
-    semi: true,
-    singleQuote: true,
-    tabWidth: 2,
-    useTabs: false,
-    trailingComma: 'all',
-    bracketSpacing: true,
-    arrowParens: 'always',
-    printWidth: 100,
-  },
+  JSON.parse(fs.readFileSync(PRETTIERRC_SOURCE_PATH, 'utf8')),
   null,
   2,
 )}\n`;

@@ -12,10 +12,12 @@ const SOURCE_TOOLING_BASELINE_PATH = path.resolve(SOURCE_DIR, 'tooling-version-b
 const OUTPUT_TOOLING_BASELINE_PATH = path.resolve(OUTPUT_DIR, 'tooling-version-baseline.json');
 const SOURCE_GITATTRIBUTES_PATH = path.resolve(REPO_ROOT, '.gitattributes');
 const SOURCE_GITIGNORE_PATH = path.resolve(REPO_ROOT, '.gitignore');
+const SOURCE_PRETTIERRC_PATH = path.resolve(REPO_ROOT, '.prettierrc');
 const SOURCE_PRETTIERIGNORE_PATH = path.resolve(REPO_ROOT, '.prettierignore');
 const SOURCE_LERNA_PATH = path.resolve(REPO_ROOT, 'lerna.json');
 const OUTPUT_GITATTRIBUTES_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitattributes');
 const OUTPUT_GITIGNORE_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/gitignore');
+const OUTPUT_PRETTIERRC_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/prettierrc');
 const OUTPUT_PRETTIERIGNORE_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/prettierignore');
 const OUTPUT_LERNA_PATH = path.resolve(PACKAGE_ROOT, 'publish-assets/lerna.json');
 const LEGACY_OUTPUT_PATH = path.resolve(
@@ -165,6 +167,9 @@ function run() {
   if (!fs.existsSync(SOURCE_GITIGNORE_PATH)) {
     throw new Error(`Missing source .gitignore: ${SOURCE_GITIGNORE_PATH}`);
   }
+  if (!fs.existsSync(SOURCE_PRETTIERRC_PATH)) {
+    throw new Error(`Missing source .prettierrc: ${SOURCE_PRETTIERRC_PATH}`);
+  }
   if (!fs.existsSync(SOURCE_PRETTIERIGNORE_PATH)) {
     throw new Error(`Missing source .prettierignore: ${SOURCE_PRETTIERIGNORE_PATH}`);
   }
@@ -187,6 +192,13 @@ function run() {
     'utf8',
   );
   process.stdout.write(`Generated ${OUTPUT_GITIGNORE_PATH} from ${SOURCE_GITIGNORE_PATH}\n`);
+
+  fs.writeFileSync(
+    OUTPUT_PRETTIERRC_PATH,
+    normalize(fs.readFileSync(SOURCE_PRETTIERRC_PATH, 'utf8')),
+    'utf8',
+  );
+  process.stdout.write(`Generated ${OUTPUT_PRETTIERRC_PATH} from ${SOURCE_PRETTIERRC_PATH}\n`);
 
   fs.writeFileSync(
     OUTPUT_PRETTIERIGNORE_PATH,

@@ -45,6 +45,24 @@ describe('sync-git command', () => {
     assert.match(result.stderr, /CWD does not exist/);
   });
 
+  it('fails when root package.json does not exist', async () => {
+    await withTempDir('agent-toolkit-sync-git-no-root-package-', async (tempDir) => {
+      const result = runCli(['sync-git', '--cwd', tempDir]);
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Root package\.json does not exist/);
+    });
+  });
+
+  it('fails when root package.json is invalid JSON', async () => {
+    await withTempDir('agent-toolkit-sync-git-invalid-root-package-', async (tempDir) => {
+      await writeTextFile(path.join(tempDir, 'package.json'), '{invalid-json}\n');
+
+      const result = runCli(['sync-git', '--cwd', tempDir]);
+      assert.equal(result.status, 2);
+      assert.match(result.stderr, /Root package\.json is not valid JSON/);
+    });
+  });
+
   it('applies required root scripts, managed dependencies, git attributes, and hooks', async () => {
     await withTempDir('agent-toolkit-sync-git-sync-', async (tempDir) => {
       await writeTextFile(

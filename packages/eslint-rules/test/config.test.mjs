@@ -10,6 +10,18 @@ import { config, excludeGitIgnore } from '../src/index.mjs';
 describe('eslint config exports', () => {
   it('uses org style baseline indentation in default config', () => {
     assert.deepEqual(config.rules.indent, ['error', 2]);
+    assert.deepEqual(config.rules['linebreak-style'], ['error', 'unix']);
+    assert.deepEqual(config.rules['max-len'], [
+      'warn',
+      {
+        code: 80,
+        ignoreUrls: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+        ignoreRegExpLiterals: true,
+        ignoreComments: true,
+      },
+    ]);
     assert.equal(config.linterOptions.noInlineConfig, true);
   });
 

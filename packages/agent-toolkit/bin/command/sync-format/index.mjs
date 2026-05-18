@@ -17,6 +17,10 @@ const PRETTIER_CONFIG_FILE = '.prettierrc';
 const PRETTIER_IGNORE_FILE = '.prettierignore';
 const REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY = 'prettier';
 
+const PRETTIER_CONFIG_SOURCE_CANDIDATE_PATHS = [
+  path.resolve(REPO_ROOT, '.prettierrc'),
+  path.resolve(PACKAGE_ROOT, 'publish-assets/prettierrc'),
+];
 const PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS = [
   path.resolve(REPO_ROOT, '.prettierignore'),
   path.resolve(PACKAGE_ROOT, 'publish-assets/prettierignore'),
@@ -25,20 +29,25 @@ const PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS = [
 const REQUIRED_FORMAT_SCRIPT_KEY = 'produck:format';
 const REQUIRED_FORMAT_SCRIPT_VALUE =
   'prettier --write . --ignore-path .prettierignore --ignore-path .gitignore';
-const REQUIRED_PRETTIER_CONFIG = `${JSON.stringify(
-  {
-    semi: true,
-    singleQuote: true,
-    tabWidth: 2,
-    useTabs: false,
-    trailingComma: 'all',
-    bracketSpacing: true,
-    arrowParens: 'always',
-    printWidth: 100,
-  },
-  null,
-  2,
-)}\n`;
+
+function loadPrettierConfigContent() {
+  const sourcePath = PRETTIER_CONFIG_SOURCE_CANDIDATE_PATHS.find((p) => fs.existsSync(p));
+
+  if (!sourcePath) {
+    console.error('Org .prettierrc source not found in expected locations:');
+    for (const p of PRETTIER_CONFIG_SOURCE_CANDIDATE_PATHS) {
+      console.error(`- ${p}`);
+    }
+    process.exit(2);
+  }
+
+  const parsed = parseJsonFile(sourcePath, '.prettierrc source');
+
+  return {
+    sourcePath,
+    content: `${JSON.stringify(parsed, null, 2)}\n`,
+  };
+}
 
 function loadPrettierIgnoreContent() {
   const sourcePath = PRETTIER_IGNORE_SOURCE_CANDIDATE_PATHS.find((p) => fs.existsSync(p));
@@ -125,6 +134,8 @@ export function runSyncFormat(options) {
   const pkg = parseJsonFile(rootPackageJsonPath, 'Root package.json');
   const toolingBaseline = loadToolingBaseline();
   const requiredPrettierVersion = toolingBaseline.prettierVersion;
+  const { sourcePath: prettierConfigSourcePath, content: requiredPrettierConfigContent } =
+    loadPrettierConfigContent();
   const { sourcePath: prettierIgnoreSourcePath, content: REQUIRED_PRETTIER_IGNORE_CONTENT } =
     loadPrettierIgnoreContent();
   const scripts =
@@ -153,7 +164,7 @@ export function runSyncFormat(options) {
   const previousPrettierIgnore = readFileIfExists(prettierIgnorePath);
 
   const matchesRequiredFormat = previousFormat === REQUIRED_FORMAT_SCRIPT_VALUE;
-  const matchesRequiredPrettierConfig = previousPrettierConfig === REQUIRED_PRETTIER_CONFIG;
+  const matchesRequiredPrettierConfig = previousPrettierConfig === requiredPrettierConfigContent;
   const matchesRequiredPrettierDep = previousPrettierDep === requiredPrettierVersion;
   const matchesRequiredPrettierIgnore = previousPrettierIgnore === REQUIRED_PRETTIER_IGNORE_CONTENT;
 
@@ -171,7 +182,7 @@ export function runSyncFormat(options) {
     pkg.devDependencies = devDependencies;
 
     fs.writeFileSync(rootPackageJsonPath, `${JSON.stringify(pkg, null, 2)}\n`, 'utf8');
-    fs.writeFileSync(prettierConfigPath, REQUIRED_PRETTIER_CONFIG, 'utf8');
+    fs.writeFileSync(prettierConfigPath, requiredPrettierConfigContent, 'utf8');
     fs.writeFileSync(prettierIgnorePath, REQUIRED_PRETTIER_IGNORE_CONTENT, 'utf8');
   }
 
@@ -185,6 +196,7 @@ export function runSyncFormat(options) {
       formatScriptKey: REQUIRED_FORMAT_SCRIPT_KEY,
       formatScriptValue: REQUIRED_FORMAT_SCRIPT_VALUE,
       prettierConfigPath: path.relative(cwd, prettierConfigPath),
+      prettierConfigSourcePath,
       prettierIgnorePath: path.relative(cwd, prettierIgnorePath),
       prettierIgnoreSourcePath,
       managedDevDependencies: { [REQUIRED_PRETTIER_DEV_DEPENDENCY_KEY]: requiredPrettierVersion },
