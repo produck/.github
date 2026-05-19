@@ -24,6 +24,11 @@ const SOURCE_GITIGNORE_PATH = path.resolve(REPO_ROOT, '.gitignore');
 const SOURCE_PRETTIERRC_PATH = path.resolve(REPO_ROOT, '.prettierrc');
 const SOURCE_PRETTIERIGNORE_PATH = path.resolve(REPO_ROOT, '.prettierignore');
 const SOURCE_LERNA_PATH = path.resolve(REPO_ROOT, 'lerna.json');
+const SOURCE_ESLINT_CONFIG_PATH = path.resolve(REPO_ROOT, 'eslint.config.mjs');
+const OUTPUT_ESLINT_CONFIG_TEMPLATE_PATH = path.resolve(
+  PACKAGE_ROOT,
+  'publish-assets/eslint.config.template.mjs',
+);
 const OUTPUT_GITATTRIBUTES_PATH = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/gitattributes',
@@ -170,6 +175,15 @@ function readSourceEntries() {
   });
 }
 
+function generateEslintConfigTemplate() {
+  return normalize(
+    fs.readFileSync(SOURCE_ESLINT_CONFIG_PATH, 'utf8').replace(
+      /from\s+['"]\.\/packages\/eslint-rules\/src\/index\.mjs['"]/g,
+      'from \'@produck/eslint-rules\'',
+    ),
+  );
+}
+
 function cleanStaleManagedFiles(expectedNames) {
   const existing = fs
     .readdirSync(OUTPUT_DIR)
@@ -224,6 +238,11 @@ function run() {
   if (!fs.existsSync(SOURCE_LERNA_PATH)) {
     throw new Error(`Missing source lerna.json: ${SOURCE_LERNA_PATH}`);
   }
+  if (!fs.existsSync(SOURCE_ESLINT_CONFIG_PATH)) {
+    throw new Error(
+      `Missing source eslint.config.mjs: ${SOURCE_ESLINT_CONFIG_PATH}`,
+    );
+  }
 
   fs.writeFileSync(
     OUTPUT_GITATTRIBUTES_PATH,
@@ -268,6 +287,15 @@ function run() {
   );
   process.stdout.write(
     `Generated ${OUTPUT_LERNA_PATH} from ${SOURCE_LERNA_PATH}\n`,
+  );
+
+  fs.writeFileSync(
+    OUTPUT_ESLINT_CONFIG_TEMPLATE_PATH,
+    generateEslintConfigTemplate(),
+    'utf8',
+  );
+  process.stdout.write(
+    `Generated ${OUTPUT_ESLINT_CONFIG_TEMPLATE_PATH} from ${SOURCE_ESLINT_CONFIG_PATH}\n`,
   );
 
   cleanStaleManagedFiles(expectedNames);

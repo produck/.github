@@ -4,6 +4,7 @@ import { includeIgnoreFile } from '@eslint/config-helpers';
 
 /** @type {import('eslint').Linter.Config} */
 export const config = {
+  files: ['**/*.{js,mjs,cjs,ts,mts}'],
   linterOptions: {
     noInlineConfig: true,
   },

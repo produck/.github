@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint';
 import json from '@eslint/json';
 import markdown from '@eslint/markdown';
 import { defineConfig } from 'eslint/config';
-import * as ProduckRule from './packages/eslint-rules/src/index.mjs';
+import * as ProduckRule from '@produck/eslint-rules';
 
 export default defineConfig([
   {

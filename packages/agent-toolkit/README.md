@@ -7,10 +7,9 @@ Central CLI toolkit for organization-level AI execution workflows.
 For a new or existing downstream repository that has not yet applied the
 organization baseline, run:
 
-```
+```bash
 npm create @produck/agent-toolkit@latest
 ```
-
 This command installs `@produck/create-agent-toolkit` and runs
 `enforce-node-baseline` in the current directory. No prior installation is
 required — npm handles the download automatically.
@@ -35,13 +34,11 @@ After running, add the persistent enforcement entry to the repository
 ```json
 "produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd ."
 ```
-
 Then future enforcement runs via:
 
-```
+```bash
 npm run produck:baseline
 ```
-
 ## Commands
 
 - agent-toolkit enforce-node-baseline
@@ -61,16 +58,14 @@ npm run produck:baseline
 
 Run default mandatory baseline flow in downstream repository root:
 
-```
+```bash
 npm exec -- agent-toolkit
 ```
-
 Equivalent explicit form:
 
-```
+```bash
 npm exec -- agent-toolkit enforce-node-baseline --cwd .
 ```
-
 `enforce-node-baseline` runs nine steps in fixed order and stops at the first
 failure:
 
@@ -101,80 +96,68 @@ Add to downstream repository root `package.json` for one-command enforcement:
 ```json
 "produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd ."
 ```
-
 Then run:
 
-```
+```bash
 npm run produck:baseline
 ```
-
 Dry-run to preview changes without writing files:
 
-```
+```bash
 npm exec -- agent-toolkit enforce-node-baseline --cwd . --dry-run
 ```
-
 Check-only mode to validate without writing:
 
-```
+```bash
 npm exec -- agent-toolkit enforce-node-baseline --cwd . --check
 ```
-
 Validate monorepo root `package.json` scripts and workspace structure:
 
-```
+```bash
 npm exec -- agent-toolkit preflight --cwd . --check-workspace-package-json package.json
 ```
-
 Run preflight with required-file and directory guards:
 
-```
+```bash
 npm exec -- agent-toolkit preflight --cwd . --require package.json --ensure-dir logs
 ```
-
 Capture long output safely:
 
-```
+```bash
 npm exec -- agent-toolkit run-capture --cwd . --cmd "npm run test" --out logs/test.log
 ```
-
 Summarize captured output:
 
-```
+```bash
 npm exec -- agent-toolkit summarize-log --file logs/test.log --match "FAIL|ERROR"
 ```
-
 Deploy organization coverage script and pinned local c8 devDependency to workspace packages:
 
-```
+```bash
 npm exec -- agent-toolkit sync-coverage --cwd .
 ```
-
 This command also enforces `scripts.test` in each workspace package.
 If missing, it generates:
 
-```
+```bash
 node -e "console.log('No tests configured')"
 ```
-
 **Note:** The `produck:coverage` script in subpackages is for local and AI development use only. It is NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
 
 Deploy organization format config and script baseline to repository root:
 
-```
+```bash
 npm exec -- agent-toolkit sync-format --cwd .
 ```
-
 This command manages `scripts.produck:format` and `.prettierrc` only.
 The managed `produck:format` script always writes formatting fixes via
 Prettier, so a separate root `format` script is not required.
 
 Deploy organization lint config and script baseline to repository root:
 
-```
+```bash
 npm exec -- agent-toolkit sync-lint --cwd .
 ```
-
 This command manages `scripts.produck:lint`, `eslint.config.mjs`, and
 `devDependencies.@produck/eslint-rules`. If `eslint.config.mjs` exists without
 `@produck/eslint-rules`, it appends Produck integration to the exported config
@@ -182,10 +165,9 @@ array.
 
 Deploy root and workspace coverage config plus root `c8` devDependency:
 
-```
+```bash
 npm exec -- agent-toolkit sync-coverage --cwd .
 ```
-
 This command manages root `scripts.produck:coverage`, root `.c8rc.json`, pins
 root `devDependencies.c8`, and updates workspace package `produck:coverage`,
 `test`, and `devDependencies.c8`. The generated `.c8rc.json` uses `src/**` and
@@ -195,10 +177,9 @@ branches, functions, lines, and statements.
 
 Deploy root git attributes baseline:
 
-```
+```bash
 npm exec -- agent-toolkit sync-git --cwd .
 ```
-
 This command manages root `.gitattributes`, `.husky/pre-commit`,
 `.husky/commit-msg`, `scripts.produck:baseline`,
 `scripts.produck:commit:check`, and shared pinned root devDependencies
@@ -206,19 +187,17 @@ This command manages root `.gitattributes`, `.husky/pre-commit`,
 
 Deploy root install script baseline:
 
-```
+```bash
 npm exec -- agent-toolkit sync-install --cwd .
 ```
-
 This command manages `scripts.produck:install` with value
 `npm -v && npm install` and removes legacy `scripts.deps:install`.
 
 Deploy root publish script baseline:
 
-```
+```bash
 npm exec -- agent-toolkit sync-publish --cwd .
 ```
-
 This command manages `scripts.produck:publish:check` and
 `scripts.produck:publish`. If `lerna.json` is absent, sync mode creates a
 default file before writing the scripts. When `scripts.publish` already
@@ -227,16 +206,14 @@ otherwise it falls back to `lerna publish`.
 
 Validate commit message format:
 
-```
+```bash
 npm exec -- agent-toolkit validate-commit-msg --file .git/COMMIT_EDITMSG
 ```
-
 Manual per-repository instruction distribution (write .github/instructions/produck/\*.instructions.md):
 
-```
+```bash
 npm exec -- agent-toolkit sync-instructions --cwd .
 ```
-
 Legacy repository bootstrap behavior:
 
 - If `.github/copilot-instructions.md` is missing, sync-instructions initializes it.
@@ -246,10 +223,9 @@ Legacy repository bootstrap behavior:
 
 Use organization source directory instead of built-in assets:
 
-```
+```bash
 npm exec -- agent-toolkit sync-instructions --cwd . --source path/to/org/.github/distribution/produck --force --prune
 ```
-
 Built-in command-local resource locations (for review and updates):
 
 - `bin/command/*/help.txt`
@@ -285,7 +261,6 @@ npm --workspace @produck/agent-toolkit run pack:check
 # optional health check
 npm --workspace @produck/agent-toolkit run verify
 ```
-
 ## Publishing
 
 Publishing is centralized at workspace root via lerna, not via
@@ -298,7 +273,6 @@ npm run produck:publish:check
 npm run publish:dry-run
 npm run publish
 ```
-
 Notes:
 
 - `publish:dry-run` validates package contents by running `npm pack --dry-run`

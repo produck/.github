@@ -288,6 +288,22 @@ describe('build-publish-assets script', () => {
     assert.match(result.stderr, /Missing source lerna\.json/);
   });
 
+  it('fails when source eslint.config.mjs is missing', () => {
+    const result = runBuildPatched(
+      [
+        'const originalExistsSync = fs.existsSync;',
+        'fs.existsSync = (p) => {',
+        '  const s = String(p);',
+        '  if (/eslint\\.config\\.mjs$/.test(s) && !String(p).includes(\'publish-assets\')) return false;',
+        '  return originalExistsSync(p);',
+        '};',
+      ].join('\n'),
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Missing source eslint\.config\.mjs/);
+  });
+
   it('generates publish-assets from repository sources', () => {
     const result = spawnSync(process.execPath, [BUILD_SCRIPT], {
       cwd: PACKAGE_ROOT,
@@ -306,6 +322,10 @@ describe('build-publish-assets script', () => {
       path.resolve(
         PACKAGE_ROOT,
         'publish-assets/instructions/produck/tooling-version-baseline.json',
+      ),
+      path.resolve(
+        PACKAGE_ROOT,
+        'publish-assets/eslint.config.template.mjs',
       ),
     ];
 

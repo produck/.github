@@ -21,6 +21,41 @@
       "version": "3.8.3",
       "policy": "pinned",
       "allowLatest": false
+    },
+    "eslint": {
+      "version": "10.4.0",
+      "policy": "pinned",
+      "allowLatest": false
+    },
+    "@eslint/js": {
+      "version": "10.0.1",
+      "policy": "pinned",
+      "allowLatest": false
+    },
+    "@eslint/json": {
+      "version": "1.2.0",
+      "policy": "pinned",
+      "allowLatest": false
+    },
+    "@eslint/markdown": {
+      "version": "8.0.1",
+      "policy": "pinned",
+      "allowLatest": false
+    },
+    "@eslint/config-helpers": {
+      "version": "0.6.0",
+      "policy": "pinned",
+      "allowLatest": false
+    },
+    "typescript-eslint": {
+      "version": "8.59.4",
+      "policy": "pinned",
+      "allowLatest": false
+    },
+    "globals": {
+      "version": "17.6.0",
+      "policy": "pinned",
+      "allowLatest": false
     }
   },
   "coverage": {

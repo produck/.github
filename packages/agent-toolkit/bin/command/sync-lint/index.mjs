@@ -24,20 +24,14 @@ const ESLINT_CONFIG_FILE = 'eslint.config.mjs';
 
 const REQUIRED_LINT_SCRIPT_KEY = 'produck:lint';
 const REQUIRED_LINT_SCRIPT_VALUE = 'eslint --fix . --max-warnings=0';
-const REQUIRED_ESLINT_CONFIG = `import globals from 'globals';
-import pluginJs from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import * as ProduckRule from '@produck/eslint-rules';
+const ESLINT_CONFIG_TEMPLATE_PATH = path.resolve(
+  COMMAND_DIR,
+  'eslint.config.template.mjs',
+);
 
-export default [
-  { files: ['**/*.{js,mjs,cjs,ts,mts}'] },
-  { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  ProduckRule.config,
-  ProduckRule.excludeGitIgnore(import.meta.url),
-];
-`;
+function loadRequiredEslintConfig() {
+  return fs.readFileSync(ESLINT_CONFIG_TEMPLATE_PATH, 'utf8');
+}
 
 export function printSyncLintHelp() {
   printTextResource(HELP_FILE);
@@ -156,6 +150,7 @@ function patchEslintConfig(existing) {
 }
 
 export function runSyncLint(options) {
+  const REQUIRED_ESLINT_CONFIG = loadRequiredEslintConfig();
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
   const check = hasFlag(options, '--check');
   const dryRun = hasFlag(options, '--dry-run') && !check;
