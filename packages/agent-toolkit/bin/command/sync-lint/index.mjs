@@ -21,6 +21,12 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
 ];
 const ESLINT_RULES_PACKAGE_NAME = '@produck/eslint-rules';
 const ESLINT_CONFIG_FILE = 'eslint.config.mjs';
+const REQUIRED_ESLINT_ENTRIES = [
+  'ProduckRule.config.ecma',
+  'ProduckRule.config.json',
+  'ProduckRule.config.markdown',
+  'ProduckRule.excludeGitIgnore(import.meta.url)',
+];
 
 const REQUIRED_LINT_SCRIPT_KEY = 'produck:lint';
 const REQUIRED_LINT_SCRIPT_VALUE = 'eslint --fix . --max-warnings=0';
@@ -235,8 +241,13 @@ export function runSyncLint(options) {
     nextEslintConfigText = REQUIRED_ESLINT_CONFIG;
   } else if (previousEslintConfig === REQUIRED_ESLINT_CONFIG) {
     matchesRequiredEslintConfig = true;
-  } else if (previousEslintConfig.includes('@produck/eslint-rules')) {
+  } else if (
+    previousEslintConfig.includes(ESLINT_RULES_PACKAGE_NAME) &&
+    REQUIRED_ESLINT_ENTRIES.every(e => previousEslintConfig.includes(e))
+  ) {
     matchesRequiredEslintConfig = true;
+  } else if (previousEslintConfig.includes(ESLINT_RULES_PACKAGE_NAME)) {
+    eslintConfigAction = 'unpatchable';
   } else {
     const patched = patchEslintConfig(previousEslintConfig);
     if (patched.ok) {

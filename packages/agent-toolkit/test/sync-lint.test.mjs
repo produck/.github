@@ -159,7 +159,7 @@ describe('sync-lint command', () => {
     assert.match(result.stderr, /does not exist/);
   });
 
-  it('reports no-op when eslint config already contains Produck integration', async () => {
+  it('reports no-op when eslint config already contains all required Produck entries', async () => {
     await withTempDir('agent-toolkit-sync-lint-noop-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, 'package.json'),
@@ -167,7 +167,16 @@ describe('sync-lint command', () => {
       );
       await writeTextFile(
         path.join(tempDir, 'eslint.config.mjs'),
-        'import ProduckRule from "@produck/eslint-rules";\n\nexport default [ProduckRule.config];\n',
+        [
+          'import * as ProduckRule from "@produck/eslint-rules";',
+          'export default [',
+          '  ProduckRule.config.ecma,',
+          '  ProduckRule.config.json,',
+          '  ProduckRule.config.markdown,',
+          '  ProduckRule.excludeGitIgnore(import.meta.url),',
+          '];',
+          '',
+        ].join('\n'),
       );
 
       const result = runCli(['sync-lint', '--cwd', tempDir]);
@@ -175,6 +184,25 @@ describe('sync-lint command', () => {
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.required.eslintConfigAction, 'unchanged');
+    });
+  });
+
+  it('reports unpatchable when eslint config has @produck/eslint-rules but missing required entries', async () => {
+    await withTempDir('agent-toolkit-sync-lint-oldstyle-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        '{"name":"tmp"}\n',
+      );
+      await writeTextFile(
+        path.join(tempDir, 'eslint.config.mjs'),
+        'import * as ProduckRule from "@produck/eslint-rules";\n\nexport default [ProduckRule.config];\n',
+      );
+
+      const result = runCli(['sync-lint', '--cwd', tempDir]);
+      assert.equal(result.status, 2);
+
+      const report = JSON.parse(result.stdout);
+      assert.equal(report.required.eslintConfigAction, 'unpatchable');
     });
   });
 
