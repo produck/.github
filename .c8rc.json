@@ -11,8 +11,14 @@
     "**/out/**"
   ],
   "functions": 99.5,
-  "include": ["**/packages/**"],
-  "reporter": ["lcov", "html", "text-summary"],
+  "include": [
+    "**/packages/**"
+  ],
+  "reporter": [
+    "lcov",
+    "html",
+    "text-summary"
+  ],
   "statements": 99.5,
   "lines": 99.5
 }
