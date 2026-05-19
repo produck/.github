@@ -9,7 +9,7 @@ const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
 const HELP_FILE = path.resolve(COMMAND_DIR, 'help.txt');
 const LEGACY_INSTALL_SCRIPT_KEY = 'deps:install';
 const REQUIRED_INSTALL_SCRIPT_KEY = 'produck:install';
-const REQUIRED_INSTALL_SCRIPT_VALUE = 'npm -v && npm install';
+const REQUIRED_INSTALL_SCRIPT_VALUE = ['npm -v', 'npm install'].join(' && ');
 
 export function printSyncInstallHelp() {
   printTextResource(HELP_FILE);

@@ -26,8 +26,13 @@ const TOOLING_BASELINE = JSON.parse(
   fs.readFileSync(TOOLING_BASELINE_FILE, 'utf8'),
 );
 
-const REQUIRED_ROOT_COVERAGE_SCRIPT =
-  'c8 --config .c8rc.json npm run test --workspaces --if-present';
+const REQUIRED_ROOT_COVERAGE_SCRIPT = [
+  'c8',
+  '--config .c8rc.json',
+  'npm run test',
+  '--workspaces',
+  '--if-present',
+].join(' ');
 const REQUIRED_COVERAGE_SCRIPT = String(
   TOOLING_BASELINE.coverage.scriptTemplate,
 ).replace(/\{c8\.version\}/g, String(TOOLING_BASELINE.tools.c8.version));

@@ -29,11 +29,22 @@ const HUSKY_DIR = '.husky';
 const PRE_COMMIT_HOOK_FILE = 'pre-commit';
 const COMMIT_MSG_HOOK_FILE = 'commit-msg';
 const REQUIRED_BASELINE_SCRIPT_KEY = 'produck:baseline';
-const REQUIRED_BASELINE_SCRIPT_VALUE =
-  'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd . && npm run produck:install';
+const REQUIRED_BASELINE_SCRIPT_VALUE = [
+  [
+    'npm exec',
+    '--package=@produck/agent-toolkit@latest',
+    '--',
+    'agent-toolkit',
+    'enforce-node-baseline',
+    '--cwd .',
+  ].join(' '),
+  'npm run produck:install',
+].join(' && ');
 const REQUIRED_COMMIT_CHECK_SCRIPT_KEY = 'produck:commit:check';
-const REQUIRED_COMMIT_CHECK_SCRIPT_VALUE =
-  'npm run produck:format && npm run produck:lint';
+const REQUIRED_COMMIT_CHECK_SCRIPT_VALUE = [
+  'npm run produck:format',
+  'npm run produck:lint',
+].join(' && ');
 const REQUIRED_PREPARE_SCRIPT_KEY = 'prepare';
 const REQUIRED_PREPARE_SCRIPT_VALUE = 'husky';
 

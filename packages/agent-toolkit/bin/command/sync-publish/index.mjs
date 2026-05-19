@@ -16,11 +16,16 @@ const LERNA_TEMPLATE_CANDIDATE_PATHS = [
 ];
 
 const REQUIRED_PUBLISH_CHECK_SCRIPT_KEY = 'produck:publish:check';
-const REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE =
-  'npm run produck:install && npm run produck:coverage && npm run produck:commit:check';
+const REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE = [
+  'npm run produck:install',
+  'npm run produck:coverage',
+  'npm run produck:commit:check',
+].join(' && ');
 const REQUIRED_PUBLISH_SCRIPT_KEY = 'produck:publish';
-const REQUIRED_PUBLISH_SCRIPT_VALUE =
-  'npm run produck:publish:check && npm run publish --';
+const REQUIRED_PUBLISH_SCRIPT_VALUE = [
+  'npm run produck:publish:check',
+  'npm run publish --',
+].join(' && ');
 const REQUIRED_LERNA_VERSION_COMMIT_HOOKS = false;
 
 export function printSyncPublishHelp() {

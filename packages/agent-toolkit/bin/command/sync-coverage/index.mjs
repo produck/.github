@@ -21,8 +21,13 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
 ];
 const GLOB_TOKEN_PATTERN = /[*?{}[\]]/;
 const REQUIRED_ROOT_COVERAGE_SCRIPT_KEY = 'produck:coverage';
-const REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE =
-  'c8 --config .c8rc.json npm run test --workspaces --if-present';
+const REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE = [
+  'c8',
+  '--config .c8rc.json',
+  'npm run test',
+  '--workspaces',
+  '--if-present',
+].join(' ');
 const REQUIRED_COVERAGE_SCRIPT_KEY = 'produck:coverage';
 const REQUIRED_TEST_SCRIPT_KEY = 'test';
 const DEFAULT_TEST_SCRIPT_VALUE =

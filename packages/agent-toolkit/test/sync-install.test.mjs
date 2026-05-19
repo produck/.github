@@ -5,7 +5,7 @@ import { describe, it } from 'node:test';
 
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
-const REQUIRED_INSTALL_SCRIPT = 'npm -v && npm install';
+const REQUIRED_INSTALL_SCRIPT = ['npm -v', 'npm install'].join(' && ');
 
 describe('sync-install command', () => {
   it('prints help text', () => {
