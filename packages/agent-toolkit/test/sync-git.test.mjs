@@ -24,7 +24,7 @@ const REQUIRED_PRE_COMMIT_HOOK =
 const REQUIRED_COMMIT_MSG_HOOK =
   '#!/usr/bin/env sh\nnode ./node_modules/@produck/agent-toolkit/bin/agent-toolkit.mjs validate-commit-msg --file "$1"\n';
 const REQUIRED_BASELINE_SCRIPT =
-  'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .';
+  'npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd . && npm run produck:install';
 const REQUIRED_COMMIT_CHECK_SCRIPT =
   'npm run produck:format && npm run produck:lint';
 const REQUIRED_PREPARE_SCRIPT = 'husky';
