@@ -2,32 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { includeIgnoreFile } from '@eslint/config-helpers';
 
-/** @type {import('eslint').Linter.Config} */
-export const config = {
-  files: ['**/*.{js,mjs,cjs,ts,mts}'],
-  linterOptions: {
-    noInlineConfig: true,
-  },
-  rules: {
-    indent: ['error', 2],
-    'linebreak-style': ['error', 'unix'],
-    // Keep a readable line-length ruler while staying formatter-friendly.
-    'max-len': [
-      'warn',
-      {
-        code: 80,
-        ignoreUrls: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-        ignoreRegExpLiterals: true,
-        ignoreComments: true,
-      },
-    ],
-    quotes: ['error', 'single'],
-    semi: ['error', 'always'],
-    'comma-dangle': ['error', 'always-multiline'],
-  },
-};
+export * as config from './config/index.mjs';
 
 /**
  * Generate an ESLint config that excludes paths listed in .gitignore

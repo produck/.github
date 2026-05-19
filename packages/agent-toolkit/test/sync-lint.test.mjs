@@ -43,7 +43,9 @@ describe('sync-lint command', () => {
         'utf8',
       );
       assert.match(eslintConfig, /@produck\/eslint-rules/);
-      assert.match(eslintConfig, /ProduckRule\.config/);
+      assert.match(eslintConfig, /ProduckRule\.config\.ecma/);
+      assert.match(eslintConfig, /ProduckRule\.config\.json/);
+      assert.match(eslintConfig, /ProduckRule\.config\.markdown/);
     });
   });
 
@@ -75,6 +77,9 @@ describe('sync-lint command', () => {
         'utf8',
       );
       assert.match(eslintConfig, /@produck\/eslint-rules/);
+      assert.match(eslintConfig, /ProduckRule\.config\.ecma/);
+      assert.match(eslintConfig, /ProduckRule\.config\.json/);
+      assert.match(eslintConfig, /ProduckRule\.config\.markdown/);
       assert.match(
         eslintConfig,
         /ProduckRule\.excludeGitIgnore\(import\.meta\.url\)/,

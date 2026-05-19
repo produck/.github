@@ -5,13 +5,15 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, it } from 'node:test';
 
-import { config, excludeGitIgnore } from '../src/index.mjs';
+import * as ProduckRule from '../src/index.mjs';
 
 describe('eslint config exports', () => {
-  it('uses org style baseline indentation in default config', () => {
-    assert.deepEqual(config.rules.indent, ['error', 2]);
-    assert.deepEqual(config.rules['linebreak-style'], ['error', 'unix']);
-    assert.deepEqual(config.rules['max-len'], [
+  it('config.ecma contains org style baseline rules', () => {
+    const { ecma } = ProduckRule.config;
+
+    assert.deepEqual(ecma.rules.indent, ['error', 2]);
+    assert.deepEqual(ecma.rules['linebreak-style'], ['error', 'unix']);
+    assert.deepEqual(ecma.rules['max-len'], [
       'warn',
       {
         code: 80,
@@ -22,7 +24,26 @@ describe('eslint config exports', () => {
         ignoreComments: true,
       },
     ]);
-    assert.equal(config.linterOptions.noInlineConfig, true);
+    assert.equal(ecma.linterOptions.noInlineConfig, true);
+  });
+
+  it('config.json targets json files with recommended rules', () => {
+    const { json } = ProduckRule.config;
+
+    assert.deepEqual(json.files, ['**/*.json']);
+    assert.deepEqual(json.ignores, ['**/package-lock.json']);
+    assert.equal(json.language, 'json/json');
+    assert.equal(typeof json.plugins.json, 'object');
+    assert.deepEqual(json.extends, ['json/recommended']);
+  });
+
+  it('config.markdown targets md files with gfm rules', () => {
+    const { markdown } = ProduckRule.config;
+
+    assert.deepEqual(markdown.files, ['**/*.md']);
+    assert.equal(markdown.language, 'markdown/gfm');
+    assert.equal(typeof markdown.plugins.markdown, 'object');
+    assert.deepEqual(markdown.extends, ['markdown/recommended']);
   });
 
   it('returns a valid flat config fragment from .gitignore', async () => {
@@ -40,7 +61,9 @@ describe('eslint config exports', () => {
 
     await fs.writeFile(eslintConfigPath, 'export default [];\n', 'utf8');
 
-    const ignoreConfig = excludeGitIgnore(pathToFileURL(eslintConfigPath).href);
+    const ignoreConfig = ProduckRule.excludeGitIgnore(
+      pathToFileURL(eslintConfigPath).href,
+    );
 
     assert.equal(typeof ignoreConfig, 'object');
     assert.ok(ignoreConfig);
@@ -57,7 +80,7 @@ describe('eslint config exports', () => {
     await fs.writeFile(eslintConfigPath, 'export default [];\n', 'utf8');
 
     assert.throws(
-      () => excludeGitIgnore(pathToFileURL(eslintConfigPath).href),
+      () => ProduckRule.excludeGitIgnore(pathToFileURL(eslintConfigPath).href),
       /ENOENT/,
     );
   });

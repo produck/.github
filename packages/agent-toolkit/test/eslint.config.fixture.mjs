@@ -8,5 +8,8 @@ export default [
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  ProduckRule.config,
+  ProduckRule.config.ecma,
+  ProduckRule.config.json,
+  ProduckRule.config.markdown,
+  ProduckRule.excludeGitIgnore(import.meta.url),
 ];

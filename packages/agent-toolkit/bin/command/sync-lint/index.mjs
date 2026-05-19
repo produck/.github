@@ -169,7 +169,7 @@ function patchEslintConfig(existing) {
   }
 
   output =
-    `${output.slice(0, exportEnd)}  ProduckRule.config,\n  ProduckRule.excludeGitIgnore(import.meta.url),\n` +
+    `${output.slice(0, exportEnd)}  ProduckRule.config.ecma,\n  ProduckRule.config.json,\n  ProduckRule.config.markdown,\n  ProduckRule.excludeGitIgnore(import.meta.url),\n` +
     output.slice(exportEnd);
 
   if (!output.endsWith('\n')) {
