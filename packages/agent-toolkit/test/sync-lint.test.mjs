@@ -187,7 +187,7 @@ describe('sync-lint command', () => {
     });
   });
 
-  it('reports unpatchable when eslint config has @produck/eslint-rules but missing required entries', async () => {
+  it('replaces with template when eslint config has @produck/eslint-rules but missing required entries', async () => {
     await withTempDir('agent-toolkit-sync-lint-oldstyle-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, 'package.json'),
@@ -199,10 +199,10 @@ describe('sync-lint command', () => {
       );
 
       const result = runCli(['sync-lint', '--cwd', tempDir]);
-      assert.equal(result.status, 2);
+      assert.equal(result.status, 0);
 
       const report = JSON.parse(result.stdout);
-      assert.equal(report.required.eslintConfigAction, 'unpatchable');
+      assert.equal(report.required.eslintConfigAction, 'replaced');
     });
   });
 

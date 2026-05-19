@@ -243,11 +243,12 @@ export function runSyncLint(options) {
     matchesRequiredEslintConfig = true;
   } else if (
     previousEslintConfig.includes(ESLINT_RULES_PACKAGE_NAME) &&
-    REQUIRED_ESLINT_ENTRIES.every(e => previousEslintConfig.includes(e))
+    REQUIRED_ESLINT_ENTRIES.every((e) => previousEslintConfig.includes(e))
   ) {
     matchesRequiredEslintConfig = true;
   } else if (previousEslintConfig.includes(ESLINT_RULES_PACKAGE_NAME)) {
-    eslintConfigAction = 'unpatchable';
+    eslintConfigAction = 'replaced';
+    nextEslintConfigText = REQUIRED_ESLINT_CONFIG;
   } else {
     const patched = patchEslintConfig(previousEslintConfig);
     if (patched.ok) {
