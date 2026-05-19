@@ -47,6 +47,7 @@ foo:
 bar:
 [REFACTOR] <docs>: rewrite installation guide
 ```
+
 Standalone repository format:
 
 - Do not use package/workspace section headers.
@@ -126,6 +127,7 @@ foo:
 [FIX] b
 [FIX] c
 ```
+
 ```text
 core:
 [ADD] <api>: new user authentication endpoint
@@ -134,6 +136,7 @@ utils:
 [UPGRADE] <deps>: update lodash to v4.17.21
 [FIX] <docs>: clarify error handling in README
 ```
+
 ## Avoid
 
 Avoid vague or low-signal messages such as:

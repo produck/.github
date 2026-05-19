@@ -177,10 +177,12 @@ function readSourceEntries() {
 
 function generateEslintConfigTemplate() {
   return normalize(
-    fs.readFileSync(SOURCE_ESLINT_CONFIG_PATH, 'utf8').replace(
-      /from\s+['"]\.\/packages\/eslint-rules\/src\/index\.mjs['"]/g,
-      'from \'@produck/eslint-rules\'',
-    ),
+    fs
+      .readFileSync(SOURCE_ESLINT_CONFIG_PATH, 'utf8')
+      .replace(
+        /from\s+['"]\.\/packages\/eslint-rules\/src\/index\.mjs['"]/g,
+        'from \'@produck/eslint-rules\'',
+      ),
   );
 }
 

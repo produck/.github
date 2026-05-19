@@ -32,6 +32,26 @@ describe('preflight command', () => {
     });
   });
 
+  it('marks report.ok false when a required file is missing', async () => {
+    await withTempDir(
+      'agent-toolkit-preflight-missing-req-',
+      async (tempDir) => {
+        const result = runCli([
+          'preflight',
+          '--cwd',
+          tempDir,
+          '--require',
+          'no-such-file.txt',
+        ]);
+
+        assert.equal(result.status, 2);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, false);
+        assert.equal(report.required[0].exists, false);
+      },
+    );
+  });
+
   it('fails when cwd does not exist', () => {
     const missingCwd = path.join(
       os.tmpdir(),

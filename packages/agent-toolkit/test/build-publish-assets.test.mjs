@@ -323,10 +323,7 @@ describe('build-publish-assets script', () => {
         PACKAGE_ROOT,
         'publish-assets/instructions/produck/tooling-version-baseline.json',
       ),
-      path.resolve(
-        PACKAGE_ROOT,
-        'publish-assets/eslint.config.template.mjs',
-      ),
+      path.resolve(PACKAGE_ROOT, 'publish-assets/eslint.config.template.mjs'),
     ];
 
     for (const filePath of expectedFiles) {

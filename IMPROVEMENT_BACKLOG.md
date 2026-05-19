@@ -51,6 +51,7 @@ Suggested skeleton (adjust team names):
 packages/agent-toolkit/**     @produck/toolkit-maintainers
 tooling-version-baseline.json @produck/governance-leads
 ```
+
 ### 4. Downstream "quick adopt" section in README
 
 Add a short "Adopting in a downstream repository" block to `README.md` with
@@ -90,6 +91,7 @@ jobs:
   baseline:
     uses: produck/.github/.github/workflows/baseline-check.yml@v1
 ```
+
 ### 7. Deprecation lifecycle
 
 No explicit deprecation window today — a rule can simply disappear between

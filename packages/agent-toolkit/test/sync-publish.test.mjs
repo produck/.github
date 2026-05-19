@@ -6,7 +6,7 @@ import { describe, it } from 'node:test';
 import { readJson, runCli, writeTextFile, withTempDir } from './helpers.mjs';
 
 const REQUIRED_PUBLISH_CHECK_SCRIPT =
-  'npm run produck:install && npm run produck:coverage && produck:commit:check';
+  'npm run produck:install && npm run produck:coverage && npm run produck:commit:check';
 const REQUIRED_PUBLISH_SCRIPT =
   'npm run produck:publish:check && npm run publish --';
 
