@@ -54,16 +54,27 @@ function readFileIfExists(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function getRequiredEslintRulesDevDependency() {
-  // Prefer the in-tree source of truth: when sync-lint runs from inside the
-  // monorepo, the eslint-rules package.json is the authoritative version. When
-  // sync-lint runs as an installed dependency, fall back to the publish-assets
-  // tooling baseline (which build-publish-assets injects at prepack time from
-  // the same package.json).
+const ESLINT_TOOLING_PACKAGE_NAMES = [
+  'eslint',
+  '@eslint/js',
+  '@eslint/json',
+  '@eslint/markdown',
+  '@eslint/config-helpers',
+  'typescript-eslint',
+  'globals',
+];
+
+function getRequiredEslintDevDependencies() {
+  // Prefer the in-tree source of truth for @produck/eslint-rules: when
+  // sync-lint runs inside the monorepo, eslint-rules/package.json is
+  // authoritative. When running as an installed dependency, fall back to the
+  // publish-assets tooling baseline.
   const inTreeEslintRulesPkgPath = path.resolve(
     REPO_ROOT,
     'packages/eslint-rules/package.json',
   );
+
+  let eslintRulesVersion = '';
   if (fs.existsSync(inTreeEslintRulesPkgPath)) {
     const eslintRulesPkg = parseJsonFile(
       inTreeEslintRulesPkgPath,
@@ -71,13 +82,13 @@ function getRequiredEslintRulesDevDependency() {
     );
     // The '' fallback is for when the in-tree package.json has a non-string
     // version field, which never occurs for this package.
-    const version =
+    const v =
       typeof eslintRulesPkg.version === 'string'
         ? eslintRulesPkg.version.trim()
         : /* c8 ignore next */
         '';
-    if (version) {
-      return version;
+    if (v) {
+      eslintRulesVersion = v;
     }
   }
 
@@ -87,9 +98,9 @@ function getRequiredEslintRulesDevDependency() {
     },
   );
 
+  /* c8 ignore next 7 */
   if (!toolingBaselinePath) {
-    console.error('Cannot resolve @produck/eslint-rules version. Looked at:');
-    console.error(`- ${inTreeEslintRulesPkgPath}`);
+    console.error('Cannot resolve ESLint tooling versions. Looked at:');
     for (const candidatePath of TOOLING_BASELINE_CANDIDATE_PATHS) {
       console.error(`- ${candidatePath}`);
     }
@@ -97,21 +108,40 @@ function getRequiredEslintRulesDevDependency() {
   }
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
-  const entry = baseline?.tools?.[ESLINT_RULES_PACKAGE_NAME];
-  // The '' fallback is for when the tooling baseline lacks a string version entry
-  // for the eslint-rules package, which the repository always provides.
-  /* c8 ignore next 2 */
-  const version =
-    typeof entry?.version === 'string' ? entry.version.trim() : '';
 
-  if (!version) {
-    console.error(
-      `Tooling baseline tools["${ESLINT_RULES_PACKAGE_NAME}"].version must be a non-empty string: ${toolingBaselinePath}`,
-    );
-    process.exit(2);
+  /* c8 ignore next 12 */
+  if (!eslintRulesVersion) {
+    const entry = baseline?.tools?.[ESLINT_RULES_PACKAGE_NAME];
+    const v = typeof entry?.version === 'string' ? entry.version.trim() : '';
+    if (!v) {
+      console.error(
+        `Tooling baseline tools["${ESLINT_RULES_PACKAGE_NAME}"].version must be a non-empty string: ${toolingBaselinePath}`,
+      );
+      process.exit(2);
+    }
+    eslintRulesVersion = v;
   }
 
-  return version;
+  const deps = { [ESLINT_RULES_PACKAGE_NAME]: eslintRulesVersion };
+
+  for (const name of ESLINT_TOOLING_PACKAGE_NAMES) {
+    const entry = baseline?.tools?.[name];
+    const v =
+      typeof entry?.version === 'string'
+        ? entry.version.trim()
+        : /* c8 ignore next */
+        '';
+    /* c8 ignore next 6 */
+    if (!v) {
+      console.error(
+        `Tooling baseline tools["${name}"].version must be a non-empty string: ${toolingBaselinePath}`,
+      );
+      process.exit(2);
+    }
+    deps[name] = v;
+  }
+
+  return deps;
 }
 
 function patchEslintConfig(existing) {
@@ -186,19 +216,15 @@ export function runSyncLint(options) {
     typeof scripts[REQUIRED_LINT_SCRIPT_KEY] === 'string'
       ? scripts[REQUIRED_LINT_SCRIPT_KEY]
       : null;
-  const previousEslintRules =
-    typeof devDependencies['@produck/eslint-rules'] === 'string'
-      ? devDependencies['@produck/eslint-rules']
-      : null;
-
-  const requiredEslintRulesDependency = getRequiredEslintRulesDevDependency();
+  const requiredEslintDevDeps = getRequiredEslintDevDependencies();
 
   const eslintConfigPath = path.resolve(cwd, ESLINT_CONFIG_FILE);
   const previousEslintConfig = readFileIfExists(eslintConfigPath);
 
   const matchesRequiredLint = previousLint === REQUIRED_LINT_SCRIPT_VALUE;
-  const matchesRequiredEslintRules =
-    previousEslintRules === requiredEslintRulesDependency;
+  const matchesRequiredEslintDeps = Object.entries(requiredEslintDevDeps).every(
+    ([name, version]) => devDependencies[name] === version,
+  );
 
   let eslintConfigAction = 'unchanged';
   let matchesRequiredEslintConfig = false;
@@ -223,7 +249,7 @@ export function runSyncLint(options) {
 
   const requiresUpdate =
     !matchesRequiredLint ||
-    !matchesRequiredEslintRules ||
+    !matchesRequiredEslintDeps ||
     !matchesRequiredEslintConfig;
   const hasUnpatchableEslintConfig = eslintConfigAction === 'unpatchable';
 
@@ -231,7 +257,9 @@ export function runSyncLint(options) {
     scripts[REQUIRED_LINT_SCRIPT_KEY] = REQUIRED_LINT_SCRIPT_VALUE;
     pkg.scripts = scripts;
 
-    devDependencies['@produck/eslint-rules'] = requiredEslintRulesDependency;
+    for (const [name, version] of Object.entries(requiredEslintDevDeps)) {
+      devDependencies[name] = version;
+    }
     pkg.devDependencies = devDependencies;
 
     fs.writeFileSync(
@@ -257,22 +285,22 @@ export function runSyncLint(options) {
     required: {
       lintScriptKey: REQUIRED_LINT_SCRIPT_KEY,
       lintScriptValue: REQUIRED_LINT_SCRIPT_VALUE,
-      eslintRulesVersion: requiredEslintRulesDependency,
+      eslintDevDependencies: requiredEslintDevDeps,
       eslintConfigPath: path.relative(cwd, eslintConfigPath),
       eslintConfigAction,
     },
     status: {
       matchesRequiredLintBefore: matchesRequiredLint,
-      matchesRequiredEslintRulesBefore: matchesRequiredEslintRules,
+      matchesRequiredEslintDepsBefore: matchesRequiredEslintDeps,
       matchesRequiredEslintConfigBefore: matchesRequiredEslintConfig,
       matchesRequiredLintAfter:
         requiresUpdate && mode === 'sync' && !hasUnpatchableEslintConfig
           ? true
           : matchesRequiredLint,
-      matchesRequiredEslintRulesAfter:
+      matchesRequiredEslintDepsAfter:
         requiresUpdate && mode === 'sync' && !hasUnpatchableEslintConfig
           ? true
-          : matchesRequiredEslintRules,
+          : matchesRequiredEslintDeps,
       matchesRequiredEslintConfigAfter:
         requiresUpdate && mode === 'sync' && !hasUnpatchableEslintConfig
           ? true

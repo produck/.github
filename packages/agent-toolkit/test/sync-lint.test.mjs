@@ -17,7 +17,7 @@ describe('sync-lint command', () => {
     assert.match(result.stdout, /@produck\/eslint-rules/);
   });
 
-  it('applies required lint script, eslint config, and eslint-rules dependency', async () => {
+  it('applies required lint script, eslint config, and eslint devDependencies', async () => {
     await withTempDir('agent-toolkit-sync-lint-sync-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, 'package.json'),
@@ -33,6 +33,10 @@ describe('sync-lint command', () => {
         pkg.devDependencies['@produck/eslint-rules'],
         /^\d+\.\d+\.\d+$/,
       );
+      assert.match(pkg.devDependencies['eslint'], /^\d+\.\d+\.\d+$/);
+      assert.match(pkg.devDependencies['@eslint/js'], /^\d+\.\d+\.\d+$/);
+      assert.match(pkg.devDependencies['typescript-eslint'], /^\d+\.\d+\.\d+$/);
+      assert.match(pkg.devDependencies['globals'], /^\d+\.\d+\.\d+$/);
 
       const eslintConfig = fs.readFileSync(
         path.join(tempDir, 'eslint.config.mjs'),

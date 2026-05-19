@@ -423,10 +423,7 @@ describe('fault injection coverage for sync commands', () => {
         );
 
         assert.equal(result.status, 2);
-        assert.match(
-          result.stderr,
-          /Cannot resolve @produck\/eslint-rules version/,
-        );
+        assert.match(result.stderr, /Cannot resolve ESLint tooling versions/);
       },
     );
   });
@@ -497,7 +494,7 @@ describe('fault injection coverage for sync commands', () => {
             '};',
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
-            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { "@produck/eslint-rules": { version: "1.2.3" } } });',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { "@produck/eslint-rules": { version: "1.2.3" }, "eslint": { version: "10.0.0" }, "@eslint/js": { version: "10.0.0" }, "@eslint/json": { version: "1.0.0" }, "@eslint/markdown": { version: "8.0.0" }, "@eslint/config-helpers": { version: "0.6.0" }, "typescript-eslint": { version: "8.0.0" }, "globals": { version: "17.0.0" } } });',
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -505,7 +502,10 @@ describe('fault injection coverage for sync commands', () => {
 
         assert.equal(result.status, 0);
         const report = JSON.parse(result.stdout);
-        assert.equal(report.required.eslintRulesVersion, '1.2.3');
+        assert.equal(
+          report.required.eslintDevDependencies['@produck/eslint-rules'],
+          '1.2.3',
+        );
       },
     );
   });
