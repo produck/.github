@@ -88,6 +88,69 @@ import './feature-b.test.mjs';
   the module name or command name).
 - `it` labels should describe the expected behavior in plain language.
 
+### Suite name conventions
+
+The `describe` suite name encodes the member type under test using a prefix
+convention:
+
+| Prefix | Meaning                                              | Example                   |
+| ------ | ---------------------------------------------------- | ------------------------- |
+| `::`   | Class static public member or namespace static       | `describe('::parse()')`   |
+| `.`    | Class instance member                                | `describe('.validate()')` |
+| `()`   | Marks the target as a function (composable)          | `describe('::create()')`  |
+| `>`    | Return-value testing, nested inside a function suite | `describe('>result')`     |
+| `#`    | Event emitter — test event dispatch behavior         | `describe('#error')`      |
+
+Prefixes and `()` compose freely. For example:
+
+| Suite name    | Meaning                       |
+| ------------- | ----------------------------- |
+| `::parse()`   | Static function `parse`       |
+| `::VERSION`   | Static property `VERSION`     |
+| `.validate()` | Instance method `validate`    |
+| `.name`       | Instance property `name`      |
+| `validate()`  | Standalone function (unbound) |
+
+Examples:
+
+```js
+describe('::parse()', () => {
+  it('should parse valid input', () => {
+    /* ... */
+  });
+});
+
+describe('::VERSION', () => {
+  it('should be a semver string', () => {
+    /* ... */
+  });
+});
+
+describe('.validate()', () => {
+  it('should reject invalid data', () => {
+    /* ... */
+  });
+
+  describe('>result', () => {
+    it('should be a boolean', () => {
+      /* ... */
+    });
+  });
+});
+
+describe('.name', () => {
+  it('should be non-empty', () => {
+    /* ... */
+  });
+});
+
+describe('#error', () => {
+  it('should emit on failure', () => {
+    /* ... */
+  });
+});
+```
+
 ## Local debug workflow (recommended)
 
 When debugging a failing test case:
