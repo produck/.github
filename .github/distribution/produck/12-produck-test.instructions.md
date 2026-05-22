@@ -52,6 +52,35 @@ import './feature-b.test.mjs';
 - Avoid global side effects that persist across test cases.
 - Clean up resources (temp files, open handles) at the end of each test case.
 
+## API usage conventions
+
+- Callback functions for `describe` and `it` MUST use arrow functions. Do not
+  use `function` keyword or method shorthand syntax.
+
+  Correct:
+
+  ```js
+  describe('my feature', () => {
+    it('should work', () => {
+      // assertions
+    });
+  });
+  ```
+
+  Wrong:
+
+  ```js
+  describe('my feature', function () {
+    it('should work', function () {
+      // assertions
+    });
+  });
+  ```
+
+- Deep nesting of `describe` blocks can make test output harder to read. When
+  nesting becomes excessive, split the test file and use `await import()` to
+  reorganize — this keeps the actual test code at shallow nesting levels.
+
 ## Naming conventions
 
 - Test files use the `.test.mjs` suffix.
