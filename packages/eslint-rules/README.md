@@ -22,7 +22,8 @@ npm install --save-dev @produck/eslint-rules
 ### `config.ecma`
 
 ESLint flat config for JS/TS files (`**/*.{js,mjs,cjs,ts,mts}`) with Produck
-coding conventions (2-space indent, single quotes, unix linebreaks, etc.).
+coding conventions (2-space indent, single quotes, unix linebreaks, mandatory
+curly braces for all control statements, etc.).
 
 ### `config.json`
 

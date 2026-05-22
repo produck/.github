@@ -5,6 +5,7 @@ export const ecma = {
     noInlineConfig: true,
   },
   rules: {
+    curly: ['error', 'all'],
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
     // Keep a readable line-length ruler while staying formatter-friendly.
