@@ -53,16 +53,8 @@ Notes:
   - Use central remediation command to deploy root lint script/config and
     eslint integration baseline:
     `npm exec -- agent-toolkit sync-lint --cwd .`.
-  - `c8` execution baseline for deployed coverage scripts is fixed to the
-    version specified in `tooling-version-baseline.json`.
   - Downstream repositories must not use unversioned `npx c8` or `c8@latest`
     in shared scripts/CI.
-  - Root local governance must pin `devDependencies.c8`,
-    `devDependencies.husky`, `devDependencies.lerna`, and
-    `devDependencies.@produck/agent-toolkit` via
-    `agent-toolkit sync-git`.
-  - Root local governance must pin `devDependencies.@produck/eslint-rules`
-    via `agent-toolkit sync-lint`.
 
 - Testing strategy and framework are repository-defined.
 - `verify` scripts are optional repository-local health checks and are not
@@ -78,43 +70,14 @@ Notes:
 - Commit prechecks still require passing repository style gates (for example
   `produck:format` and `produck:lint`).
 
-Central toolkit command role model:
+Enforcement:
 
-- `agent-toolkit sync-instructions` is guidance-first distribution for
-  organization baseline instructions.
-- `sync-instructions` is not a hard gate; use it to reduce instruction drift,
-  but do not assume it can fully prevent AI hallucination or iterative drift.
-- `agent-toolkit preflight` is the hard guard for organization engineering
-  baseline and is mandatory for required baseline checks.
-- `agent-toolkit sync-install` is the hard guard for root install script
-  governance and is mandatory in monorepo mode.
-- `agent-toolkit sync-coverage` is the hard guard for monorepo coverage
-  governance and is mandatory in monorepo mode.
-- `agent-toolkit sync-git` is the hard guard for local anti-drift hook
-  governance and is mandatory in monorepo mode.
-- `agent-toolkit sync-format` is the hard guard for root format
-  script/config governance and is mandatory in monorepo mode.
-- `agent-toolkit sync-lint` is the hard guard for root lint
-  script/config and eslint integration governance and is mandatory in monorepo
-  mode.
-- `agent-toolkit sync-publish` is the hard guard for root publish script
-  governance when `lerna.json` is present.
-- For simplified downstream execution of mandatory flow (1 -> 2 -> ... -> 9),
-  use:
-  `npm exec -- agent-toolkit`.
-- Equivalent explicit form:
+- For one-step execution of all mandatory checks, use:
   `npm exec -- agent-toolkit enforce-node-baseline --cwd .`.
-- `agent-toolkit validate-commit-msg` is a hard guard for AI-agent-authored
-  `git commit` and `git commit --amend` operations.
-- For human engineers, commit-message validation is recommended rather than
-  mandatory unless repository-specific hooks/CI enforce it.
-- Do not require retroactive rewrite/amend of historical commits solely to
-  satisfy commit-message validator rules.
-- `agent-toolkit run-capture` and `agent-toolkit summarize-log` are AI-agent
-  execution guardrails.
-- These guardrails pair with node-first execution policy: prefer Node.js
-  interpreter workflows for parsing/filtering over brittle OS-shell pipelines.
-- For human engineers, `run-capture` and `summarize-log` are optional helpers.
+- `agent-toolkit validate-commit-msg` is required for AI-agent-authored
+  `git commit` and `git commit --amend`.
+- For human engineers, commit-message validation is recommended.
+- Do not require retroactive rewrite/amend of historical commits.
 
 Test authoring baseline:
 
@@ -163,33 +126,12 @@ Script placement:
   publish gate when `lerna.json` is present (governed by
   `agent-toolkit sync-publish`).
 - `publish` may be defined at root or package level based on release workflow.
-- Workspace subpackage `produck:coverage` scripts must be synchronized by
-  `agent-toolkit sync-coverage`.
-- Root local hook governance must be synchronized by
-  `agent-toolkit sync-git`.
-- Root local shared script governance must initialize
-  `scripts.produck:install` with required value `npm -v && npm install`
-  via `agent-toolkit sync-install`.
-- Root local format governance must be synchronized by
-  `agent-toolkit sync-format`.
-- Root local lint governance must be synchronized by
-  `agent-toolkit sync-lint`.
-- Root local shared script/dependency governance must pin root
-  `devDependencies.c8`,
-  `devDependencies.husky`, `devDependencies.lerna`,
-  `devDependencies.@produck/agent-toolkit` via
-  `agent-toolkit sync-git`.
-- Root local shared script/dependency governance must initialize
-  `scripts.produck:coverage` with workspace-level execution behavior:
-  attempt `test` on all workspace packages using `--workspaces --if-present`.
-- Root local shared script/dependency governance must initialize `.c8rc.json`
-  via `agent-toolkit sync-coverage`.
-- Root local format governance must initialize `.prettierrc` and
-  `scripts.produck:format` via `agent-toolkit sync-format`.
-- Root local lint governance must initialize `eslint.config.mjs`,
-  `scripts.produck:lint`, and `devDependencies.@produck/eslint-rules`
-  (including append-mode integration for existing eslint config) via
-  `agent-toolkit sync-lint`.
+- Remediation commands (run from root):
+  - `npm exec -- agent-toolkit sync-install --cwd .` — deploy root install script
+  - `npm exec -- agent-toolkit sync-coverage --cwd .` — deploy coverage scripts
+  - `npm exec -- agent-toolkit sync-git --cwd .` — deploy git hooks and deps
+  - `npm exec -- agent-toolkit sync-format --cwd .` — deploy format config
+  - `npm exec -- agent-toolkit sync-lint --cwd .` — deploy lint config
 - Root `package.json` must define a `produck:baseline` script for organization
   baseline enforcement:
   ```json
@@ -203,7 +145,8 @@ Release tooling policy (required):
   repository.
 - Source of truth for `lerna` version baseline:
   `.github/distribution/produck/tooling-version-baseline.json`.
-- Required execution baseline: version specified in `tooling-version-baseline.json`.
+- Required execution baseline: version specified in the
+  `tooling-version-baseline.json`.
 - Required invocation:
   `npm exec -- lerna <subcommand>`.
 - Downstream repositories must not use unversioned `npx lerna` or

@@ -32,12 +32,12 @@ repositories:
   - `.github/copilot-instructions.md` — repository-specific exceptions and
     stricter local constraints.
 
-Editing rule (upstream only):
+Editing rule:
 
 - Update downstream baseline rules directly in
   `.github/distribution/produck/*.instructions.md`.
-- Add organization-only governance under
-  `.github/instructions/produck/` only when it must not be distributed.
+- For internal-only governance (this repo only, not distributed), add files
+  under `.github/instructions/produck/`.
 
 ## Default expectations
 

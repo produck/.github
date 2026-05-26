@@ -147,6 +147,10 @@ describe('build-publish-assets script', () => {
         '  if (/tooling-version-baseline\\.json$/.test(s)) {',
         '    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: \'\' }, lerna: { version: \'9.0.7\' } }, coverage: { scriptTemplate: \'c8 {c8.version}\' } });',
         '  }',
+        '  // Mask root package.json so fallback resolver does not find c8',
+        '  if (/package\\.json$/.test(s) && !/node_modules/.test(s) && !/publish-assets/.test(s)) {',
+        '    return JSON.stringify({ name: "test", devDependencies: { lerna: "9.0.7" } });',
+        '  }',
         '  return originalReadFileSync(p, enc);',
         '};',
       ].join('\n'),
@@ -164,6 +168,10 @@ describe('build-publish-assets script', () => {
         '  const s = String(p);',
         '  if (/tooling-version-baseline\\.json$/.test(s)) {',
         '    return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: \'11.0.0\' }, lerna: { version: \'\' } }, coverage: { scriptTemplate: \'c8 {c8.version}\' } });',
+        '  }',
+        '  // Mask root package.json so fallback resolver does not find lerna',
+        '  if (/package\\.json$/.test(s) && !/node_modules/.test(s) && !/publish-assets/.test(s)) {',
+        '    return JSON.stringify({ name: "test", devDependencies: { c8: "11.0.0" } });',
         '  }',
         '  return originalReadFileSync(p, enc);',
         '};',
@@ -223,7 +231,35 @@ describe('build-publish-assets script', () => {
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Missing source \.prettierignore/);
   });
+  it('handles root package.json without devDependencies', () => {
+    const result = runBuildPatched(
+      [
+        'const originalReadFileSync = fs.readFileSync;',
+        'fs.readFileSync = (p, enc) => {',
+        '  const s = String(p);',
+        '  if (/package\\.json$/.test(s) && !/node_modules/.test(s) && !/publish-assets/.test(s) && !/eslint-rules/.test(s)) {',
+        '    return JSON.stringify({ name: "test" });',
+        '  }',
+        '  return originalReadFileSync(p, enc);',
+        '};',
+      ].join('\n'),
+    );
 
+    // Without devDependencies, "auto" versions remain unresolved but are still
+    // non-empty strings → build succeeds, output preserves "auto".
+    assert.equal(result.status, 0);
+    assert.match(result.stdout, /Generated/);
+    const baseLine = JSON.parse(
+      fs.readFileSync(
+        path.resolve(
+          PACKAGE_ROOT,
+          'publish-assets/instructions/produck/tooling-version-baseline.json',
+        ),
+        'utf8',
+      ),
+    );
+    assert.equal(baseLine.tools.c8.version, 'auto');
+  });
   it('fails when source .gitattributes is missing', () => {
     const result = runBuildPatched(
       [

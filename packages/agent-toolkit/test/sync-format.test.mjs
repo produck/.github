@@ -23,10 +23,19 @@ const TOOLING_BASELINE_PATH = fs.existsSync(TOOLING_BASELINE_REPO_PATH)
   ? TOOLING_BASELINE_REPO_PATH
   : /* c8 ignore next */
   TOOLING_BASELINE_ASSET_PATH;
+const ROOT_PKG = JSON.parse(
+  fs.readFileSync(path.resolve(REPO_ROOT, 'package.json'), 'utf8'),
+);
 const TOOLING_BASELINE = JSON.parse(
   fs.readFileSync(TOOLING_BASELINE_PATH, 'utf8'),
 );
-const REQUIRED_PRETTIER_VERSION = TOOLING_BASELINE.tools.prettier.version;
+function resolveSemverExact(text) {
+  return text.replace(/^[\^~>=<]+\s*/, '').trim();
+}
+const REQUIRED_PRETTIER_VERSION =
+  TOOLING_BASELINE.tools.prettier.version === 'auto'
+    ? resolveSemverExact(String(ROOT_PKG.devDependencies.prettier))
+    : /* c8 ignore next */ TOOLING_BASELINE.tools.prettier.version;
 const PRETTIERRC_REPO_PATH = path.resolve(REPO_ROOT, '.prettierrc');
 const PRETTIERRC_ASSET_PATH = path.resolve(
   PACKAGE_ROOT,

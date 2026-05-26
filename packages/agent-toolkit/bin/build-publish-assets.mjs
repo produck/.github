@@ -49,6 +49,7 @@ const OUTPUT_LERNA_PATH = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/lerna.json',
 );
+const ROOT_PACKAGE_JSON_PATH = path.resolve(REPO_ROOT, 'package.json');
 const LEGACY_OUTPUT_PATH = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/instructions/org.instructions.md',
@@ -80,6 +81,10 @@ function validateSourceFile(fileName, text) {
   }
 }
 
+function resolveSemverExact(text) {
+  return text.replace(/^[\^~>=<]+\s*/, '').trim();
+}
+
 function readAndValidateToolingBaseline() {
   if (!fs.existsSync(SOURCE_TOOLING_BASELINE_PATH)) {
     throw new Error(
@@ -98,25 +103,40 @@ function readAndValidateToolingBaseline() {
     );
   }
 
-  const c8Version = baseline?.tools?.c8?.version;
-  const lernaVersion = baseline?.tools?.lerna?.version;
-  const coverageScriptTemplate = baseline?.coverage?.scriptTemplate;
-
   if (typeof baseline.schemaVersion !== 'number') {
     throw new Error(
       `Invalid tooling baseline schemaVersion in: ${SOURCE_TOOLING_BASELINE_PATH}`,
     );
   }
 
+  // Auto-resolve tool versions: only override version when set to "auto"
+  const rootPkg = JSON.parse(fs.readFileSync(ROOT_PACKAGE_JSON_PATH, 'utf8'));
+  const devDeps = rootPkg.devDependencies || {};
+
+  for (const [toolName, entry] of Object.entries(baseline.tools)) {
+    if (entry.version === 'auto') {
+      const depVersion = devDeps[toolName];
+      if (typeof depVersion === 'string' && depVersion.trim()) {
+        entry.version = resolveSemverExact(depVersion);
+      }
+    }
+  }
+
+  const c8Version = baseline?.tools?.c8?.version;
+  const lernaVersion = baseline?.tools?.lerna?.version;
+  const coverageScriptTemplate = baseline?.coverage?.scriptTemplate;
+
   if (typeof c8Version !== 'string' || c8Version.trim() === '') {
     throw new Error(
-      `Invalid tools.c8.version in: ${SOURCE_TOOLING_BASELINE_PATH}`,
+      `Invalid tools.c8.version in: ${SOURCE_TOOLING_BASELINE_PATH} ` +
+        '(c8 must be listed in root package.json devDependencies)',
     );
   }
 
   if (typeof lernaVersion !== 'string' || lernaVersion.trim() === '') {
     throw new Error(
-      `Invalid tools.lerna.version in: ${SOURCE_TOOLING_BASELINE_PATH}`,
+      `Invalid tools.lerna.version in: ${SOURCE_TOOLING_BASELINE_PATH} ` +
+        '(lerna must be listed in root package.json devDependencies)',
     );
   }
 
@@ -129,6 +149,7 @@ function readAndValidateToolingBaseline() {
     );
   }
 
+  // Dynamically inject @produck/eslint-rules version from its own package.json
   const eslintRulesPkgPath = path.resolve(
     PACKAGE_ROOT,
     '../eslint-rules/package.json',
@@ -146,6 +167,7 @@ function readAndValidateToolingBaseline() {
       };
     }
   }
+
   return `${JSON.stringify(baseline, null, 2)}\n`;
 }
 

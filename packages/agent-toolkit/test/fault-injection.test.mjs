@@ -176,6 +176,10 @@ describe('fault injection coverage for sync commands', () => {
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
             '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { prettier: { version: "" } } });',
+            '  // Mask root package.json so fallback resolver does not find prettier',
+            '  if (/[.]json$/.test(s) && /package[.]json$/.test(s) && !/node_modules/.test(s) && !/publish-assets/.test(s) && !/tooling-version-baseline/.test(s)) {',
+            '    return JSON.stringify({ name: "tmp" });',
+            '  }',
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -344,6 +348,10 @@ describe('fault injection coverage for sync commands', () => {
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
             '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: "" } }, coverage: { scriptTemplate: "c8 --config .c8rc.json npm run test" } });',
+            '  // Mask root package.json so fallback resolver does not find c8',
+            '  if (/[.]json$/.test(s) && /package[.]json$/.test(s) && !/node_modules/.test(s) && !/publish-assets/.test(s) && !/tooling-version-baseline/.test(s)) {',
+            '    return JSON.stringify({ name: "tmp" });',
+            '  }',
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -697,6 +705,10 @@ describe('fault injection coverage for sync commands', () => {
             'fs.readFileSync = (p, enc) => {',
             '  const s = String(p);',
             '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { husky: { version: \'\' }, lerna: { version: \'\' } } });',
+            '  // Mask root package.json so fallback resolver does not find husky/lerna',
+            '  if (/[.]json$/.test(s) && /package[.]json$/.test(s) && !/node_modules/.test(s) && !/publish-assets/.test(s) && !/tooling-version-baseline/.test(s)) {',
+            '  return JSON.stringify({ name: "tmp" });',
+            '  }',
             '  return originalReadFileSync(p, enc);',
             '};',
           ].join('\n'),
@@ -815,6 +827,122 @@ describe('fault injection coverage for sync commands', () => {
 
         assert.equal(result.status, 2);
         assert.match(result.stderr, /Toolkit package version is missing/);
+      },
+    );
+  });
+
+  it('sync-format uses concrete baseline version without falling back to package.json', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-format-concrete-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-format/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncFormat',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { prettier: { version: "99.99.99" } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        // With concrete version in baseline, the early return is taken
+        // without falling through to root package.json fallback.
+        assert.equal(result.status, 0);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+      },
+    );
+  });
+
+  it('sync-git uses concrete baseline version without falling back to package.json', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-git-concrete-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          JSON.stringify({
+            name: 'tmp',
+            scripts: {
+              'produck:baseline': 'echo baseline',
+              'produck:commit:check': 'echo check',
+              prepare: 'husky',
+            },
+            devDependencies: {
+              '@produck/agent-toolkit': '0.0.0',
+            },
+          }) + '\n',
+        );
+
+        const modulePath = path.resolve(ROOT, 'bin/command/sync-git/index.mjs');
+        const result = runPatched(
+          modulePath,
+          'runSyncGit',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { husky: { version: "9.9.9" }, lerna: { version: "8.8.8" } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        // Concrete baseline versions are used directly without needing
+        // root package.json fallback.
+        assert.equal(result.status, 0);
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+      },
+    );
+  });
+
+  it('sync-lint fails when tooling baseline and root package.json both lack eslint tools', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-lint-no-tools-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-lint/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncLint',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: {} });',
+            '  // Return a root package.json without eslint tools (falls through to readFileSync fallback)',
+            '  if (/package\\.json$/.test(s) && !/node_modules/.test(s) && !/publish-assets/.test(s) && !/tooling-version-baseline/.test(s) && !/eslint-rules/.test(s)) {',
+            '    return JSON.stringify({ name: "tmp" });',
+            '  }',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /must be a non-empty string/);
       },
     );
   });

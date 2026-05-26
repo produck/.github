@@ -128,16 +128,38 @@ function getRequiredEslintDevDependencies() {
     eslintRulesVersion = v;
   }
 
+  function resolveSemverExact(text) {
+    return text.replace(/^[\^~>=<]+\s*/, '').trim();
+  }
+
+  function resolveToolVersionFromDevDeps(name) {
+    // If baseline has a concrete version (not "auto"), use it directly.
+    // This is the case when reading the published publish-assets baseline.
+    const entry = baseline?.tools?.[name];
+    const v = typeof entry?.version === 'string' ? entry.version.trim() : '';
+    if (v && v !== 'auto') {
+      return v;
+    }
+
+    // Fall back to resolving from local root package.json devDependencies.
+    // This covers source baseline with version="auto" during local dev.
+    const repoRoot = path.resolve(PACKAGE_ROOT, '../..');
+    const pkgJsonPath = path.resolve(repoRoot, 'package.json');
+    if (fs.existsSync(pkgJsonPath)) {
+      const pkg = parseJsonFile(pkgJsonPath, 'root package.json');
+      const dep = pkg?.devDependencies?.[name];
+      if (typeof dep === 'string' && dep.trim()) {
+        return resolveSemverExact(dep);
+      }
+    }
+
+    return '';
+  }
+
   const deps = { [ESLINT_RULES_PACKAGE_NAME]: eslintRulesVersion };
 
   for (const name of ESLINT_TOOLING_PACKAGE_NAMES) {
-    const entry = baseline?.tools?.[name];
-    const v =
-      typeof entry?.version === 'string'
-        ? entry.version.trim()
-        : /* c8 ignore next */
-        '';
-    /* c8 ignore next 6 */
+    const v = resolveToolVersionFromDevDeps(name);
     if (!v) {
       console.error(
         `Tooling baseline tools["${name}"].version must be a non-empty string: ${toolingBaselinePath}`,

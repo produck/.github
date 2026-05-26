@@ -116,6 +116,35 @@ function getRequiredToolkitDevDependency() {
   return version;
 }
 
+function resolveSemverExact(text) {
+  return text.replace(/^[\^~>=<]+\s*/, '').trim();
+}
+
+function resolveToolVersionFromDevDeps(baseline, toolName) {
+  // If baseline has a concrete version (not "auto"), use it directly.
+  // This is the case when reading the published publish-assets baseline.
+  const baselineVersion = String(
+    baseline?.tools?.[toolName]?.version || '',
+  ).trim();
+  if (baselineVersion && baselineVersion !== 'auto') {
+    return baselineVersion;
+  }
+
+  // Fall back to resolving from local root package.json devDependencies.
+  // This covers source baseline with version="auto" during local dev.
+  const repoRoot = path.resolve(PACKAGE_ROOT, '../..');
+  const pkgJsonPath = path.resolve(repoRoot, 'package.json');
+  if (fs.existsSync(pkgJsonPath)) {
+    const pkg = parseJsonFile(pkgJsonPath, 'root package.json');
+    const dep = pkg?.devDependencies?.[toolName];
+    if (typeof dep === 'string' && dep.trim()) {
+      return resolveSemverExact(dep);
+    }
+  }
+
+  return '';
+}
+
 function loadToolingBaseline() {
   const toolingBaselinePath = TOOLING_BASELINE_CANDIDATE_PATHS.find(
     (candidatePath) => {
@@ -134,8 +163,8 @@ function loadToolingBaseline() {
   }
 
   const baseline = parseJsonFile(toolingBaselinePath, 'Tooling baseline file');
-  const huskyVersion = String(baseline?.tools?.husky?.version || '').trim();
-  const lernaVersion = String(baseline?.tools?.lerna?.version || '').trim();
+  const huskyVersion = resolveToolVersionFromDevDeps(baseline, 'husky');
+  const lernaVersion = resolveToolVersionFromDevDeps(baseline, 'lerna');
 
   if (!huskyVersion || !lernaVersion) {
     console.error(
