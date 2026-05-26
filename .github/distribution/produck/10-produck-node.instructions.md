@@ -106,25 +106,71 @@ Team conventions for `.gitignore`:
 
 ## Monorepo mode
 
-Repository layout:
+### Repository layout
 
 - Root-level `docs/` is required.
 - Each package/app should contain its own `src/` and `test/`.
 
-Script placement:
+### Root `package.json` governance
 
-- Root `package.json` must provide `produck:install`, `test`, `produck:coverage`,
-  and `produck:lint` orchestration scripts.
-- Root `package.json` must reserve `produck:commit:check` for organization
-  anti-drift gate with required value:
-  `npm run produck:format && npm run produck:lint`.
-- Root `package.json` must reserve `prepare` for husky setup with required
-  value: `husky`.
-- Root `package.json` must reserve `produck:format` and `produck:lint` for
-  organization-controlled format/lint gates.
-- Root `package.json` must reserve `produck:publish` for organization-controlled
-  publish gate when `lerna.json` is present (governed by
-  `agent-toolkit sync-publish`).
+The root `package.json` exists only for development orchestration. It is
+never consumed as a downstream dependency, so runtime-oriented fields are
+prohibited.
+
+#### Required fields
+
+- `name` — A fixed name stabilizes the `name` field in `package-lock.json`.
+- `private`: `true` — Prevents accidental npm publish.
+- `workspaces` — Explicit path list only; see constraints below.
+- `scripts` — See [Required scripts](#required-scripts) section below.
+- `devDependencies` — The development materials manifest. Root
+  `devDependencies` is the single source of truth for organization-level and
+  repository-level tooling.
+
+#### Optional fields
+
+- `version` — Root is not published; version is meaningless.
+- `description` — Root is not published; description has no practical use.
+- `engines` — Not required. Leave this to Node.js version managers if
+  needed.
+
+#### Prohibited fields
+
+The following fields must never appear in root `package.json`:
+
+- `type`
+- `main`
+- `exports`
+- `types`
+- `files`
+- `publishConfig`
+- `dependencies`
+
+#### `workspaces` field constraints
+
+- Do not use wildcard/glob patterns (for example `packages/*`, `**`, `?`,
+  `{}` or `[]`).
+- List each workspace package path explicitly.
+
+### Required scripts
+
+Root `package.json` must define:
+
+| Script key              | Required value                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `produck:install`       | `npm -v && npm install`                                                                           |
+| `prepare`               | `husky`                                                                                           |
+| `test`                  | Repository-defined (may use `--workspaces --if-present`)                                          |
+| `produck:coverage`      | Organization-defined via `agent-toolkit sync-coverage`                                            |
+| `produck:lint`          | Organization-defined via `agent-toolkit sync-lint`                                                |
+| `produck:format`        | Organization-defined via `agent-toolkit sync-format`                                              |
+| `produck:commit:check`  | `npm run produck:format && npm run produck:lint`                                                  |
+| `produck:baseline`      | `npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd .` |
+| `produck:publish`       | Required when `lerna.json` is present; governed by `agent-toolkit sync-publish`                   |
+| `produck:publish:check` | Required when `lerna.json` is present; governed by `agent-toolkit sync-publish`                   |
+
+Notes:
+
 - `publish` may be defined at root or package level based on release workflow.
 - Remediation commands (run from root):
   - `npm exec -- agent-toolkit sync-install --cwd .` — deploy root install script
@@ -132,13 +178,31 @@ Script placement:
   - `npm exec -- agent-toolkit sync-git --cwd .` — deploy git hooks and deps
   - `npm exec -- agent-toolkit sync-format --cwd .` — deploy format config
   - `npm exec -- agent-toolkit sync-lint --cwd .` — deploy lint config
-- Root `package.json` must define a `produck:baseline` script for organization
-  baseline enforcement:
-  ```json
-  "produck:baseline": "npm exec --package=@produck/agent-toolkit@latest -- agent-toolkit enforce-node-baseline --cwd ."
-  ```
 
-Release tooling policy (required):
+### Workspace `package.json` governance
+
+#### Property restrictions
+
+Workspace-level `package.json` must NOT contain:
+
+- `private` — Package publication state is managed by the root workspace;
+  individual workspace packages should not declare it.
+- `workspaces` — Only the root `package.json` defines workspace paths.
+  Nested declarations violate the centralization principle.
+- Root orchestration scripts — These are the root `package.json`'s
+  responsibility and must not be duplicated in workspace packages:
+  `produck:install`, `produck:baseline`, `produck:commit:check`, `prepare`,
+  `produck:format`, `produck:publish`, `produck:publish:check`
+
+#### Recommended structure
+
+Workspace packages should keep their `package.json` lean, containing only:
+
+- Package metadata: `name`, `version`, `type`, `main`, `exports`, etc.
+- Dependencies: `dependencies`, `devDependencies`
+- Package-level scripts: `test`, `produck:coverage`
+
+### Release tooling policy
 
 - Monorepo release workflow must use `lerna`.
 - `lerna` execution version is governed at organization level, not per
@@ -155,34 +219,7 @@ Release tooling policy (required):
 - Keep an emergency organization-level rollback path when baseline version is
   updated.
 
-Root workspace `package.json` minimal baseline (required):
-
-- `private`: `true`
-- `workspaces` (explicit package path list only)
-- `scripts` with at least: `produck:install`, `test`, `produck:coverage`,
-  `produck:lint`
-- `publish` script is optional at root when release is managed per package or
-  by external workflow.
-
-`workspaces` field constraints (required):
-
-- Do not use wildcard/glob patterns (for example `packages/*`, `**`, `?`,
-  `{}` or `[]`).
-- List each workspace package path explicitly.
-
-Avoid unused root runtime/publish fields by default:
-
-- `type`
-- `main`
-- `exports`
-- `types`
-- `files`
-- `publishConfig`
-
-Add the fields above only when the monorepo root itself is an executable
-runtime package or is intentionally published.
-
-Ignore strategy:
+### Ignore strategy
 
 - Keep ignore rules centralized at repository root whenever possible.
 - Add package-level `.gitignore` only when a package has unique generated
