@@ -191,6 +191,18 @@ Commit precheck gate (AI-agent required, human recommended):
 
 If validation fails, fix the message and rerun until it passes.
 
+## Workspace Draft Files
+
+AI agents **must not** create or organize commit message draft files (such as
+`.git/COMMIT_EDITMSG` snapshots, staged-message backups, or raw draft text
+files) anywhere in the working tree.
+
+**Exception**: draft files are allowed if the filename matches the
+`*.ign*` glob pattern (for example `commit-msg.ign` or
+`message.draft.ignore`). This ensures the file is covered by the
+organization-level `.gitignore` rules and will never be accidentally
+committed.
+
 ## Notes
 
 - Keep the summary concise and specific.
