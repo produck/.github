@@ -1,33 +1,33 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
     "alwaysStrict": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "ES2022"
   },
-  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.js"],
   "exclude": [
     "node_modules",
     "dist",
     "coverage",
     "**/*.test.ts",
     "**/*.test.js"
-  ]
+  ],
+  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.js"]
 }

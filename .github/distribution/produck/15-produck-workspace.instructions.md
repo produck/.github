@@ -34,17 +34,14 @@ The Produck monorepo provides unified configuration across all packages for cons
 - If a repository overrides inherited rules, include only the deltas and
   document the rationale.
 
-**Usage in packages:**
+**Usage:**
 
-```javascript
-// packages/my-package/eslint.config.mjs
-import rootConfig from '../../eslint.config.mjs';
-
-export default [
-  ...rootConfig,
-  // Package-specific overrides here
-];
-```
+- Root `eslint.config.mjs` applies to all packages automatically via ESLint
+  flat config resolution — sub-packages are NOT required to create their own
+  `eslint.config.mjs`.
+- Sub-packages may create a package-level `eslint.config.mjs` on demand for
+  workspace-specific overrides, but this is opt-in and not proactively
+  deployed.
 
 ### 2. TypeScript Configuration (`tsconfig.json`, conditional)
 
@@ -161,32 +158,22 @@ npm run produck:coverage
 
 1. Create `packages/my-package/` directory
 2. Create `packages/my-package/package.json` with workspace configuration
-3. Inherit root configs:
-   - ESLint: extend `../../eslint.config.mjs`
+3. Config inheritance:
+   - ESLint: root `eslint.config.mjs` applies automatically — package-level
+     `eslint.config.mjs` is opt-in and not proactively deployed.
    - TypeScript (when root `tsconfig.json` exists): extend
      `../../tsconfig.json`
    - Prettier: uses root `.prettierrc` automatically
 
 ### Package-Level Overrides
 
-Each package can extend/override shared config:
+Each package's specific needs should be handled within the root shared config
+whenever possible. Per-package ESLint config files are opt-in and not
+proactively deployed; sub-packages may create one on demand.
 
-**ESLint example:**
-
-```javascript
-import rootConfig from '../../eslint.config.mjs';
-import onlyWarn from 'eslint-plugin-only-warn';
-
-export default [
-  ...rootConfig,
-  {
-    plugins: { 'only-warn': onlyWarn },
-    rules: {
-      'custom-rule': 'warn', // package-specific override
-    },
-  },
-];
-```
+For TypeScript configuration, packages may extend root `tsconfig.json` (see
+[TypeScript Configuration](#2-typescript-configuration-tsconfigjson-conditional)
+above).
 
 ## .editorconfig
 

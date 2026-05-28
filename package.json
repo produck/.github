@@ -1,30 +1,5 @@
 {
-  "name": "@produck/org-policies-monorepo",
-  "private": true,
-  "version": "0.0.0",
   "description": "Produck organization policy repository monorepo",
-  "workspaces": [
-    "packages/agent-toolkit",
-    "packages/create-agent-toolkit",
-    "packages/eslint-rules"
-  ],
-  "scripts": {
-    "prepare": "husky",
-    "test": "npm run test --workspaces --if-present",
-    "type-check": "tsc --noEmit",
-    "publish": "node ./scripts/lerna-publish.mjs",
-    "publish:dry-run": "npm run produck:publish:check && lerna exec --no-private -- npm pack --dry-run",
-    "produck:install": "npm -v && npm install",
-    "produck:format": "prettier --write . --ignore-path .prettierignore --ignore-path .gitignore",
-    "produck:lint": "eslint --fix . --max-warnings=0",
-    "produck:coverage": "c8 --config .c8rc.json npm run test --workspaces --if-present",
-    "produck:publish": "npm run produck:publish:check && npm run publish --",
-    "produck:publish:check": "npm run produck:install && npm run produck:coverage && npm run produck:commit:check",
-    "produck:commit:check": "npm run produck:format && npm run produck:lint"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
   "devDependencies": {
     "@eslint/config-helpers": "0.6.0",
     "@eslint/js": "10.0.1",
@@ -39,5 +14,30 @@
     "prettier": "3.8.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "8.60.0"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "name": "@produck/org-policies-monorepo",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "produck:commit:check": "npm run produck:format && npm run produck:lint",
+    "produck:coverage": "c8 --config .c8rc.json npm run test --workspaces --if-present",
+    "produck:format": "prettier --write . --ignore-path .prettierignore --ignore-path .gitignore",
+    "produck:install": "npm -v && npm install",
+    "produck:lint": "eslint --fix . --max-warnings=0",
+    "produck:publish": "npm run produck:publish:check && npm run publish --",
+    "produck:publish:check": "npm run produck:install && npm run produck:coverage && npm run produck:commit:check",
+    "publish": "node ./scripts/lerna-publish.mjs",
+    "publish:dry-run": "npm run produck:publish:check && lerna exec --no-private -- npm pack --dry-run",
+    "test": "npm run test --workspaces --if-present",
+    "type-check": "tsc --noEmit"
+  },
+  "version": "0.0.0",
+  "workspaces": [
+    "packages/agent-toolkit",
+    "packages/create-agent-toolkit",
+    "packages/eslint-rules"
+  ]
 }

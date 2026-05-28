@@ -7,4 +7,11 @@ export const json = {
   plugins: { json: jsonPlugin },
   language: 'json/json',
   extends: ['json/recommended'],
+  rules: {
+    'json/sort-keys': [
+      'warn',
+      'asc',
+      { caseSensitive: true, natural: false, minKeys: 2 },
+    ],
+  },
 };

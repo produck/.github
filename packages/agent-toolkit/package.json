@@ -1,35 +1,35 @@
 {
-  "name": "@produck/agent-toolkit",
-  "version": "0.9.2",
-  "description": "Central CLI toolkit for organization AI execution workflows",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/produck/.github.git",
-    "directory": "packages/agent-toolkit"
-  },
   "bin": {
     "agent-toolkit": "bin/agent-toolkit.mjs"
   },
-  "scripts": {
-    "prepack": "node ./bin/build-publish-assets.mjs",
-    "test": "node test/index.mjs",
-    "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test",
-    "produck:lint": "eslint --fix . --max-warnings=0"
+  "description": "Central CLI toolkit for organization AI execution workflows",
+  "devDependencies": {
+    "@produck/eslint-rules": "^0.4.0",
+    "c8": "11.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "files": [
     "bin",
     "publish-assets"
   ],
+  "license": "MIT",
+  "name": "@produck/agent-toolkit",
   "publishConfig": {
     "access": "public"
   },
-  "engines": {
-    "node": ">=18.0.0"
+  "repository": {
+    "directory": "packages/agent-toolkit",
+    "type": "git",
+    "url": "git+https://github.com/produck/.github.git"
   },
-  "license": "MIT",
-  "devDependencies": {
-    "@produck/eslint-rules": "^0.4.0",
-    "c8": "11.0.0"
-  }
+  "scripts": {
+    "prepack": "node ./bin/build-publish-assets.mjs",
+    "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test",
+    "produck:lint": "eslint --fix . --max-warnings=0",
+    "test": "node test/index.mjs"
+  },
+  "type": "module",
+  "version": "0.9.2"
 }

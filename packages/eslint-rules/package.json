@@ -1,15 +1,12 @@
 {
-  "name": "@produck/eslint-rules",
-  "version": "0.4.0",
+  "author": "ChaosLee",
   "description": "Common eslint rules of Produck team",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/produck/.github.git",
-    "directory": "packages/eslint-rules"
+  "devDependencies": {
+    "c8": "11.0.0"
   },
-  "main": "src/index.mjs",
-  "types": "src/index.d.ts",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
     ".": {
       "import": "./src/index.mjs",
@@ -19,26 +16,29 @@
   "files": [
     "src"
   ],
+  "keywords": [
+    "eslint",
+    "rules"
+  ],
+  "license": "MIT",
+  "main": "src/index.mjs",
+  "name": "@produck/eslint-rules",
   "peerDependencies": {
     "@eslint/config-helpers": ">=0.6.0",
     "@eslint/json": ">=1.2.0",
     "@eslint/markdown": ">=8.0.1",
     "eslint": ">=10.3.0"
   },
+  "repository": {
+    "directory": "packages/eslint-rules",
+    "type": "git",
+    "url": "git+https://github.com/produck/.github.git"
+  },
   "scripts": {
-    "test": "node test/index.mjs",
-    "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
+    "produck:coverage": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test",
+    "test": "node test/index.mjs"
   },
-  "keywords": [
-    "eslint",
-    "rules"
-  ],
-  "author": "ChaosLee",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "devDependencies": {
-    "c8": "11.0.0"
-  }
+  "type": "module",
+  "types": "src/index.d.ts",
+  "version": "0.4.0"
 }

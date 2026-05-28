@@ -202,6 +202,59 @@ Workspace packages should keep their `package.json` lean, containing only:
 - Dependencies: `dependencies`, `devDependencies`
 - Package-level scripts: `test`, `produck:coverage`
 
+#### Publish metadata governance
+
+Workspace packages that are published to npm must correctly declare the
+following fields. These control the package's npm registry page appearance and
+link back to the git hosting platform.
+
+**Required fields:**
+
+- `description` — Short summary shown on npm search results and package page.
+  Must be meaningful and accurate.
+- `license` — SPDX license identifier (for example `"MIT"`). Displayed on npm
+  package page.
+
+**Repository linkage fields** (affect npm "repository", "bugs", "homepage"
+links):
+
+- `repository` — Must use the expanded object form with `directory` to
+  identify the subpackage location within the monorepo:
+  ```json
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/produck/<repo>.git",
+    "directory": "packages/<name>"
+  }
+  ```
+  The `url` value must match the repository's canonical git remote. The
+  `directory` value must be the package's workspace-relative path from the
+  monorepo root.
+- `bugs` — Must link to the GitHub issues page:
+  ```json
+  "bugs": {
+    "url": "https://github.com/produck/<repo>/issues"
+  }
+  ```
+- `homepage` — Must point to the package's README on the default branch, using
+  the `directory` form to navigate to the subpackage:
+  ```json
+  "homepage": "https://github.com/produck/<repo>/tree/main/packages/<name>#readme"
+  ```
+
+**Recommended fields:**
+
+- `keywords` — Array of strings that describe the package. Improves npm search
+  discoverability. Omit if the package has no meaningful keywords.
+
+**Rationale:**
+
+- Without `repository.directory`, npm links the repository field to the
+  monorepo root, which is not helpful for subpackage visitors.
+- Without `bugs`, npm omits the "Report issues" link on the package page.
+- Without `description`, npm shows "(not yet filled)" on the package page.
+- Invalid or missing `license` causes npm warnings during publish.
+
 ### Release tooling policy
 
 - Monorepo release workflow must use `lerna`.

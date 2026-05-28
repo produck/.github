@@ -1,63 +1,4 @@
 {
-  "schemaVersion": 1,
-  "updatedAt": "2026-05-12",
-  "tools": {
-    "c8": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "husky": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "lerna": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "prettier": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "eslint": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "@eslint/js": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "@eslint/json": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "@eslint/markdown": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "@eslint/config-helpers": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "typescript-eslint": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    },
-    "globals": {
-      "version": "auto",
-      "policy": "pinned",
-      "allowLatest": false
-    }
-  },
   "coverage": {
     "scriptTemplate": "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test"
   },
@@ -70,5 +11,64 @@
       "npx prettier",
       "prettier@latest"
     ]
-  }
+  },
+  "schemaVersion": 1,
+  "tools": {
+    "@eslint/config-helpers": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "@eslint/js": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "@eslint/json": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "@eslint/markdown": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "c8": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "eslint": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "globals": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "husky": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "lerna": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "prettier": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    },
+    "typescript-eslint": {
+      "allowLatest": false,
+      "policy": "pinned",
+      "version": "auto"
+    }
+  },
+  "updatedAt": "2026-05-12"
 }
