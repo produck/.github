@@ -138,3 +138,6 @@ dist
 
 # @produck/agent-toolkit
 publish-assets/
+
+# Ensure .github directory is not ignored by any existing rules
+!.github/
