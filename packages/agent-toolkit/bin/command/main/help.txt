@@ -7,6 +7,7 @@ agent-toolkit commands:
   sync-editorconfig
   sync-git
   sync-format
+  sync-typescript
   sync-install
   sync-lint
   sync-publish

@@ -42,6 +42,10 @@ import {
   printSyncPublishHelp,
   runSyncPublish,
 } from './command/sync-publish/index.mjs';
+import {
+  printSyncTypescriptHelp,
+  runSyncTypescript,
+} from './command/sync-typescript/index.mjs';
 import { hasFlag, parseCommonArgs } from './command/shared/args.mjs';
 import {
   printValidateCommitMsgHelp,
@@ -100,6 +104,10 @@ const COMMANDS = {
   'sync-publish': {
     printHelp: printSyncPublishHelp,
     run: runSyncPublish,
+  },
+  'sync-typescript': {
+    printHelp: printSyncTypescriptHelp,
+    run: runSyncTypescript,
   },
 };
 
