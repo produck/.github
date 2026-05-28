@@ -46,6 +46,10 @@ import {
   printSyncTypescriptHelp,
   runSyncTypescript,
 } from './command/sync-typescript/index.mjs';
+import {
+  printSyncWorkspaceHelp,
+  runSyncWorkspace,
+} from './command/sync-workspace/index.mjs';
 import { hasFlag, parseCommonArgs } from './command/shared/args.mjs';
 import {
   printValidateCommitMsgHelp,
@@ -108,6 +112,10 @@ const COMMANDS = {
   'sync-typescript': {
     printHelp: printSyncTypescriptHelp,
     run: runSyncTypescript,
+  },
+  'sync-workspace': {
+    printHelp: printSyncWorkspaceHelp,
+    run: runSyncWorkspace,
   },
 };
 

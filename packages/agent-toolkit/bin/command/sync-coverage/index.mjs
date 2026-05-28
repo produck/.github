@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { getMulti, getSingle, hasFlag } from '../shared/args.mjs';
+import { getSingle, hasFlag } from '../shared/args.mjs';
 import { printTextResource } from '../shared/text-resource.mjs';
 
 const COMMAND_DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -19,7 +19,6 @@ const TOOLING_BASELINE_CANDIDATE_PATHS = [
     'publish-assets/instructions/produck/tooling-version-baseline.json',
   ),
 ];
-const GLOB_TOKEN_PATTERN = /[*?{}[\]]/;
 const REQUIRED_ROOT_COVERAGE_SCRIPT_KEY = 'produck:coverage';
 const REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE = [
   'c8',
@@ -28,10 +27,6 @@ const REQUIRED_ROOT_COVERAGE_SCRIPT_VALUE = [
   '--workspaces',
   '--if-present',
 ].join(' ');
-const REQUIRED_COVERAGE_SCRIPT_KEY = 'produck:coverage';
-const REQUIRED_TEST_SCRIPT_KEY = 'test';
-const DEFAULT_TEST_SCRIPT_VALUE =
-  'node -e "console.log(\'No tests configured\')"';
 const REQUIRED_C8_CONFIG_FILE = '.c8rc.json';
 const REQUIRED_C8_CONFIG_TEMPLATE_FILE = path.resolve(
   COMMAND_DIR,
@@ -127,12 +122,6 @@ function loadToolingBaseline() {
   };
 }
 
-function buildRequiredCoverageScript(baseline) {
-  const c8Version = String(baseline.tools.c8.version);
-  const coverageTemplate = String(baseline.coverage.scriptTemplate);
-  return coverageTemplate.replace(/\{c8\.version\}/g, c8Version);
-}
-
 function buildRequiredC8DevDependency(baseline) {
   return String(baseline.tools.c8.version);
 }
@@ -158,37 +147,6 @@ function loadRequiredC8ConfigContent() {
     'Required c8 config template',
   );
   return `${JSON.stringify(template, null, 2)}\n`;
-}
-
-function resolveWorkspacePaths(cwd, options) {
-  const manual = getMulti(options, '--workspace');
-  if (manual.length > 0) {
-    return manual;
-  }
-
-  const rootPackageJsonPath = path.resolve(cwd, 'package.json');
-  const rootPackageJson = parseJsonFile(
-    rootPackageJsonPath,
-    'Root package.json',
-  );
-  if (!Array.isArray(rootPackageJson.workspaces)) {
-    return [];
-  }
-
-  const workspaces = rootPackageJson.workspaces.map((entry) => String(entry));
-  if (workspaces.length === 0) {
-    return [];
-  }
-
-  const hasGlob = workspaces.some((entry) => GLOB_TOKEN_PATTERN.test(entry));
-  if (hasGlob) {
-    console.error(
-      'Root package.json `workspaces` must use explicit paths without glob tokens',
-    );
-    process.exit(2);
-  }
-
-  return workspaces;
 }
 
 function syncRootCoverage(
@@ -274,130 +232,6 @@ function syncRootCoverage(
   };
 }
 
-function reconcileCoverageScript(
-  cwd,
-  workspacePath,
-  mode,
-  requiredCoverageScript,
-  requiredC8Version,
-) {
-  const packageDir = path.resolve(cwd, workspacePath);
-  const packageJsonPath = path.resolve(packageDir, 'package.json');
-
-  const result = {
-    workspacePath,
-    packageDir,
-    packageJsonPath,
-    exists: false,
-    validJson: false,
-    previousCoverage: null,
-    coverageScript: null,
-    previousTestScript: null,
-    testScript: null,
-    previousC8DevDependency: null,
-    c8DevDependency: null,
-    matchesRequiredCoverageBefore: false,
-    matchesRequiredCoverageAfter: false,
-    hasRequiredTestScriptBefore: false,
-    hasRequiredTestScriptAfter: false,
-    matchesRequiredC8DevDependencyBefore: false,
-    matchesRequiredC8DevDependencyAfter: false,
-    updated: false,
-    error: '',
-  };
-
-  if (!fs.existsSync(packageJsonPath)) {
-    result.error = `Workspace package.json does not exist: ${workspacePath}`;
-    return result;
-  }
-  result.exists = true;
-
-  let pkg;
-  try {
-    pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    result.validJson = true;
-  } catch {
-    result.error = `Workspace package.json is not valid JSON: ${workspacePath}`;
-    return result;
-  }
-
-  const scripts =
-    pkg.scripts &&
-    typeof pkg.scripts === 'object' &&
-    !Array.isArray(pkg.scripts)
-      ? { ...pkg.scripts }
-      : {};
-  const devDependencies =
-    pkg.devDependencies &&
-    typeof pkg.devDependencies === 'object' &&
-    !Array.isArray(pkg.devDependencies)
-      ? { ...pkg.devDependencies }
-      : {};
-
-  const previousCoverage =
-    typeof scripts[REQUIRED_COVERAGE_SCRIPT_KEY] === 'string'
-      ? scripts[REQUIRED_COVERAGE_SCRIPT_KEY]
-      : null;
-  const previousTestScript =
-    typeof scripts[REQUIRED_TEST_SCRIPT_KEY] === 'string' &&
-    scripts[REQUIRED_TEST_SCRIPT_KEY].trim() !== ''
-      ? scripts[REQUIRED_TEST_SCRIPT_KEY]
-      : null;
-  const previousC8DevDependency =
-    typeof devDependencies.c8 === 'string' ? devDependencies.c8 : null;
-  result.previousCoverage = previousCoverage;
-  result.previousTestScript = previousTestScript;
-  result.previousC8DevDependency = previousC8DevDependency;
-  result.matchesRequiredCoverageBefore =
-    previousCoverage === requiredCoverageScript;
-  result.hasRequiredTestScriptBefore = previousTestScript !== null;
-  result.matchesRequiredC8DevDependencyBefore =
-    previousC8DevDependency === requiredC8Version;
-
-  if (
-    (!result.matchesRequiredCoverageBefore ||
-      !result.hasRequiredTestScriptBefore ||
-      !result.matchesRequiredC8DevDependencyBefore) &&
-    mode === 'sync'
-  ) {
-    scripts[REQUIRED_COVERAGE_SCRIPT_KEY] = requiredCoverageScript;
-    if (!result.hasRequiredTestScriptBefore) {
-      scripts[REQUIRED_TEST_SCRIPT_KEY] = DEFAULT_TEST_SCRIPT_VALUE;
-    }
-    devDependencies.c8 = requiredC8Version;
-    pkg.scripts = scripts;
-    pkg.devDependencies = devDependencies;
-    fs.writeFileSync(
-      packageJsonPath,
-      `${JSON.stringify(pkg, null, 2)}\n`,
-      'utf8',
-    );
-    result.updated = true;
-  }
-
-  result.coverageScript =
-    mode === 'sync' && !result.matchesRequiredCoverageBefore
-      ? requiredCoverageScript
-      : previousCoverage;
-  result.testScript =
-    mode === 'sync' && !result.hasRequiredTestScriptBefore
-      ? DEFAULT_TEST_SCRIPT_VALUE
-      : previousTestScript;
-  result.c8DevDependency =
-    mode === 'sync' && !result.matchesRequiredC8DevDependencyBefore
-      ? requiredC8Version
-      : previousC8DevDependency;
-
-  result.matchesRequiredCoverageAfter =
-    result.updated || result.matchesRequiredCoverageBefore;
-  result.hasRequiredTestScriptAfter =
-    (mode === 'sync' && !result.hasRequiredTestScriptBefore) ||
-    result.hasRequiredTestScriptBefore;
-  result.matchesRequiredC8DevDependencyAfter =
-    result.updated || result.matchesRequiredC8DevDependencyBefore;
-  return result;
-}
-
 export function runSyncCoverage(options) {
   const cwd = path.resolve(getSingle(options, '--cwd', process.cwd()));
   const check = hasFlag(options, '--check');
@@ -405,7 +239,6 @@ export function runSyncCoverage(options) {
   const jsonFile = getSingle(options, '--json', '');
   const { baseline: toolingBaseline, toolingBaselinePath } =
     loadToolingBaseline();
-  const requiredCoverageScript = buildRequiredCoverageScript(toolingBaseline);
   const requiredC8Version = buildRequiredC8DevDependency(toolingBaseline);
   const requiredC8ConfigContent = loadRequiredC8ConfigContent();
 
@@ -421,7 +254,6 @@ export function runSyncCoverage(options) {
     requiredC8Version,
     requiredC8ConfigContent,
   );
-  const workspacePaths = resolveWorkspacePaths(cwd, options);
 
   const report = {
     cwd,
@@ -431,12 +263,8 @@ export function runSyncCoverage(options) {
       schemaVersion: toolingBaseline.schemaVersion,
       c8Version: toolingBaseline.tools.c8.version,
     },
-    requiredCoverageScript,
-    requiredTestScript: DEFAULT_TEST_SCRIPT_VALUE,
     requiredC8DevDependency: requiredC8Version,
     root,
-    workspaces: workspacePaths,
-    results: [],
     ok: true,
   };
 
@@ -447,32 +275,6 @@ export function runSyncCoverage(options) {
       !root.status.matchesRequiredC8ConfigAfter)
   ) {
     report.ok = false;
-  }
-
-  for (const workspacePath of workspacePaths) {
-    const effectiveMode = mode === 'sync' ? 'sync' : 'check';
-    const item = reconcileCoverageScript(
-      cwd,
-      workspacePath,
-      effectiveMode,
-      requiredCoverageScript,
-      requiredC8Version,
-    );
-    report.results.push(item);
-
-    if (item.error) {
-      report.ok = false;
-      continue;
-    }
-
-    if (
-      mode === 'check' &&
-      (!item.matchesRequiredCoverageAfter ||
-        !item.hasRequiredTestScriptAfter ||
-        !item.matchesRequiredC8DevDependencyAfter)
-    ) {
-      report.ok = false;
-    }
   }
 
   if (jsonFile) {

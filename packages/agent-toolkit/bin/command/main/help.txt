@@ -5,14 +5,15 @@ agent-toolkit commands:
   summarize-log
   sync-coverage
   sync-editorconfig
-  sync-git
   sync-format
-  sync-typescript
+  sync-git
   sync-install
+  sync-instructions
   sync-lint
   sync-publish
+  sync-typescript
+  sync-workspace
   validate-commit-msg
-  sync-instructions
 
 Default:
   agent-toolkit

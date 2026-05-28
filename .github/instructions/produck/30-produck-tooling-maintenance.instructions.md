@@ -91,6 +91,9 @@ Downstream repositories do not need this detail — they just run
 - `sync-typescript` is the hard guard for sub-package tsconfig.json
   governance, ensuring each TypeScript package has a standardized config that
   extends the root, and is mandatory in monorepo mode.
+- `sync-workspace` is the hard guard for workspace package.json governance
+  (produck:coverage script, test script, c8 devDependency) and is mandatory in
+  monorepo mode.
 - `validate-commit-msg` is a hard guard for AI-agent-authored `git commit` and
   `git commit --amend` operations. For human engineers, it is recommended
   rather than mandatory unless repository-specific hooks/CI enforce it.

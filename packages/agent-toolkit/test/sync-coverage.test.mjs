@@ -33,10 +33,7 @@ const REQUIRED_ROOT_COVERAGE_SCRIPT = [
   '--workspaces',
   '--if-present',
 ].join(' ');
-const REQUIRED_COVERAGE_SCRIPT = String(
-  TOOLING_BASELINE.coverage.scriptTemplate,
-).replace(/\{c8\.version\}/g, String(TOOLING_BASELINE.tools.c8.version));
-const REQUIRED_TEST_SCRIPT = 'node -e "console.log(\'No tests configured\')"';
+
 const REQUIRED_C8_CONFIG_TEMPLATE_FILE = path.join(
   PACKAGE_ROOT,
   'bin',
@@ -89,51 +86,17 @@ describe('sync-coverage command', () => {
     );
   });
 
-  it('fails when root workspaces contains glob token', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-workspace-glob-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', private: true, workspaces: ['packages/*'] }, null, 2)}\n`,
-        );
-
-        const result = runCli(['sync-coverage', '--cwd', tempDir]);
-        assert.equal(result.status, 2);
-        assert.match(
-          result.stderr,
-          /must use explicit paths without glob tokens/,
-        );
-      },
-    );
-  });
-
-  it('applies root c8 config and workspace coverage sync', async () => {
+  it('applies root c8 config and coverage', async () => {
     await withTempDir('agent-toolkit-sync-coverage-sync-', async (tempDir) => {
-      const rootPackage = {
-        name: 'tmp',
-        private: true,
-        workspaces: ['packages/a', 'packages/b'],
-      };
       await writeTextFile(
         path.join(tempDir, 'package.json'),
-        `${JSON.stringify(rootPackage, null, 2)}\n`,
-      );
-      await writeTextFile(
-        path.join(tempDir, 'packages/a/package.json'),
-        `${JSON.stringify({ name: 'a', scripts: { test: 'node --test test/index.mjs' } }, null, 2)}\n`,
-      );
-      await writeTextFile(
-        path.join(tempDir, 'packages/b/package.json'),
-        `${JSON.stringify({ name: 'b' }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
       );
 
       const result = runCli(['sync-coverage', '--cwd', tempDir]);
       assert.equal(result.status, 0);
 
       const root = await readJson(path.join(tempDir, 'package.json'));
-      const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
-      const b = await readJson(path.join(tempDir, 'packages/b/package.json'));
 
       assert.equal(
         root.scripts['produck:coverage'],
@@ -144,12 +107,6 @@ describe('sync-coverage command', () => {
         fs.readFileSync(path.join(tempDir, '.c8rc.json'), 'utf8'),
         REQUIRED_C8_CONFIG_CONTENT,
       );
-      assert.equal(a.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
-      assert.equal(b.scripts['produck:coverage'], REQUIRED_COVERAGE_SCRIPT);
-      assert.equal(a.scripts.test, 'node --test test/index.mjs');
-      assert.equal(b.scripts.test, REQUIRED_TEST_SCRIPT);
-      assert.equal(a.devDependencies.c8, REQUIRED_C8_VERSION);
-      assert.equal(b.devDependencies.c8, REQUIRED_C8_VERSION);
 
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
@@ -159,38 +116,14 @@ describe('sync-coverage command', () => {
         true,
       );
       assert.equal(report.root.status.matchesRequiredC8ConfigAfter, true);
-      assert.equal(report.results.length, 2);
-      assert.equal(
-        report.results.every((item) => item.matchesRequiredCoverageAfter),
-        true,
-      );
-      assert.equal(
-        report.results.every(
-          (item) => item.matchesRequiredC8DevDependencyAfter,
-        ),
-        true,
-      );
-      assert.equal(
-        report.results.every((item) => item.hasRequiredTestScriptAfter),
-        true,
-      );
     });
   });
 
   it('supports --check mode and exits non-zero on mismatch without mutating', async () => {
     await withTempDir('agent-toolkit-sync-coverage-check-', async (tempDir) => {
-      const rootPackage = {
-        name: 'tmp',
-        private: true,
-        workspaces: ['packages/a'],
-      };
       await writeTextFile(
         path.join(tempDir, 'package.json'),
-        `${JSON.stringify(rootPackage, null, 2)}\n`,
-      );
-      await writeTextFile(
-        path.join(tempDir, 'packages/a/package.json'),
-        `${JSON.stringify({ name: 'a', scripts: { 'produck:coverage': 'echo custom' }, devDependencies: { c8: '10.0.0' } }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
       );
 
       const result = runCli(['sync-coverage', '--cwd', tempDir, '--check']);
@@ -204,134 +137,20 @@ describe('sync-coverage command', () => {
         false,
       );
       assert.equal(report.root.status.matchesRequiredC8ConfigAfter, false);
-      assert.equal(report.results[0].matchesRequiredCoverageAfter, false);
-      assert.equal(report.results[0].hasRequiredTestScriptAfter, false);
-      assert.equal(
-        report.results[0].matchesRequiredC8DevDependencyAfter,
-        false,
-      );
 
-      const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
       const rootAfter = await readJson(path.join(tempDir, 'package.json'));
-      /* c8 ignore next */
       assert.equal(rootAfter.scripts?.['produck:coverage'], undefined);
-      assert.equal(a.scripts['produck:coverage'], 'echo custom');
-      assert.equal(a.devDependencies.c8, '10.0.0');
+      assert.equal(fs.existsSync(path.join(tempDir, '.c8rc.json')), false);
     });
-  });
-
-  it('supports --workspace override and --json report output', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-workspace-override-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp' }, null, 2)}\n`,
-        );
-        await writeTextFile(
-          path.join(tempDir, 'packages/a/package.json'),
-          `${JSON.stringify({ name: 'a' }, null, 2)}\n`,
-        );
-
-        const reportFile = path.join(tempDir, 'reports', 'sync-coverage.json');
-        const result = runCli([
-          'sync-coverage',
-          '--cwd',
-          tempDir,
-          '--workspace',
-          'packages/a',
-          '--json',
-          reportFile,
-        ]);
-
-        assert.equal(result.status, 0);
-        const report = await readJson(reportFile);
-        assert.equal(report.ok, true);
-        assert.deepEqual(report.workspaces, ['packages/a']);
-      },
-    );
-  });
-
-  it('check mode reports missing workspace package.json as error item', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-missing-workspace-pkg-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
-        );
-
-        const result = runCli([
-          'sync-coverage',
-          '--cwd',
-          tempDir,
-          '--workspace',
-          'packages/missing',
-          '--check',
-        ]);
-
-        assert.equal(result.status, 2);
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.ok, false);
-        assert.equal(report.results.length, 1);
-        assert.match(
-          report.results[0].error,
-          /Workspace package\.json does not exist/,
-        );
-      },
-    );
-  });
-
-  it('check mode reports invalid workspace package.json as error item', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-invalid-workspace-json-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
-        );
-        await writeTextFile(
-          path.join(tempDir, 'packages/a/package.json'),
-          '{invalid-json}\n',
-        );
-
-        const result = runCli([
-          'sync-coverage',
-          '--cwd',
-          tempDir,
-          '--workspace',
-          'packages/a',
-          '--check',
-        ]);
-
-        assert.equal(result.status, 2);
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.ok, false);
-        assert.equal(report.results.length, 1);
-        assert.match(
-          report.results[0].error,
-          /Workspace package\.json is not valid JSON/,
-        );
-      },
-    );
   });
 
   it('supports --dry-run without writing package changes', async () => {
     await withTempDir(
       'agent-toolkit-sync-coverage-dry-run-',
       async (tempDir) => {
-        const rootPackage = {
-          name: 'tmp',
-          private: true,
-          workspaces: ['packages/a'],
-        };
         await writeTextFile(
           path.join(tempDir, 'package.json'),
-          `${JSON.stringify(rootPackage, null, 2)}\n`,
-        );
-        await writeTextFile(
-          path.join(tempDir, 'packages/a/package.json'),
-          `${JSON.stringify({ name: 'a', scripts: { 'produck:coverage': 'echo old' } }, null, 2)}\n`,
+          `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
         );
 
         const result = runCli(['sync-coverage', '--cwd', tempDir, '--dry-run']);
@@ -340,74 +159,19 @@ describe('sync-coverage command', () => {
         const report = JSON.parse(result.stdout);
         assert.equal(report.mode, 'dry-run');
         assert.equal(report.root.status.updated, false);
-        assert.equal(report.results[0].updated, false);
 
         const root = await readJson(path.join(tempDir, 'package.json'));
-        const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
-        /* c8 ignore next */
         assert.equal(root.scripts?.['produck:coverage'], undefined);
-        assert.equal(a.scripts['produck:coverage'], 'echo old');
-        assert.equal(a.scripts.test, undefined);
-        assert.equal(a.devDependencies, undefined);
         assert.equal(fs.existsSync(path.join(tempDir, '.c8rc.json')), false);
-      },
-    );
-  });
-
-  it('handles root package without workspaces', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-no-workspaces-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
-        );
-
-        const result = runCli(['sync-coverage', '--cwd', tempDir]);
-        assert.equal(result.status, 0);
-
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.ok, true);
-        assert.deepEqual(report.workspaces, []);
-        assert.deepEqual(report.results, []);
-      },
-    );
-  });
-
-  it('handles root package with empty workspaces array', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-empty-workspaces-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', private: true, workspaces: [] }, null, 2)}\n`,
-        );
-
-        const result = runCli(['sync-coverage', '--cwd', tempDir]);
-        assert.equal(result.status, 0);
-
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.ok, true);
-        assert.deepEqual(report.workspaces, []);
-        assert.deepEqual(report.results, []);
       },
     );
   });
 
   it('is a no-op on second run after state is synchronized', async () => {
     await withTempDir('agent-toolkit-sync-coverage-no-op-', async (tempDir) => {
-      const rootPackage = {
-        name: 'tmp',
-        private: true,
-        workspaces: ['packages/a'],
-      };
       await writeTextFile(
         path.join(tempDir, 'package.json'),
-        `${JSON.stringify(rootPackage, null, 2)}\n`,
-      );
-      await writeTextFile(
-        path.join(tempDir, 'packages/a/package.json'),
-        `${JSON.stringify({ name: 'a' }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
       );
 
       const first = runCli(['sync-coverage', '--cwd', tempDir]);
@@ -421,10 +185,6 @@ describe('sync-coverage command', () => {
         path.join(tempDir, '.c8rc.json'),
         'utf8',
       );
-      const beforeWorkspace = fs.readFileSync(
-        path.join(tempDir, 'packages/a/package.json'),
-        'utf8',
-      );
 
       const result = runCli(['sync-coverage', '--cwd', tempDir]);
       assert.equal(result.status, 0);
@@ -432,20 +192,14 @@ describe('sync-coverage command', () => {
       const report = JSON.parse(result.stdout);
       assert.equal(report.ok, true);
       assert.equal(report.root.status.updated, false);
-      assert.equal(report.results[0].updated, false);
 
       const afterRoot = fs.readFileSync(
         path.join(tempDir, 'package.json'),
         'utf8',
       );
       const afterC8 = fs.readFileSync(path.join(tempDir, '.c8rc.json'), 'utf8');
-      const afterWorkspace = fs.readFileSync(
-        path.join(tempDir, 'packages/a/package.json'),
-        'utf8',
-      );
       assert.equal(afterRoot, beforeRoot);
       assert.equal(afterC8, beforeC8);
-      assert.equal(afterWorkspace, beforeWorkspace);
     });
   });
 
@@ -498,6 +252,7 @@ describe('sync-coverage command', () => {
         );
 
         const result = runCli(['sync-coverage', '--cwd', tempDir, '--check']);
+
         assert.equal(result.status, 2);
 
         const report = JSON.parse(result.stdout);
@@ -508,103 +263,6 @@ describe('sync-coverage command', () => {
           true,
         );
         assert.equal(report.root.status.matchesRequiredC8ConfigAfter, false);
-      },
-    );
-  });
-
-  it('check mode marks workspace ok=false when only test script mismatches', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-check-ws-test-',
-      async (tempDir) => {
-        const rootPkg = {
-          name: 'tmp',
-          private: true,
-          scripts: { 'produck:coverage': REQUIRED_ROOT_COVERAGE_SCRIPT },
-          devDependencies: { c8: REQUIRED_C8_VERSION },
-        };
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify(rootPkg, null, 2)}\n`,
-        );
-        await writeTextFile(
-          path.join(tempDir, '.c8rc.json'),
-          REQUIRED_C8_CONFIG_CONTENT,
-        );
-        const wsPkg = {
-          name: 'a',
-          scripts: { 'produck:coverage': REQUIRED_COVERAGE_SCRIPT },
-        };
-        await writeTextFile(
-          path.join(tempDir, 'packages/a/package.json'),
-          `${JSON.stringify(wsPkg, null, 2)}\n`,
-        );
-
-        const result = runCli([
-          'sync-coverage',
-          '--cwd',
-          tempDir,
-          '--workspace',
-          'packages/a',
-          '--check',
-        ]);
-        assert.equal(result.status, 2);
-
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.ok, false);
-        assert.equal(report.results[0].matchesRequiredCoverageAfter, true);
-        assert.equal(report.results[0].hasRequiredTestScriptAfter, false);
-      },
-    );
-  });
-
-  it('check mode marks workspace ok=false when only c8 devDep mismatches', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-check-ws-c8dep-',
-      async (tempDir) => {
-        const rootPkg = {
-          name: 'tmp',
-          private: true,
-          scripts: { 'produck:coverage': REQUIRED_ROOT_COVERAGE_SCRIPT },
-          devDependencies: { c8: REQUIRED_C8_VERSION },
-        };
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify(rootPkg, null, 2)}\n`,
-        );
-        await writeTextFile(
-          path.join(tempDir, '.c8rc.json'),
-          REQUIRED_C8_CONFIG_CONTENT,
-        );
-        const wsPkg = {
-          name: 'a',
-          scripts: {
-            'produck:coverage': REQUIRED_COVERAGE_SCRIPT,
-            test: REQUIRED_TEST_SCRIPT,
-          },
-        };
-        await writeTextFile(
-          path.join(tempDir, 'packages/a/package.json'),
-          `${JSON.stringify(wsPkg, null, 2)}\n`,
-        );
-
-        const result = runCli([
-          'sync-coverage',
-          '--cwd',
-          tempDir,
-          '--workspace',
-          'packages/a',
-          '--check',
-        ]);
-        assert.equal(result.status, 2);
-
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.ok, false);
-        assert.equal(report.results[0].matchesRequiredCoverageAfter, true);
-        assert.equal(report.results[0].hasRequiredTestScriptAfter, true);
-        assert.equal(
-          report.results[0].matchesRequiredC8DevDependencyAfter,
-          false,
-        );
       },
     );
   });

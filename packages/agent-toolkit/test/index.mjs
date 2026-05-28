@@ -5,6 +5,7 @@ import './eslint-config.test.mjs';
 import './fault-injection.test.mjs';
 import './preflight-summarize-run-capture.test.mjs';
 import './sync-coverage.test.mjs';
+import './sync-workspace.test.mjs';
 import './sync-format.test.mjs';
 import './sync-install.test.mjs';
 import './sync-lint.test.mjs';
