@@ -6,7 +6,9 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2022"],
+    "lib": [
+      "ES2022"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
@@ -29,5 +31,8 @@
     "**/*.test.ts",
     "**/*.test.js"
   ],
-  "include": ["packages/*/src/**/*.ts", "packages/*/src/**/*.js"]
+  "include": [
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.js"
+  ]
 }

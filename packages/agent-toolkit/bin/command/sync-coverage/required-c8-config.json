@@ -11,6 +11,10 @@
   ],
   "functions": 99.5,
   "lines": 99.5,
-  "reporter": ["lcov", "html", "text-summary"],
+  "reporter": [
+    "lcov",
+    "html",
+    "text-summary"
+  ],
   "statements": 99.5
 }
