@@ -10,7 +10,7 @@ Behavior:
 - Sync mode applies organization-required root publish scripts:
   - scripts.produck:publish:check = npm run produck:install && npm run produck:format && npm run produck:lint && npm run produck:coverage
   - scripts.produck:publish = npm run produck:publish:check && npm run publish --
-    when scripts.publish exists; otherwise it falls back to lerna publish
+  - If scripts.publish is missing, defaults to "lerna publish"
   - Enforces lerna.json command.version.commitHooks = false so publish/version commits skip git commit hooks
 
 Rules:

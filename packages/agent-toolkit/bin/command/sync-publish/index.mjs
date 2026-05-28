@@ -26,6 +26,8 @@ const REQUIRED_PUBLISH_SCRIPT_VALUE = [
   'npm run produck:publish:check',
   'npm run publish --',
 ].join(' && ');
+const REQUIRED_ROOT_PUBLISH_SCRIPT_KEY = 'publish';
+const REQUIRED_ROOT_PUBLISH_SCRIPT_VALUE = 'lerna publish';
 const REQUIRED_LERNA_VERSION_COMMIT_HOOKS = false;
 
 export function printSyncPublishHelp() {
@@ -175,31 +177,49 @@ export function runSyncPublish(options) {
     typeof scripts[REQUIRED_PUBLISH_SCRIPT_KEY] === 'string'
       ? scripts[REQUIRED_PUBLISH_SCRIPT_KEY]
       : null;
+  const previousRootPublish =
+    typeof scripts[REQUIRED_ROOT_PUBLISH_SCRIPT_KEY] === 'string' &&
+    scripts[REQUIRED_ROOT_PUBLISH_SCRIPT_KEY].trim() !== ''
+      ? scripts[REQUIRED_ROOT_PUBLISH_SCRIPT_KEY]
+      : null;
 
   const matchesRequiredPublishCheck =
     previousPublishCheck === REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
   const matchesRequiredPublish =
     previousPublish === REQUIRED_PUBLISH_SCRIPT_VALUE;
+  const hasRequiredRootPublishBefore = previousRootPublish !== null;
   const lernaRequiresCreation = !lernaExistedBefore && !lernaDefaultCreated;
   const requiresUpdate =
     !matchesRequiredPublishCheck ||
     !matchesRequiredPublish ||
     lernaRequiresCreation ||
-    !matchesRequiredLernaCommitHooks;
+    !matchesRequiredLernaCommitHooks ||
+    !hasRequiredRootPublishBefore;
 
-  if (
-    mode === 'sync' &&
-    (!matchesRequiredPublishCheck || !matchesRequiredPublish)
-  ) {
-    scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY] =
-      REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
-    scripts[REQUIRED_PUBLISH_SCRIPT_KEY] = REQUIRED_PUBLISH_SCRIPT_VALUE;
-    pkg.scripts = scripts;
-    fs.writeFileSync(
-      rootPackageJsonPath,
-      `${JSON.stringify(pkg, null, 2)}\n`,
-      'utf8',
-    );
+  if (mode === 'sync') {
+    let needsWrite = false;
+
+    if (!matchesRequiredPublishCheck || !matchesRequiredPublish) {
+      scripts[REQUIRED_PUBLISH_CHECK_SCRIPT_KEY] =
+        REQUIRED_PUBLISH_CHECK_SCRIPT_VALUE;
+      scripts[REQUIRED_PUBLISH_SCRIPT_KEY] = REQUIRED_PUBLISH_SCRIPT_VALUE;
+      needsWrite = true;
+    }
+
+    if (!hasRequiredRootPublishBefore) {
+      scripts[REQUIRED_ROOT_PUBLISH_SCRIPT_KEY] =
+        REQUIRED_ROOT_PUBLISH_SCRIPT_VALUE;
+      needsWrite = true;
+    }
+
+    if (needsWrite) {
+      pkg.scripts = scripts;
+      fs.writeFileSync(
+        rootPackageJsonPath,
+        `${JSON.stringify(pkg, null, 2)}\n`,
+        'utf8',
+      );
+    }
   }
 
   const report = {
@@ -232,6 +252,9 @@ export function runSyncPublish(options) {
         !matchesRequiredPublish && mode === 'sync'
           ? true
           : matchesRequiredPublish,
+      hasRequiredRootPublishBefore,
+      hasRequiredRootPublishAfter:
+        mode === 'sync' ? true : hasRequiredRootPublishBefore,
       updated: requiresUpdate && mode === 'sync',
     },
   };
