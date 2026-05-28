@@ -247,7 +247,7 @@ describe('sync-publish command', () => {
     await withTempDir('agent-toolkit-sync-publish-noop-', async (tempDir) => {
       await writeTextFile(
         path.join(tempDir, 'package.json'),
-        `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT, 'publish': 'lerna publish' } }, null, 2)}\n`,
+        `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT, publish: 'lerna publish' } }, null, 2)}\n`,
       );
       await writeTextFile(
         path.join(tempDir, 'lerna.json'),
@@ -273,7 +273,7 @@ describe('sync-publish command', () => {
       async (tempDir) => {
         await writeTextFile(
           path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT, 'publish': 'lerna publish' } }, null, 2)}\n`,
+          `${JSON.stringify({ name: 'tmp', scripts: { 'produck:publish:check': REQUIRED_PUBLISH_CHECK_SCRIPT, 'produck:publish': REQUIRED_PUBLISH_SCRIPT, publish: 'lerna publish' } }, null, 2)}\n`,
         );
         await writeTextFile(
           path.join(tempDir, 'lerna.json'),

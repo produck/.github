@@ -95,7 +95,7 @@ exists, it is skipped without modification.
 
 **Rules:**
 
-- Print width: 100 characters
+- Print width: 80 characters
 - Tab width: 2 spaces
 - Single quotes: true
 - Trailing commas: es5
