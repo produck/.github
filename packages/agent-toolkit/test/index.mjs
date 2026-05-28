@@ -13,3 +13,4 @@ import './sync-publish.test.mjs';
 import './sync-instructions.test.mjs';
 import './validate-commit-msg.test.mjs';
 import './sync-editorconfig.test.mjs';
+import './sync-typescript.test.mjs';
