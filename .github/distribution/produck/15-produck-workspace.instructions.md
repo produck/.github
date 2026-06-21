@@ -51,17 +51,27 @@ The Produck monorepo provides unified configuration across all packages for cons
 
 **Decision rule:**
 
-- If the workspace has no TypeScript source files and no package-level need for
-  shared TypeScript options, do not create/deploy root `tsconfig.json`.
-- If any package uses TypeScript source files or needs centralized strict/type
-  options, create root `tsconfig.json` and let TypeScript packages extend it.
+Root-level `tsconfig.json` is **not** recommended for downstream repositories.
+Prefer per-package `tsconfig.json` that stands alone.
+
+- Do **not** create/deploy root `tsconfig.json` unless there is a clear,
+  unavoidable need for centralized TypeScript configuration (e.g., a shared
+  path alias map or compound project references).
+- Each TypeScript package should manage its own `tsconfig.json` independently.
+- Only introduce root `tsconfig.json` when per-package duplication becomes a
+  proven maintenance burden — not as a proactive measure.
 
 **Governance (enforced by `agent-toolkit sync-typescript`):**
 
-Run `agent-toolkit sync-typescript --package-root packages/<name> --cwd .`
+When root `tsconfig.json` exists, run
+`agent-toolkit sync-typescript --package-root packages/<name> --cwd .`
 to ensure a sub-package has a `tsconfig.json` that extends the root with the
 correct relative path and uses standard compiler options. If the file already
 exists, it is skipped without modification.
+
+If no root `tsconfig.json` exists (the recommended default), each TypeScript
+package maintains its own standalone `tsconfig.json` with its own compiler
+options — no `extends` chain is needed.
 
 **Enforced settings:**
 
@@ -184,6 +194,33 @@ proactively deployed; sub-packages may create one on demand.
 For TypeScript configuration, packages may extend root `tsconfig.json` (see
 [TypeScript Configuration](#2-typescript-configuration-tsconfigjson-conditional)
 above).
+
+### Dependency Management in Downstream Repositories
+
+When a monorepo policy is distributed to a downstream repository, sub-package
+`devDependencies` must **not** duplicate workspace-level (root) devDependencies.
+
+**Rationale:**
+
+- Avoids version conflicts between root and sub-package declarations
+- Eliminates ambiguity about which declaration is the source of truth
+- Keeps sub-packages version-stable — root-level upgrades apply uniformly,
+  preventing drift across packages
+- Reduces `npm install` deduplication overhead and `lockfile` churn
+
+**Rule:**
+
+- Shared tooling (ESLint, Prettier, TypeScript, c8, test runners, build tools)
+  belongs in root `devDependencies` only.
+- Sub-packages may list only **package-specific** devDependencies that are not
+  already declared at root level.
+- In the downstream repository, sub-packages that extend root configs (e.g.,
+  `extends` in `tsconfig.json` or `eslint.config.mjs`) inherit their tooling
+  from root and must **not** redeclare those tools in their own
+  `devDependencies`.
+- When a downstream sub-package needs a different version of a root-level tool,
+  use root-level overrides (e.g., `overrides` or `resolutions` in root
+  `package.json`) rather than redeclaring in the sub-package.
 
 ## .editorconfig
 
