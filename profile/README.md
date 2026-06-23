@@ -1,36 +1,58 @@
 # Produck
 
-Organization-level AI collaboration and engineering baselines for repositories
-in the Produck ecosystem.
+Produck is a provider of cross-language infrastructure and foundational
+technologies, committed to composable systems, stable responsibilities, and
+explicit engineering boundaries.
 
-## Quick Start
+## Engineering Principles
 
-Bootstrap the baseline toolkit in your repository:
+Our organization engineering direction follows SOLID as a design baseline. These
+principles are intended to guide future members and are implemented through
+concrete projects and tooling.
 
-```bash
-npm create @produck/agent-toolkit@latest
-```
+### 🎯 1. Single Responsibility Principle (SRP)
 
-## What You Get
+> Each module should have one reason to change.
 
-- AI collaboration baseline and precedence rules
-- Node.js and workspace initialization standards
-- Test authoring and coverage conventions
-- Commit message grammar and target taxonomy
-- Distribution-ready policy assets and sync tooling
+### 🧩 2. Open/Closed Principle (OCP)
 
-## Adoption Model
+> Systems should be open for extension, closed for risky modifications.
 
-- New repositories can adopt this baseline directly
-- Teams may add stricter local rules when needed
-- Any exception should be explicit and documented
+We pursue fully extension-oriented systems.
 
-## Contributing
+- Build with sufficient extension points.
+- Assemble capabilities brick by brick.
+- Keep core positioning stable after broad adoption or formal release.
+- Reject frequent incompatible releases.
+- Replace a proven-wrong core design with a new project, and move the old system into deprecation.
+- Keep this commitment more flexible before broad adoption or formal release.
 
-We welcome focused improvements that increase clarity, enforceability, and
-automation. Prefer small, reviewable pull requests with clear behavior impact.
+### ✅ 3. Liskov Substitution Principle (LSP)
 
-## Feedback
+> Implementations must preserve behavioral contracts.
 
-Use Issues or Discussions for policy proposals, exception requests, and tooling
-feedback.
+### 🔌 4. Interface Segregation Principle (ISP)
+
+> Expose small, role-focused interfaces.
+
+We pursue deliberately bounded public surfaces.
+
+- Keep internal state safe by default.
+- Define public members strictly and carefully.
+- Split interfaces by consumer roles so callers depend only on capabilities they use.
+- Verify consumer boundaries with runtime checks where contracts matter.
+
+### 🧭 5. Dependency Inversion Principle (DIP)
+
+> High-level policy should depend on abstractions rather than concrete tools.
+
+## AI Collaboration 🤝
+
+We work closely with AI as a human-centered engineering practice.
+
+- Use AI to explore context, draft changes, review trade-offs, and automate
+  repeatable engineering work.
+- Keep people accountable for intent, design boundaries, final decisions, and
+  user impact.
+- Treat AI collaboration as explicit, reviewable, testable, and continuously
+  improved work.
