@@ -64,5 +64,8 @@ From [@produck/agent-toolkit](packages/agent-toolkit/README.md)
 - `npm run produck:install` prints the npm version once, installs
   dependencies, and installs Husky hooks for local `pre-commit` and
   `commit-msg` enforcement.
-- Keep markdown line length at 80 characters or fewer.
+- Keep Markdown prose lines at 80 characters or fewer where practical. Longer
+  lines are acceptable for tables, links, badges, code fences, generated
+  content, and other Markdown constructs where wrapping would reduce
+  readability.
 - Keep policy changes small, explicit, and reviewable.

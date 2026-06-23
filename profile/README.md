@@ -24,7 +24,8 @@ We pursue fully extension-oriented systems.
 - Assemble capabilities brick by brick.
 - Keep core positioning stable after broad adoption or formal release.
 - Reject frequent incompatible releases.
-- Replace a proven-wrong core design with a new project, and move the old system into deprecation.
+- Replace a proven-wrong core design with a new project, and move the old
+  system into deprecation.
 - Keep this commitment more flexible before broad adoption or formal release.
 
 ### ✅ 3. Liskov Substitution Principle (LSP)
@@ -39,7 +40,8 @@ We pursue deliberately bounded public surfaces.
 
 - Keep internal state safe by default.
 - Define public members strictly and carefully.
-- Split interfaces by consumer roles so callers depend only on capabilities they use.
+- Split interfaces by consumer roles so callers depend only on capabilities
+  they use.
 - Verify consumer boundaries with runtime checks where contracts matter.
 
 ### 🧭 5. Dependency Inversion Principle (DIP)
