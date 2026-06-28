@@ -168,6 +168,16 @@ export function runEnforceNodeBaseline(options) {
     syncEslintConfigArgs.push('--dry-run');
   }
 
+  const syncWorkspaceArgs = ['sync-workspace', '--cwd', cwd];
+  for (const workspacePath of workspaces) {
+    syncWorkspaceArgs.push('--workspace', workspacePath);
+  }
+  if (check) {
+    syncWorkspaceArgs.push('--check');
+  } else if (dryRun) {
+    syncWorkspaceArgs.push('--dry-run');
+  }
+
   const plan = [
     { name: 'preflight', args: preflightArgs },
     { name: 'sync-instructions', args: syncInstructionsArgs },
@@ -177,6 +187,7 @@ export function runEnforceNodeBaseline(options) {
     { name: 'sync-install', args: syncInstallArgs },
     { name: 'sync-git', args: syncGitArgs },
     { name: 'sync-coverage', args: syncCoverageArgs },
+    { name: 'sync-workspace', args: syncWorkspaceArgs },
     { name: 'sync-publish', args: syncPublishArgs },
   ];
 

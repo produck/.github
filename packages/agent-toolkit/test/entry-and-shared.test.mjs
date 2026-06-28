@@ -191,6 +191,7 @@ describe('main command router', () => {
           'sync-install',
           'sync-git',
           'sync-coverage',
+          'sync-workspace',
           'sync-publish',
         ],
       );

@@ -96,7 +96,7 @@ trim_trailing_whitespace = true
 
         const report = JSON.parse(result.stdout);
         assert.equal(report.ok, true);
-        assert.equal(report.steps.length, 9);
+        assert.equal(report.steps.length, 10);
         assert.deepEqual(
           report.steps.map((step) => step.name),
           [
@@ -108,6 +108,7 @@ trim_trailing_whitespace = true
             'sync-install',
             'sync-git',
             'sync-coverage',
+            'sync-workspace',
             'sync-publish',
           ],
         );
