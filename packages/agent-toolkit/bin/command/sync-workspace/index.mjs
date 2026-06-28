@@ -111,10 +111,6 @@ function buildRequiredCoverageScript(baseline) {
   return coverageTemplate.replace(/\{c8\.version\}/g, c8Version);
 }
 
-function buildRequiredC8DevDependency(baseline) {
-  return String(baseline.tools.c8.version);
-}
-
 function expandGlobPatterns(cwd, entries) {
   const result = [];
   for (const entry of entries) {
@@ -182,13 +178,7 @@ function resolveWorkspacePaths(cwd, options) {
   return raw;
 }
 
-function reconcileWorkspace(
-  cwd,
-  workspacePath,
-  mode,
-  requiredCoverageScript,
-  requiredC8Version,
-) {
+function reconcileWorkspace(cwd, workspacePath, mode, requiredCoverageScript) {
   const packageDir = path.resolve(cwd, workspacePath);
   const packageJsonPath = path.resolve(packageDir, 'package.json');
 
@@ -202,14 +192,10 @@ function reconcileWorkspace(
     coverageScript: null,
     previousTestScript: null,
     testScript: null,
-    previousC8DevDependency: null,
-    c8DevDependency: null,
     matchesRequiredCoverageBefore: false,
     matchesRequiredCoverageAfter: false,
     hasRequiredTestScriptBefore: false,
     hasRequiredTestScriptAfter: false,
-    matchesRequiredC8DevDependencyBefore: false,
-    matchesRequiredC8DevDependencyAfter: false,
     updated: false,
     error: '',
   };
@@ -235,12 +221,6 @@ function reconcileWorkspace(
     !Array.isArray(pkg.scripts)
       ? { ...pkg.scripts }
       : {};
-  const devDependencies =
-    pkg.devDependencies &&
-    typeof pkg.devDependencies === 'object' &&
-    !Array.isArray(pkg.devDependencies)
-      ? { ...pkg.devDependencies }
-      : {};
 
   const previousCoverage =
     typeof scripts[REQUIRED_COVERAGE_SCRIPT_KEY] === 'string'
@@ -251,30 +231,22 @@ function reconcileWorkspace(
     scripts[REQUIRED_TEST_SCRIPT_KEY].trim() !== ''
       ? scripts[REQUIRED_TEST_SCRIPT_KEY]
       : null;
-  const previousC8DevDependency =
-    typeof devDependencies.c8 === 'string' ? devDependencies.c8 : null;
   result.previousCoverage = previousCoverage;
   result.previousTestScript = previousTestScript;
-  result.previousC8DevDependency = previousC8DevDependency;
   result.matchesRequiredCoverageBefore =
     previousCoverage === requiredCoverageScript;
   result.hasRequiredTestScriptBefore = previousTestScript !== null;
-  result.matchesRequiredC8DevDependencyBefore =
-    previousC8DevDependency === requiredC8Version;
 
   if (
     (!result.matchesRequiredCoverageBefore ||
-      !result.hasRequiredTestScriptBefore ||
-      !result.matchesRequiredC8DevDependencyBefore) &&
+      !result.hasRequiredTestScriptBefore) &&
     mode === 'sync'
   ) {
     scripts[REQUIRED_COVERAGE_SCRIPT_KEY] = requiredCoverageScript;
     if (!result.hasRequiredTestScriptBefore) {
       scripts[REQUIRED_TEST_SCRIPT_KEY] = DEFAULT_TEST_SCRIPT_VALUE;
     }
-    devDependencies.c8 = requiredC8Version;
     pkg.scripts = scripts;
-    pkg.devDependencies = devDependencies;
     fs.writeFileSync(
       packageJsonPath,
       `${JSON.stringify(pkg, null, 2)}\n`,
@@ -291,18 +263,12 @@ function reconcileWorkspace(
     mode === 'sync' && !result.hasRequiredTestScriptBefore
       ? DEFAULT_TEST_SCRIPT_VALUE
       : previousTestScript;
-  result.c8DevDependency =
-    mode === 'sync' && !result.matchesRequiredC8DevDependencyBefore
-      ? requiredC8Version
-      : previousC8DevDependency;
 
   result.matchesRequiredCoverageAfter =
     result.updated || result.matchesRequiredCoverageBefore;
   result.hasRequiredTestScriptAfter =
     (mode === 'sync' && !result.hasRequiredTestScriptBefore) ||
     result.hasRequiredTestScriptBefore;
-  result.matchesRequiredC8DevDependencyAfter =
-    result.updated || result.matchesRequiredC8DevDependencyBefore;
   return result;
 }
 
@@ -314,7 +280,6 @@ export function runSyncWorkspace(options) {
   const { baseline: toolingBaseline, toolingBaselinePath } =
     loadToolingBaseline();
   const requiredCoverageScript = buildRequiredCoverageScript(toolingBaseline);
-  const requiredC8Version = buildRequiredC8DevDependency(toolingBaseline);
 
   if (!fs.existsSync(cwd)) {
     console.error(`CWD does not exist: ${cwd}`);
@@ -334,7 +299,6 @@ export function runSyncWorkspace(options) {
     },
     requiredCoverageScript,
     requiredTestScript: DEFAULT_TEST_SCRIPT_VALUE,
-    requiredC8DevDependency: requiredC8Version,
     workspaces: workspacePaths,
     results: [],
     ok: true,
@@ -347,7 +311,6 @@ export function runSyncWorkspace(options) {
       workspacePath,
       effectiveMode,
       requiredCoverageScript,
-      requiredC8Version,
     );
     report.results.push(item);
 
@@ -358,9 +321,7 @@ export function runSyncWorkspace(options) {
 
     if (
       mode === 'check' &&
-      (!item.matchesRequiredCoverageAfter ||
-        !item.hasRequiredTestScriptAfter ||
-        !item.matchesRequiredC8DevDependencyAfter)
+      (!item.matchesRequiredCoverageAfter || !item.hasRequiredTestScriptAfter)
     ) {
       report.ok = false;
     }

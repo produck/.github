@@ -26,7 +26,7 @@ What it does (in order):
 6. Deploys root `.c8rc.json` and root `c8` devDependency
    **Note:** The `produck:coverage` script in subpackages is for local and AI development use only. It is NOT enforced by organization CI or `.c8rc.json`. Only the root workspace (monorepo root) is subject to org-level coverage enforcement and `.c8rc.json`.
 7. Deploys root `.gitattributes`
-8. Deploys the pinned `produck:coverage` script and `c8` devDependency to each workspace package, and enforces `scripts.test` (generates a default `test` script when missing).
+8. Deploys the pinned `produck:coverage` script to each workspace package and enforces `scripts.test` (generates a default `test` script when missing). Workspace packages rely on root-level c8 devDependency (hoisted by npm workspaces).
 9. Deploys `.husky/pre-commit` and `.husky/commit-msg`
 
 After running, add the persistent enforcement entry to the repository
@@ -90,11 +90,14 @@ failure:
    (`produck:baseline`, `produck:commit:check`) plus shared pinned root
    devDependencies (`husky`, `lerna`, `@produck/agent-toolkit`)
 8. `sync-coverage` — deploy root `scripts.produck:coverage`, `.c8rc.json`, and
-   root `c8` devDependency, then deploy pinned `produck:coverage` script and
-   `c8` devDependency into each workspace package, and ensure each workspace
-   package has `scripts.test` (auto-generate a default value when missing)
-9. `sync-publish` — create default `lerna.json` when missing and deploy root
-   `scripts.produck:publish:check` plus `scripts.produck:publish`
+   root `c8` devDependency (root-only; does not touch workspace packages)
+9. `sync-workspace` — deploy pinned `produck:coverage` script to each
+   workspace package and enforce `scripts.test` (auto-generate a default value
+   when missing). Workspace packages rely on root-level c8 devDependency
+   (hoisted by npm workspaces) and must not duplicate c8 in their own
+   `devDependencies`
+10. `sync-publish` — create default `lerna.json` when missing and deploy root
+    `scripts.produck:publish:check` plus `scripts.produck:publish`
 
 Add to downstream repository root `package.json` for one-command enforcement:
 

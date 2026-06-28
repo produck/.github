@@ -3,20 +3,20 @@ Usage:
     [--workspace <path>] ... [--check] [--dry-run] [--json <file>]
 
 Behavior:
-  - Adds or updates scripts.produck:coverage and devDependencies.c8
-    in each workspace package.json.
+  - Adds or updates scripts.produck:coverage in each workspace
+    package.json.
   - Enforces scripts.test in each workspace package.json.
   - If scripts.test is missing, generates:
     node -e "console.log('No tests configured')"
-  - The produck:coverage script in workspaces is for local and AI
-    development use only.
+  - The produck:coverage script in workspaces relies on root-level
+    c8 devDependency (hoisted by npm workspaces).
   - Organization-reserved script key is scripts.produck:coverage
-  - c8 version is resolved from organization tooling baseline file
 
 Rules:
   - When --workspace is omitted, root package.json workspaces are used
   - Single-level glob patterns (e.g. packages/*) are expanded automatically
   - Recursive glob patterns (e.g. packages/**) are rejected
-  - Workspace package.json files must pin devDependencies.c8 to baseline version
+  - Workspace packages must not duplicate root devDependencies;
+    c8 belongs in root package.json only
   - --check validates without writing and exits non-zero on mismatch
   - --dry-run prints planned changes without writing

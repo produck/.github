@@ -268,29 +268,26 @@ describe('sync-coverage command', () => {
   });
 
   it('outputs JSON report to file when --json is specified', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-coverage-json-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
-        );
+    await withTempDir('agent-toolkit-sync-coverage-json-', async (tempDir) => {
+      await writeTextFile(
+        path.join(tempDir, 'package.json'),
+        `${JSON.stringify({ name: 'tmp', private: true }, null, 2)}\n`,
+      );
 
-        const jsonPath = path.join(tempDir, 'logs', 'sync-coverage.json');
-        const result = runCli([
-          'sync-coverage',
-          '--cwd',
-          tempDir,
-          '--json',
-          jsonPath,
-        ]);
+      const jsonPath = path.join(tempDir, 'logs', 'sync-coverage.json');
+      const result = runCli([
+        'sync-coverage',
+        '--cwd',
+        tempDir,
+        '--json',
+        jsonPath,
+      ]);
 
-        assert.equal(result.status, 0);
+      assert.equal(result.status, 0);
 
-        const report = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-        assert.equal(report.ok, true);
-        assert.equal(report.cwd, tempDir);
-      },
-    );
+      const report = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+      assert.equal(report.ok, true);
+      assert.equal(report.cwd, tempDir);
+    });
   });
 });

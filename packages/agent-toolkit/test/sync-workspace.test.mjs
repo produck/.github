@@ -30,7 +30,7 @@ const REQUIRED_COVERAGE_SCRIPT = String(
   TOOLING_BASELINE.coverage.scriptTemplate,
 ).replace(/\{c8\.version\}/g, String(TOOLING_BASELINE.tools.c8.version));
 const REQUIRED_TEST_SCRIPT = 'node -e "console.log(\'No tests configured\')"';
-const REQUIRED_C8_VERSION = String(TOOLING_BASELINE.tools.c8.version);
+// c8 devDependency management is handled by sync-coverage (root-only), not sync-workspace
 
 describe('sync-workspace command', () => {
   it('prints help text for sync-workspace command', () => {
@@ -40,7 +40,7 @@ describe('sync-workspace command', () => {
     assert.match(result.stdout, /Usage:/);
     assert.match(result.stdout, /produck:coverage/);
     assert.match(result.stdout, /scripts\.test/);
-    assert.match(result.stdout, /c8 version/);
+    assert.match(result.stdout, /root-level\s+c8 devDependency/);
   });
 
   it('fails when --cwd does not exist', () => {
@@ -122,9 +122,9 @@ describe('sync-workspace command', () => {
     );
   });
 
-  it('enforces c8 devDependency in workspace packages', async () => {
+  it('does not write devDependencies.c8 into workspace packages', async () => {
     await withTempDir(
-      'agent-toolkit-sync-workspace-c8-devdep-',
+      'agent-toolkit-sync-workspace-no-c8-devdep-',
       async (tempDir) => {
         await writeTextFile(
           path.join(tempDir, 'package.json'),
@@ -139,13 +139,7 @@ describe('sync-workspace command', () => {
         assert.equal(result.status, 0);
 
         const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
-        assert.equal(a.devDependencies.c8, REQUIRED_C8_VERSION);
-
-        const report = JSON.parse(result.stdout);
-        assert.equal(
-          report.results[0].matchesRequiredC8DevDependencyAfter,
-          true,
-        );
+        assert.equal(a.devDependencies, undefined);
       },
     );
   });
@@ -200,10 +194,6 @@ describe('sync-workspace command', () => {
         assert.equal(report.ok, false);
         assert.equal(report.results[0].matchesRequiredCoverageAfter, false);
         assert.equal(report.results[0].hasRequiredTestScriptAfter, false);
-        assert.equal(
-          report.results[0].matchesRequiredC8DevDependencyAfter,
-          false,
-        );
 
         const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
         assert.equal(a.scripts['produck:coverage'], 'echo custom');
@@ -240,7 +230,6 @@ describe('sync-workspace command', () => {
         const a = await readJson(path.join(tempDir, 'packages/a/package.json'));
         assert.equal(a.scripts['produck:coverage'], 'echo old');
         assert.equal(a.scripts.test, undefined);
-        assert.equal(a.devDependencies, undefined);
       },
     );
   });
@@ -407,7 +396,7 @@ describe('sync-workspace command', () => {
     );
   });
 
-  it('is a no-op on second run after state is synchronized', async () => {
+  it('first run adds produck:coverage and test scripts, second run is no-op', async () => {
     await withTempDir(
       'agent-toolkit-sync-workspace-no-op-',
       async (tempDir) => {
@@ -455,7 +444,6 @@ describe('sync-workspace command', () => {
         const wsPkg = {
           name: 'a',
           scripts: { test: REQUIRED_TEST_SCRIPT },
-          devDependencies: { c8: REQUIRED_C8_VERSION },
         };
         await writeTextFile(
           path.join(tempDir, 'packages/a/package.json'),
@@ -469,10 +457,6 @@ describe('sync-workspace command', () => {
         assert.equal(report.ok, false);
         assert.equal(report.results[0].matchesRequiredCoverageAfter, false);
         assert.equal(report.results[0].hasRequiredTestScriptAfter, true);
-        assert.equal(
-          report.results[0].matchesRequiredC8DevDependencyAfter,
-          true,
-        );
       },
     );
   });
@@ -488,7 +472,6 @@ describe('sync-workspace command', () => {
         const wsPkg = {
           name: 'a',
           scripts: { 'produck:coverage': REQUIRED_COVERAGE_SCRIPT },
-          devDependencies: { c8: REQUIRED_C8_VERSION },
         };
         await writeTextFile(
           path.join(tempDir, 'packages/a/package.json'),
@@ -502,45 +485,6 @@ describe('sync-workspace command', () => {
         assert.equal(report.ok, false);
         assert.equal(report.results[0].matchesRequiredCoverageAfter, true);
         assert.equal(report.results[0].hasRequiredTestScriptAfter, false);
-        assert.equal(
-          report.results[0].matchesRequiredC8DevDependencyAfter,
-          true,
-        );
-      },
-    );
-  });
-
-  it('check mode marks workspace ok=false when only c8 devDep mismatches', async () => {
-    await withTempDir(
-      'agent-toolkit-sync-workspace-check-ws-c8dep-',
-      async (tempDir) => {
-        await writeTextFile(
-          path.join(tempDir, 'package.json'),
-          `${JSON.stringify({ name: 'tmp', private: true, workspaces: ['packages/a'] }, null, 2)}\n`,
-        );
-        const wsPkg = {
-          name: 'a',
-          scripts: {
-            'produck:coverage': REQUIRED_COVERAGE_SCRIPT,
-            test: REQUIRED_TEST_SCRIPT,
-          },
-        };
-        await writeTextFile(
-          path.join(tempDir, 'packages/a/package.json'),
-          `${JSON.stringify(wsPkg, null, 2)}\n`,
-        );
-
-        const result = runCli(['sync-workspace', '--cwd', tempDir, '--check']);
-        assert.equal(result.status, 2);
-
-        const report = JSON.parse(result.stdout);
-        assert.equal(report.ok, false);
-        assert.equal(report.results[0].matchesRequiredCoverageAfter, true);
-        assert.equal(report.results[0].hasRequiredTestScriptAfter, true);
-        assert.equal(
-          report.results[0].matchesRequiredC8DevDependencyAfter,
-          false,
-        );
       },
     );
   });

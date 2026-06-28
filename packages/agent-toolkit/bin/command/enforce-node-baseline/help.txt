@@ -12,13 +12,14 @@ Behavior:
     5) sync-lint
     6) sync-install
     7) sync-git
-    8) sync-coverage
-    9) sync-publish
+    8) sync-coverage (root-level only)
+    9) sync-workspace (workspace packages, scripts only)
+   10) sync-publish
   - Stops at first failed step and exits non-zero
   - Prints one combined JSON report for all executed steps
 
 Rules:
-  - --check runs non-mutating validation mode for step 2, step 3, step 4, step 5, step 6, step 7, step 8, and step 9
-  - --dry-run runs non-mutating preview mode for step 2, step 3, step 4, step 5, step 6, step 7, step 8, and step 9
+  - --check runs non-mutating validation mode for step 2 through step 10
+  - --dry-run runs non-mutating preview mode for step 2 through step 10
   - --check takes precedence over --dry-run
-  - --workspace filters coverage sync targets in step 8
+  - --workspace filters workspace package targets in step 9
