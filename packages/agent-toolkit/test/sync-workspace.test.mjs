@@ -544,4 +544,31 @@ describe('sync-workspace command', () => {
       },
     );
   });
+
+  it('skips glob workspace entry when base directory does not exist', async () => {
+    await withTempDir(
+      'agent-toolkit-sync-workspace-glob-missing-dir-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          `${JSON.stringify({ name: 'tmp', private: true, workspaces: ['src/*', 'packages/a'] }, null, 2)}\n`,
+        );
+        // src/ does not exist at all; packages/a exists
+        await writeTextFile(
+          path.join(tempDir, 'packages/a/package.json'),
+          `${JSON.stringify({ name: 'a' }, null, 2)}\n`,
+        );
+
+        const result = runCli(['sync-workspace', '--cwd', tempDir]);
+        assert.equal(result.status, 0);
+
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+        // src/* glob is skipped because src/ does not exist
+        // Only packages/a is resolved
+        assert.equal(report.workspaces.length, 1);
+        assert.equal(report.workspaces[0], 'packages/a');
+      },
+    );
+  });
 });

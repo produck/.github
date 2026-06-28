@@ -1230,4 +1230,228 @@ describe('fault injection coverage for sync commands', () => {
       },
     );
   });
+
+  it('sync-workspace fails when tooling baseline candidates are missing', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-workspace-no-baseline-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-workspace/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncWorkspace',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /Tooling baseline file does not exist/);
+      },
+    );
+  });
+
+  it('sync-workspace fails when tooling baseline has invalid schemaVersion', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-workspace-schema-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-workspace/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncWorkspace',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ tools: { c8: { version: "11.0.0" } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(result.stderr, /schemaVersion must be a number/);
+      },
+    );
+  });
+
+  it('sync-workspace fails when tooling baseline c8 version is empty', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-workspace-empty-c8-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-workspace/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncWorkspace',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  // Block any package.json that is NOT in the tempDir (cwd)',
+            '  if (/package\\.json$/.test(s) && !s.includes(String(process.cwd()))) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: "" } }, coverage: { scriptTemplate: "c8 --reporter=lcov npm test" } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(
+          result.stderr,
+          /tools\.c8\.version must be a non-empty string/,
+        );
+      },
+    );
+  });
+
+  it('sync-workspace fails when tooling baseline coverage template is empty', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-workspace-empty-template-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-workspace/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncWorkspace',
+          ['--cwd', tempDir],
+          [
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: "11.0.0" } } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(
+          result.stderr,
+          /coverage\.scriptTemplate must be a non-empty string/,
+        );
+      },
+    );
+  });
+
+  it('sync-workspace uses concrete baseline version without falling back to package.json', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-workspace-concrete-version-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp"}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-workspace/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncWorkspace',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  // Hide the source baseline (which has "auto" versions) so publish-assets baseline (concrete versions) is used',
+            '  if (/distribution[\\\\/]produck[\\\\/]tooling-version-baseline\\.json$/.test(s)) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 0);
+        // The command should succeed using the publish-assets baseline concrete version
+        const report = JSON.parse(result.stdout);
+        assert.equal(report.ok, true);
+      },
+    );
+  });
+
+  it('sync-workspace falls back when root package.json has no c8 devDependency', async () => {
+    await withTempDir(
+      'agent-toolkit-fault-sync-workspace-fallback-',
+      async (tempDir) => {
+        await writeTextFile(
+          path.join(tempDir, 'package.json'),
+          '{"name":"tmp","devDependencies":{}}\n',
+        );
+
+        const modulePath = path.resolve(
+          ROOT,
+          'bin/command/sync-workspace/index.mjs',
+        );
+        const result = runPatched(
+          modulePath,
+          'runSyncWorkspace',
+          ['--cwd', tempDir],
+          [
+            'const originalExistsSync = fs.existsSync;',
+            'const originalReadFileSync = fs.readFileSync;',
+            'fs.existsSync = (p) => {',
+            '  const s = String(p);',
+            '  // Hide the monorepo root package.json so devDep fallback returns empty',
+            '  if (/package\\.json$/.test(s) && /produck-he/i.test(s) && !s.includes(String(process.cwd()))) return false;',
+            '  return originalExistsSync(p);',
+            '};',
+            'fs.readFileSync = (p, enc) => {',
+            '  const s = String(p);',
+            '  if (/tooling-version-baseline\\.json$/.test(s)) return JSON.stringify({ schemaVersion: 1, tools: { c8: { version: "auto" } }, coverage: { scriptTemplate: "c8 --reporter=lcov --reporter=html --reporter=text-summary npm test" } });',
+            '  return originalReadFileSync(p, enc);',
+            '};',
+          ].join('\n'),
+        );
+
+        assert.equal(result.status, 2);
+        assert.match(
+          result.stderr,
+          /tools\.c8\.version must be a non-empty string/,
+        );
+      },
+    );
+  });
 });
