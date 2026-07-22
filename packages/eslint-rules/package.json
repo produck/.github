@@ -1,9 +1,6 @@
 {
   "author": "ChaosLee",
   "description": "Common eslint rules of Produck team",
-  "devDependencies": {
-    "c8": "11.0.0"
-  },
   "engines": {
     "node": ">=18.0.0"
   },
@@ -26,7 +23,7 @@
   "peerDependencies": {
     "@eslint/config-helpers": ">=0.6.0",
     "@eslint/json": ">=1.2.0",
-    "@eslint/markdown": ">=8.0.1",
+    "@eslint/markdown": ">=8.0.0",
     "eslint": ">=10.3.0"
   },
   "repository": {

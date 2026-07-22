@@ -6,9 +6,6 @@
     "@produck/agent-toolkit": "^0.11.1"
   },
   "description": "Bootstrap downstream repositories with the produck organization baseline",
-  "devDependencies": {
-    "c8": "11.0.0"
-  },
   "engines": {
     "node": ">=18.0.0"
   },

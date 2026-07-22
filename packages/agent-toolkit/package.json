@@ -4,8 +4,7 @@
   },
   "description": "Central CLI toolkit for organization AI execution workflows",
   "devDependencies": {
-    "@produck/eslint-rules": "^0.4.1",
-    "c8": "11.0.0"
+    "@produck/eslint-rules": "^0.4.1"
   },
   "engines": {
     "node": ">=18.0.0"
