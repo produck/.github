@@ -47,7 +47,7 @@ export function bootstrapRepo(cwd, repoName, moduleName) {
 
   // Create root package.json with explicit workspace enumeration (no globs)
   const rootPkg = {
-    name: `@produck/${repoName}`,
+    name: `@produck/${repoName}-workspace`,
     private: true,
     workspaces: [workspaceRelPath],
   };
@@ -86,31 +86,7 @@ export function bootstrapRepo(cwd, repoName, moduleName) {
   }
   /* c8 ignore stop */
 
-  // Install dependencies written by enforce-node-baseline
-  if (process.env.PRODUCK_SKIP_INSTALL) {
-    process.stdout.write(
-      '\n\u2139 Skipping npm install (PRODUCK_SKIP_INSTALL is set).\n',
-    );
-    process.stdout.write('Run manually: npm install\n');
-    process.stdout.write('\n\u2713 Repository initialized successfully!\n');
-    return;
-  } /* c8 ignore start */
-
-  process.stdout.write('\n\u2192 Running npm install...\n\n');
-
-  const installResult = spawnSync('npm', ['install'], {
-    stdio: 'inherit',
-    cwd,
-  });
-
-  if (installResult.status !== 0) {
-    process.stderr.write(
-      `\n\u26A0 npm install exited with code ${installResult.status ?? 1}.\n`,
-    );
-    process.stderr.write('Run manually: npm install\n');
-    process.exit(installResult.status ?? 1);
-  }
-
-  process.stdout.write('\n\u2713 Repository initialized successfully!\n');
-  /* c8 ignore stop */
+  process.stdout.write(
+    '\n\u2713 Repository initialized. Run `npm install` to install dependencies.\n',
+  );
 }

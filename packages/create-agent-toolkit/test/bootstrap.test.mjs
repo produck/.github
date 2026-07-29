@@ -31,7 +31,7 @@ describe('bootstrapRepo', () => {
         'utf8',
       );
       const rootPkg = JSON.parse(rootPkgRaw);
-      assert.equal(rootPkg.name, '@produck/myapp');
+      assert.equal(rootPkg.name, '@produck/myapp-workspace');
       assert.equal(rootPkg.private, true);
       assert.deepStrictEqual(rootPkg.workspaces, ['packages/mymod']);
 
@@ -122,7 +122,7 @@ describe('bootstrapRepo', () => {
         cwd: tempDir,
         input: '\n\n',
         encoding: 'utf8',
-        env: toolkitEnv({ PRODUCK_SKIP_INSTALL: '1' }),
+        env: toolkitEnv(),
       });
 
       assert.equal(
@@ -138,7 +138,7 @@ describe('bootstrapRepo', () => {
       const rootPkg = JSON.parse(rootPkgRaw);
 
       // Both should default to the directory name
-      assert.equal(rootPkg.name, `@produck/${dirName}`);
+      assert.equal(rootPkg.name, `@produck/${dirName}-workspace`);
       assert.deepStrictEqual(rootPkg.workspaces, [`packages/${dirName}`]);
 
       const wsExists = await fs

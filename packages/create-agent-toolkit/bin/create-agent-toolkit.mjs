@@ -19,7 +19,7 @@ async function initInteractive(cwd) {
   process.stdout.write('Produck Repository Initialization\n');
   process.stdout.write('================================\n\n');
 
-  const repoName = await prompt('Repository name (\u8BCD\u6839)', dirName);
+  const repoName = await prompt('Repository name', dirName);
   const moduleName = await prompt('First workspace module name', repoName);
 
   bootstrapRepo(cwd, repoName, moduleName);
