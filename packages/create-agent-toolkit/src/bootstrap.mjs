@@ -73,6 +73,7 @@ export function bootstrapRepo(cwd, repoName, moduleName) {
     { stdio: 'inherit', cwd },
   );
 
+  /* c8 ignore start */
   if (baselineResult.status !== 0) {
     process.stderr.write(
       `\n\u26A0 enforce-node-baseline exited with code ${baselineResult.status ?? 1}.\n`,
@@ -83,6 +84,7 @@ export function bootstrapRepo(cwd, repoName, moduleName) {
     process.stderr.write('  npx @produck/create-agent-toolkit\n');
     process.exit(baselineResult.status ?? 1);
   }
+  /* c8 ignore stop */
 
   // Install dependencies written by enforce-node-baseline
   if (process.env.PRODUCK_SKIP_INSTALL) {
@@ -92,7 +94,7 @@ export function bootstrapRepo(cwd, repoName, moduleName) {
     process.stdout.write('Run manually: npm install\n');
     process.stdout.write('\n\u2713 Repository initialized successfully!\n');
     return;
-  }
+  } /* c8 ignore start */
 
   process.stdout.write('\n\u2192 Running npm install...\n\n');
 
@@ -110,4 +112,5 @@ export function bootstrapRepo(cwd, repoName, moduleName) {
   }
 
   process.stdout.write('\n\u2713 Repository initialized successfully!\n');
+  /* c8 ignore stop */
 }

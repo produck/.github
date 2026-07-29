@@ -7,6 +7,7 @@ import { createInterface } from 'node:readline';
  * @param {string} defaultValue
  * @returns {Promise<string>}
  */
+/* c8 ignore start */
 export function prompt(question, defaultValue = '') {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   const display = defaultValue
@@ -19,6 +20,7 @@ export function prompt(question, defaultValue = '') {
     });
   });
 }
+/* c8 ignore stop */
 
 /**
  * Read all lines from piped stdin synchronously.

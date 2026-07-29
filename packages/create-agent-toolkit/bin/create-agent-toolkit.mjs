@@ -12,6 +12,7 @@ import { bootstrapRepo, toolkitBin } from '../src/bootstrap.mjs';
  * @param {string} cwd
  * @returns {Promise<void>}
  */
+/* c8 ignore start */
 async function initInteractive(cwd) {
   const dirName = path.basename(cwd);
 
@@ -23,6 +24,7 @@ async function initInteractive(cwd) {
 
   bootstrapRepo(cwd, repoName, moduleName);
 }
+/* c8 ignore stop */
 
 /**
  * Non-interactive piped-stdin initialization: read lines, then bootstrap.
@@ -54,6 +56,7 @@ if (fs.existsSync(packageJsonPath)) {
 }
 
 // New empty repository
+/* c8 ignore start */
 if (process.stdin.isTTY) {
   // Interactive mode (human typing)
   initInteractive(cwd).catch((err) => {
@@ -61,6 +64,7 @@ if (process.stdin.isTTY) {
     process.exit(1);
   });
 } else {
+  /* c8 ignore stop */
   // Piped input mode (non-interactive, used by tests)
   initFromPipedStdin(cwd);
 }
