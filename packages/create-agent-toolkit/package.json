@@ -10,7 +10,8 @@
     "node": ">=18.0.0"
   },
   "files": [
-    "bin"
+    "bin",
+    "src"
   ],
   "license": "MIT",
   "name": "@produck/create-agent-toolkit",
