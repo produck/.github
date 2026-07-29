@@ -3,7 +3,7 @@
     "create-agent-toolkit": "bin/create-agent-toolkit.mjs"
   },
   "dependencies": {
-    "@produck/agent-toolkit": "^0.11.1"
+    "@produck/agent-toolkit": "^0.11.2"
   },
   "description": "Bootstrap downstream repositories with the produck organization baseline",
   "engines": {
@@ -28,5 +28,5 @@
     "test": "node test/index.mjs"
   },
   "type": "module",
-  "version": "0.5.1"
+  "version": "0.6.0"
 }
