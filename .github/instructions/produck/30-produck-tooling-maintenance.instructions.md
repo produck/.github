@@ -65,6 +65,38 @@ To revert to auto-resolution, change it back to `"version": "auto"`.
    longer needed.
 3. Update the relevant sync commands if they explicitly reference that tool.
 
+## Toolkit Publish Trigger
+
+Published `@produck/agent-toolkit` assets embed the resolved tooling version
+baseline and copies of repository-level configuration. Changing root tool
+versions or those configuration files therefore changes the package contents
+without touching any file under `packages/agent-toolkit/`, which lerna's own
+change detection cannot see.
+
+`scripts/lerna-publish.mjs` closes that gap. Before running `lerna publish` it
+collects the publish inputs that differ between the latest
+`@produck/agent-toolkit@*` tag and `HEAD`, then force-publishes the toolkit when
+any input changed. When no local toolkit tag exists, the toolkit is always
+force-published.
+
+Publish inputs are declared in `packages/agent-toolkit/bin/publish-inputs.mjs`:
+
+- Repository paths copied into `publish-assets` (for example
+  `.github/distribution/produck`, `lerna.json`, `.gitignore`).
+- Root `package.json` `devDependencies` entries that the build script resolves
+  for baseline tools declared with `"version": "auto"`.
+- `packages/eslint-rules/package.json` `version`, which is injected into the
+  published baseline.
+
+Rules when editing distribution sources:
+
+- Adding a copied source to
+  `packages/agent-toolkit/bin/build-publish-assets.mjs` requires adding the same
+  path to `packages/agent-toolkit/bin/publish-inputs.mjs`, otherwise changes to
+  it will not trigger a toolkit release.
+- To release regardless of detection, pass the flag explicitly:
+  `npm run produck:publish -- --force-publish=@produck/agent-toolkit`.
+
 ## Toolkit Command Role Model
 
 The following describes the architecture and role of each toolkit command.

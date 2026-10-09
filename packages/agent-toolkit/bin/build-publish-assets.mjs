@@ -7,6 +7,8 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = path.resolve(SCRIPT_DIR, '..');
 const REPO_ROOT = path.resolve(PACKAGE_ROOT, '../..');
 const SOURCE_DIR = path.resolve(REPO_ROOT, '.github/distribution/produck');
+// Adding a copied source here also requires updating bin/publish-inputs.mjs,
+// which drives the publish trigger for changes to these sources.
 const OUTPUT_DIR = path.resolve(
   PACKAGE_ROOT,
   'publish-assets/instructions/produck',

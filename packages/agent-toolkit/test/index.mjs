@@ -1,6 +1,7 @@
 import './enforce-node-baseline.test.mjs';
 import './entry-and-shared.test.mjs';
 import './build-publish-assets.test.mjs';
+import './publish-inputs.test.mjs';
 import './eslint-config.test.mjs';
 import './fault-injection.test.mjs';
 import './preflight-summarize-run-capture.test.mjs';

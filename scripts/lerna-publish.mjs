@@ -4,10 +4,11 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { collectPublishInputChanges } from '../packages/agent-toolkit/bin/publish-inputs.mjs';
+
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 const TOOLKIT_PACKAGE_NAME = '@produck/agent-toolkit';
-const DISTRIBUTION_SOURCE_PATH = '.github/distribution/produck';
 const LERNA_CLI_PATH = path.resolve(
   REPO_ROOT,
   'node_modules/lerna/dist/cli.js',
@@ -47,23 +48,13 @@ function findLatestToolkitTag() {
     .find((line) => line.length > 0);
 }
 
-function getDistributionSourceChangesSince(tagName) {
-  const result = runGit(
-    ['diff', '--name-only', `${tagName}..HEAD`, '--', DISTRIBUTION_SOURCE_PATH],
-    { allowFailure: true },
-  );
+function getPublishInputChangesSince(tagName) {
+  const { changedPaths, changedVersionInputs } = collectPublishInputChanges({
+    tagName,
+    runGit,
+  });
 
-  if (result.status !== 0 && result.status !== 1) {
-    const stderr = result.stderr?.trim();
-    throw new Error(
-      `Unable to diff ${DISTRIBUTION_SOURCE_PATH} since ${tagName}${stderr ? `: ${stderr}` : ''}`,
-    );
-  }
-
-  return result.stdout
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+  return [...changedPaths, ...changedVersionInputs];
 }
 
 function hasForcePublishArg(args) {
@@ -84,12 +75,12 @@ function resolveForcePublish() {
     };
   }
 
-  const changedFiles = getDistributionSourceChangesSince(latestTag);
+  const changedFiles = getPublishInputChangesSince(latestTag);
 
   if (changedFiles.length === 0) {
     return {
       shouldForcePublish: false,
-      reason: `No distribution instruction changes since ${latestTag}`,
+      reason: `No publish input changes since ${latestTag}`,
       latestTag,
       changedFiles,
     };
@@ -97,7 +88,7 @@ function resolveForcePublish() {
 
   return {
     shouldForcePublish: true,
-    reason: `Detected ${changedFiles.length} distribution instruction change(s) since ${latestTag}`,
+    reason: `Detected ${changedFiles.length} publish input change(s) since ${latestTag}`,
     latestTag,
     changedFiles,
   };
